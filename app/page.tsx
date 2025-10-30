@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { db, storage } from '../lib/firebase';
+// FIX: Removed v9 modular imports, as we are now using the v8-compatible API.
 import { slugify } from '../lib/slugify';
+
 import type { PropertyDetails, PropertyFormData } from '../types';
 import { PropertyForm } from '../components/PropertyForm';
 import { LandingPage } from '../components/LandingPage';
@@ -15,6 +17,7 @@ const HomePage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
+
 
   useEffect(() => {
     setIsClient(true);
@@ -38,6 +41,7 @@ const HomePage: React.FC = () => {
       setPropertyDetails(newDetails);
     } catch (error) {
       console.error("Error generating content:", error);
+      // Fallback: use original description and a generic title
       setPropertyDetails({
         ...formData,
         generatedTitle: "הזדמנות נדל\"ן שאסור לפספס",
@@ -54,6 +58,7 @@ const HomePage: React.FC = () => {
     }
   };
 
+  // FIX: Updated to use Firebase v8 Storage API.
   const uploadFile = async (base64: string, path: string): Promise<string> => {
     const storageRef = storage.ref(path);
     const snapshot = await storageRef.putString(base64, 'data_url');
@@ -65,10 +70,15 @@ const HomePage: React.FC = () => {
     
     setIsSaving(true);
     try {
+      // 1. Generate a new document reference to get a unique ID *before* saving
+      // FIX: Updated to use Firebase v8 Firestore API.
       const docRef = db.collection("landingPages").doc();
       const newId = docRef.id;
+
+      // 2. Generate slug from address
       const slug = slugify(propertyDetails.address);
 
+      // 3. Upload images and logo using the new ID for the path
       const imageUrls = await Promise.all(
         propertyDetails.images.map((img, index) => 
             uploadFile(img, `properties/${newId}/image_${index}.jpg`)
@@ -80,6 +90,7 @@ const HomePage: React.FC = () => {
         logoUrl = await uploadFile(propertyDetails.logo, `properties/${newId}/logo.png`);
       }
 
+      // 4. Prepare data for Firestore, including the slug and id
       const dataToSave = {
         ...propertyDetails,
         id: newId,
@@ -88,8 +99,14 @@ const HomePage: React.FC = () => {
         logo: logoUrl,
       };
 
+      // 5. Save the data to the document reference we created earlier
+      // FIX: Updated to use Firebase v8 Firestore API.
       await docRef.set(dataToSave);
+      
+      // 6. Create the final user-friendly URL
       const finalUrl = `/p/${slug}-${newId}`;
+      
+      // 7. Redirect to the new page
       router.push(finalUrl);
 
     } catch (error) {
