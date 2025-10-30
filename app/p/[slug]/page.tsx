@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { db } from '../../../lib/firebase';
+// FIX: Removed v9 modular imports, as we are now using the v8-compatible API.
 import { LandingPage } from '../../../components/LandingPage';
 import type { PropertyDetails } from '../../../types';
 
@@ -19,6 +20,8 @@ const PropertyPage = ({ params }: PageProps) => {
     const fetchProperty = async () => {
       try {
         const fullSlug = params.slug;
+        // The ID is the last part of the slug, separated by a dash.
+        // It's a 20-character alphanumeric string from Firestore.
         const idMatch = fullSlug.match(/([a-zA-Z0-9]{20})$/);
 
         if (!idMatch || !idMatch[0]) {
@@ -28,6 +31,7 @@ const PropertyPage = ({ params }: PageProps) => {
         }
         
         const id = idMatch[0];
+        // FIX: Updated to use Firebase v8 Firestore API.
         const docRef = db.collection('landingPages').doc(id);
         const docSnap = await docRef.get();
 
