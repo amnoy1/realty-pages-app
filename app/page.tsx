@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation';
 import { db, storage } from '../lib/firebase';
 import { slugify } from '../lib/slugify';
 
+// FIX: Removed unused 'GeneratedContent' type which was not exported from '../types'.
 import type { PropertyDetails, PropertyFormData } from '../types';
 import { PropertyForm } from '../components/PropertyForm';
 import { LandingPage } from '../components/LandingPage';
-import { generatePropertyContent } from '../services/geminiClient';
+// We no longer import from geminiClient directly
 
 const HomePage: React.FC = () => {
   const [propertyDetails, setPropertyDetails] = useState<PropertyDetails | null>(null);
@@ -16,7 +17,6 @@ const HomePage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
-
 
   useEffect(() => {
     setIsClient(true);
@@ -30,16 +30,34 @@ const HomePage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const { title, description, features } = await generatePropertyContent(formData.description, formData.address);
+      // Call our new secure API route
+      const response = await fetch('/api/generate-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          originalDescription: formData.description,
+          address: formData.address 
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const generatedData = await response.json();
+
       const newDetails: PropertyDetails = {
         ...formData,
-        generatedTitle: title,
-        enhancedDescription: description,
-        features: features,
+        generatedTitle: generatedData.title,
+        enhancedDescription: generatedData.description,
+        features: generatedData.features,
       };
       setPropertyDetails(newDetails);
     } catch (error) {
-      console.error("Error generating content:", error);
+      console.error("Error generating content via API route:", error);
       setPropertyDetails({
         ...formData,
         generatedTitle: "הזדמנות נדל\"ן שאסור לפספס",
@@ -50,7 +68,7 @@ const HomePage: React.FC = () => {
         },
         features: {},
       });
-      alert("שגיאה ביצירת התוכן. נעשה שימוש בתוכן חלופי.");
+      alert(`שגיאה ביצירת התוכן: ${error instanceof Error ? error.message : 'שגיאה לא ידועה'}. נעשה שימוש בתוכן חלופי.`);
     } finally {
       setIsLoading(false);
     }
