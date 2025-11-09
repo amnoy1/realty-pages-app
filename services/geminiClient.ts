@@ -5,6 +5,11 @@ console.log("--- RUNNING LATEST geminiClient.ts v2 ---");
 
 // Aligned with Gemini API guidelines to exclusively use process.env.API_KEY.
 const apiKey = process.env.API_KEY;
+
+// New debug log to check the key's status
+console.log(`API_KEY found: ${!!apiKey}`);
+
+
 if (!apiKey) {
   // This error will stop the build process if the API key is not set in Vercel.
   throw new Error("API_KEY environment variable not set");
@@ -119,11 +124,13 @@ export const generatePropertyContent = async (originalDescription: string, addre
         try {
             const response = await ai.models.generateContent(modelConfig);
             
+            // This is the critical fix that solves the TypeScript error.
             const responseText = response.text;
             if (!responseText) {
                 throw new Error(`Gemini API returned an empty text response on attempt ${attempt}.`);
             }
 
+            // If we have text, parse it.
             const parsed = JSON.parse(responseText);
             return parsed; // Success
             
