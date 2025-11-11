@@ -5,11 +5,9 @@ import { useRouter } from 'next/navigation';
 import { db, storage } from '../lib/firebase';
 import { slugify } from '../lib/slugify';
 
-// FIX: Removed unused 'GeneratedContent' type which was not exported from '../types'.
 import type { PropertyDetails, PropertyFormData } from '../types';
 import { PropertyForm } from '../components/PropertyForm';
 import { LandingPage } from '../components/LandingPage';
-// We no longer import from geminiClient directly
 
 const HomePage: React.FC = () => {
   const [propertyDetails, setPropertyDetails] = useState<PropertyDetails | null>(null);
@@ -30,7 +28,6 @@ const HomePage: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Call our new secure API route
       const response = await fetch('/api/generate-content', {
         method: 'POST',
         headers: {
@@ -125,14 +122,14 @@ const HomePage: React.FC = () => {
 
   if (!isClient) {
     return (
-        <div className="flex justify-center items-center min-h-screen">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+        <div className="flex justify-center items-center min-h-screen bg-slate-50">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-slate-900"></div>
         </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <main>
       {propertyDetails ? (
         <LandingPage 
             details={propertyDetails} 
@@ -144,7 +141,7 @@ const HomePage: React.FC = () => {
       ) : (
         <PropertyForm onSubmit={handleFormSubmit} isLoading={isLoading} />
       )}
-    </div>
+    </main>
   );
 };
 
