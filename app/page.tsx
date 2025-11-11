@@ -122,14 +122,14 @@ const HomePage: React.FC = () => {
 
   if (!isClient) {
     return (
-        <div className="flex justify-center items-center min-h-screen bg-slate-50">
+        <div className="flex justify-center items-center min-h-screen">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-slate-900"></div>
         </div>
     );
   }
 
   return (
-    <main>
+    <div className="min-h-screen">
       {propertyDetails ? (
         <LandingPage 
             details={propertyDetails} 
@@ -141,7 +141,7 @@ const HomePage: React.FC = () => {
       ) : (
         <PropertyForm onSubmit={handleFormSubmit} isLoading={isLoading} />
       )}
-    </main>
+    </div>
   );
 };
 
