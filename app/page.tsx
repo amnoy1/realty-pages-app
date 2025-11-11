@@ -6,7 +6,7 @@ import { db, storage } from '../lib/firebase';
 import { slugify } from '../lib/slugify';
 
 import type { PropertyDetails, PropertyFormData } from '../types';
-import { PropertyForm } from '../components/PropertyForm';
+import { CreationForm } from '../components/CreationForm'; // Updated import
 import { LandingPage } from '../components/LandingPage';
 
 const HomePage: React.FC = () => {
@@ -139,7 +139,7 @@ const HomePage: React.FC = () => {
             isSaving={isSaving}
         />
       ) : (
-        <PropertyForm onSubmit={handleFormSubmit} isLoading={isLoading} />
+        <CreationForm onSubmit={handleFormSubmit} isLoading={isLoading} /> // Updated component
       )}
     </div>
   );
