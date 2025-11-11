@@ -58,17 +58,16 @@ const FeaturesSection: React.FC<{ features: PropertyFeatures }> = ({ features })
     <div className="bg-slate-100 p-4 rounded-2xl">
         <h3 className="text-xl font-bold text-slate-800 mb-4 text-center">מאפייני הנכס</h3>
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 justify-items-center">
-            {/* FIX: Changed string props from using escaped quotes ("\"") to JS expressions ({'""'}) to prevent JSX parsing errors with Hebrew text. */}
             <FeatureItem icon={<AreaIcon />} label={'מ"ר בנוי'} value={features.apartmentArea} />
-            {/* FIX: Changed string props from using escaped quotes ("\"") to JS expressions ({'""'}) to prevent JSX parsing errors with Hebrew text. */}
             <FeatureItem icon={<BalconyIcon />} label={'מ"ר מרפסת'} value={features.balconyArea} />
             <FeatureItem icon={<BedIcon />} label="חדרים" value={features.rooms} />
             <FeatureItem icon={<FloorIcon />} label="קומה" value={features.floor} />
-            <FeatureItem icon={<SafeRoomIcon />} label="" value={features.safeRoom} />
+            {/* FIX: Changed label="ממ\"ד" to label={'ממ"ד'} to avoid TSX parsing error. */}
+            <FeatureItem icon={<SafeRoomIcon />} label={'ממ"ד'} value={features.safeRoom} />
             <FeatureItem icon={<ParkingIcon />} label="חניות" value={features.parking} />
             <FeatureItem icon={<StorageIcon />} label="מחסן" value={features.storage} />
             <FeatureItem icon={<WindIcon />} label="כיווני אוויר" value={features.airDirections} />
-            <FeatureItem icon={<ElevatorIcon />} label="" value={features.elevator === 'יש' ? 'מעלית' : ''} />
+            <FeatureItem icon={<ElevatorIcon />} label="מעלית" value={features.elevator} />
         </div>
     </div>
   );
