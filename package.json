@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tailwindcss/aspect-ratio": "^0.4.2",
     "@google/genai": "^1.27.0",
     "firebase": "^10.12.2",
     "next": "14.2.4",
