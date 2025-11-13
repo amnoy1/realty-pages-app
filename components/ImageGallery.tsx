@@ -5,12 +5,13 @@ interface ImageGalleryProps {
 }
 
 const ChevronRightIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
 );
 
 const ChevronLeftIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
 );
+
 
 export const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -28,35 +29,35 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
   };
   
   if (!images || images.length === 0) {
-    return null;
+    return <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-400">לא נבחרו תמונות</div>;
   }
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full group">
       <div className="w-full h-full">
         <img src={images[currentIndex]} alt={`Gallery image ${currentIndex + 1}`} className="w-full h-full object-cover transition-opacity duration-500 ease-in-out" />
       </div>
       <button 
         onClick={goToPrevious} 
-        className="absolute top-1/2 -translate-y-1/2 left-4 bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition-colors focus:outline-none z-10"
+        className="absolute top-1/2 -translate-y-1/2 left-4 bg-black/30 text-white p-3 rounded-full hover:bg-black/50 transition-all focus:outline-none z-10 opacity-0 group-hover:opacity-100"
         aria-label="Previous Image"
       >
         <ChevronLeftIcon />
       </button>
       <button 
         onClick={goToNext}
-        className="absolute top-1/2 -translate-y-1/2 right-4 bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition-colors focus:outline-none z-10"
+        className="absolute top-1/2 -translate-y-1/2 right-4 bg-black/30 text-white p-3 rounded-full hover:bg-black/50 transition-all focus:outline-none z-10 opacity-0 group-hover:opacity-100"
         aria-label="Next Image"
       >
         <ChevronRightIcon />
       </button>
-       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 space-x-reverse z-10">
+       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 space-x-reverse z-10">
         {images.map((_, index) => (
             <div
                 key={index}
                 role="button"
                 aria-label={`Go to image ${index + 1}`}
-                className={`h-2 w-2 rounded-full cursor-pointer transition-all duration-300 ${currentIndex === index ? 'bg-white scale-125' : 'bg-white/50'}`}
+                className={`h-2 w-2 rounded-full cursor-pointer transition-all duration-300 ${currentIndex === index ? 'bg-white scale-150 w-6' : 'bg-white/60 hover:bg-white'}`}
                 onClick={() => setCurrentIndex(index)}
             ></div>
         ))}

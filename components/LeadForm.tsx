@@ -40,7 +40,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ agentWhatsApp, agentEmail, p
   
   if (submitted) {
     return (
-        <div className="text-center max-w-lg mx-auto p-8 bg-green-100 border-2 border-green-300 rounded-2xl">
+        <div className="text-center max-w-lg mx-auto p-8 bg-green-50 border-2 border-green-200 rounded-2xl">
             <h2 className="text-2xl font-bold text-green-800 mb-2">תודה רבה!</h2>
             <p className="text-green-700">הפרטים נשלחו לסוכן באמצעות דוא"ל ו-WhatsApp. ניצור איתך קשר בהקדם.</p>
         </div>
@@ -48,41 +48,43 @@ export const LeadForm: React.FC<LeadFormProps> = ({ agentWhatsApp, agentEmail, p
   }
 
   return (
-    <div className="max-w-lg mx-auto">
-      <h2 className="text-3xl font-bold text-center text-gray-800 mb-2">אני רוצה לקבוע סיור בנכס</h2>
-      <p className="text-center text-gray-500 mb-8">השאר פרטים ונחזור אליך לתיאום סיור</p>
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-2xl shadow-xl space-y-6">
+    <div className="max-w-xl mx-auto bg-white p-8 sm:p-12 rounded-2xl shadow-2xl">
+      <h2 className="text-3xl font-bold text-center text-slate-800 mb-2">רוצים לראות את הנכס?</h2>
+      <p className="text-center text-slate-500 mb-8">השאירו פרטים ונחזור אליכם לתיאום סיור בהקדם</p>
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">שם מלא</label>
+          <label htmlFor="fullName" className="block text-sm font-medium text-slate-700 mb-1">שם מלא</label>
           <input
             type="text"
             id="fullName"
             name="fullName"
-            className="w-full px-4 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg shadow-sm focus:ring-slate-500 focus:border-slate-500 transition duration-150 placeholder-slate-400"
+            className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 placeholder-slate-400"
             placeholder="ישראל ישראלי"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             required
+            aria-required="true"
           />
         </div>
         <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">טלפון</label>
+          <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-1">טלפון</label>
           <input
             type="tel"
             id="phone"
             name="phone"
-            className="w-full px-4 py-2 bg-slate-800 text-white border border-slate-600 rounded-lg shadow-sm focus:ring-slate-500 focus:border-slate-500 transition duration-150 placeholder-slate-400"
+            className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 placeholder-slate-400"
             placeholder="050-123-4567"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             required
+            aria-required="true"
           />
         </div>
         <button
           type="submit"
-          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-lg font-medium text-white bg-slate-700 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-all duration-300 transform hover:scale-105"
+          className="w-full flex justify-center py-4 px-4 border border-transparent rounded-lg shadow-lg text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105"
         >
-          שלח וקבע סיור
+          שליחה ותיאום סיור
         </button>
       </form>
     </div>

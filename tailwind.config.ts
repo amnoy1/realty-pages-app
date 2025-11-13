@@ -1,5 +1,10 @@
 import type { Config } from "tailwindcss";
 
+// Fix: Use import for Tailwind plugins in a TypeScript configuration file to avoid 'require is not defined' errors.
+import aspectRatio from "@tailwindcss/aspect-ratio";
+import forms from "@tailwindcss/forms";
+import typography from "@tailwindcss/typography";
+
 const config: Config = {
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -10,7 +15,9 @@ const config: Config = {
     extend: {},
   },
   plugins: [
-    require('@tailwindcss/aspect-ratio'),
+    aspectRatio,
+    forms,
+    typography,
   ],
 };
 export default config;
