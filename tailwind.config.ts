@@ -1,6 +1,5 @@
 import type { Config } from "tailwindcss";
-
-// Fix: Use import for Tailwind plugins in a TypeScript configuration file to avoid 'require is not defined' errors.
+// Fix: Use ES module imports for Tailwind CSS plugins instead of `require` to make the file valid TypeScript.
 import aspectRatio from "@tailwindcss/aspect-ratio";
 import forms from "@tailwindcss/forms";
 import typography from "@tailwindcss/typography";
