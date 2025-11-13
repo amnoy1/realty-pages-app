@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
-// Fix: Use ES module imports instead of CommonJS require for Tailwind plugins to resolve TypeScript errors.
+
+// FIX: Replaced CommonJS `require()` with ES module `import` statements to resolve TypeScript errors. This is a more modern and type-safe way to include Tailwind CSS plugins.
 import aspectRatio from "@tailwindcss/aspect-ratio";
 import forms from "@tailwindcss/forms";
 import typography from "@tailwindcss/typography";
