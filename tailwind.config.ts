@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
-// Fix: Use ES module imports for Tailwind CSS plugins instead of `require` to make the file valid TypeScript.
+
+// Fix: Replaced `require` with `import` for Tailwind CSS plugins to resolve TypeScript errors.
 import aspectRatio from "@tailwindcss/aspect-ratio";
 import forms from "@tailwindcss/forms";
 import typography from "@tailwindcss/typography";
