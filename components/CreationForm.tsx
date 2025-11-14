@@ -82,89 +82,105 @@ export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => v
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 to-indigo-100 p-4 sm:p-6 lg:p-8 flex items-center justify-center">
-      <div className="container mx-auto max-w-4xl">
-        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-10">
+    <div className="min-h-screen bg-slate-900 p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+      <div className="container mx-auto max-w-6xl w-full">
+        <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-2xl shadow-2xl p-6 sm:p-10">
           <div className="text-center mb-10">
-              <h1 className="text-3xl sm:text-4xl font-bold text-slate-800 mb-2">מחולל דפי נחיתה לנדל"ן</h1>
-              <p className="text-slate-500 text-lg">הזן את פרטי הנכס וצור דף נחיתה מקצועי וממיר ברגע</p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">מחולל דפי נחיתה לנדל"ן</h1>
+              <p className="text-slate-400 text-lg">הזן את פרטי הנכס וצור דף נחיתה מקצועי וממיר ברגע</p>
           </div>
           
-          <form onSubmit={handleSubmit} className="space-y-12">
-            <fieldset className="space-y-6">
-              <legend className="text-xl font-semibold text-slate-700 border-b border-slate-200 w-full pb-2 mb-4">שלב 1: פרטי הנכס</legend>
-              <InputField icon={<BuildingIcon/>} name="address" label="כתובת הנכס המלאה" placeholder="לדוגמה: רוטשילד 16, תל אביב" value={formData.address} onChange={handleChange} required />
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-slate-700 mb-1">תיאור הנכס</label>
-                <textarea id="description" name="description" rows={6} className="form-textarea w-full" placeholder="ספרו על הנכס, היתרונות שלו, והסביבה. תיאור זה ישודרג אוטומטית על ידי AI לכותרת ותיאור שיווקיים." value={formData.description} onChange={handleChange} required />
-                <p className="text-xs text-slate-500 mt-1">התיאור הזה ישמש ליצירת כותרת ותיאור משופרים באמצעות בינה מלאכותית.</p>
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-x-12 gap-y-10">
+
+              {/* Form Fields Column */}
+              <div className="lg:col-span-3 space-y-10">
+                <section>
+                  <h2 className="text-xl font-semibold text-white border-b border-slate-700 pb-3 mb-6">פרטי הנכס</h2>
+                  <div className="space-y-6">
+                    <InputField icon={<BuildingIcon/>} name="address" label="כתובת הנכס המלאה" placeholder="לדוגמה: רוטשילד 16, תל אביב" value={formData.address} onChange={handleChange} required />
+                    <div>
+                      <label htmlFor="description" className="block text-sm font-medium text-slate-300 mb-2">תיאור הנכס</label>
+                      <textarea id="description" name="description" rows={6} className="form-textarea w-full bg-slate-700 border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="ספרו על הנכס, היתרונות שלו, והסביבה. תיאור זה ישודרג אוטומטית על ידי AI לכותרת ותיאור שיווקיים." value={formData.description} onChange={handleChange} required />
+                      <p className="text-xs text-slate-500 mt-2">התיאור הזה ישמש ליצירת כותרת ותיאור משופרים באמצעות בינה מלאכותית.</p>
+                    </div>
+                    <InputField icon={<PriceIcon/>} name="price" label="מחיר שיווק" placeholder="לדוגמה: 5,400,000 ₪" value={formData.price} onChange={handleChange} required />
+                  </div>
+                </section>
+                
+                <section>
+                  <h2 className="text-xl font-semibold text-white border-b border-slate-700 pb-3 mb-6">פרטי הסוכן</h2>
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <InputField icon={<UserIcon/>} name="agentName" label="סוכן מטפל" placeholder="שם מלא" value={formData.agentName} onChange={handleChange} required />
+                      <InputField icon={<EmailIcon/>} name="agentEmail" label="דוא'ל לקבלת פניות" placeholder="your-email@example.com" value={formData.agentEmail} onChange={handleChange} required type="email" />
+                    </div>
+                    <InputField icon={<WhatsAppIcon/>} name="agentWhatsApp" label="מספר ווצאפ של הסוכן" placeholder="בפורמט בינלאומי, לדוגמה: 972501234567" value={formData.agentWhatsApp} onChange={handleChange} required />
+                  </div>
+                </section>
               </div>
-              <InputField icon={<PriceIcon/>} name="price" label="מחיר שיווק" placeholder="לדוגמה: 5,400,000 ₪" value={formData.price} onChange={handleChange} required />
-            </fieldset>
 
-            <fieldset className="space-y-6">
-              <legend className="text-xl font-semibold text-slate-700 border-b border-slate-200 w-full pb-2 mb-4">שלב 2: פרטי הסוכן</legend>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InputField icon={<UserIcon/>} name="agentName" label="סוכן מטפל" placeholder="שם מלא" value={formData.agentName} onChange={handleChange} required />
-                <InputField icon={<EmailIcon/>} name="agentEmail" label="דוא'ל לקבלת פניות" placeholder="your-email@example.com" value={formData.agentEmail} onChange={handleChange} required type="email" />
+              {/* Media Column */}
+              <div className="lg:col-span-2">
+                <section>
+                  <h2 className="text-xl font-semibold text-white border-b border-slate-700 pb-3 mb-6">מדיה</h2>
+                  <div className="space-y-8">
+                      <div>
+                          <label className="block text-sm font-medium text-slate-300 mb-2">תמונות הנכס (עד 10)</label>
+                          <div className="mt-1 flex justify-center p-6 border-2 border-slate-600 border-dashed rounded-lg bg-slate-800 hover:border-slate-500 transition">
+                              <div className="space-y-1 text-center">
+                                  <FileUploadIcon/>
+                                  <div className="flex text-sm text-slate-400">
+                                      <label htmlFor="file-upload" className="relative cursor-pointer bg-slate-800 rounded-md font-medium text-blue-500 hover:text-blue-400 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-slate-800 focus-within:ring-blue-500">
+                                          <span>העלה קבצים</span>
+                                          <input id="file-upload" name="file-upload" type="file" className="sr-only" multiple accept="image/*" onChange={handleFileChange} />
+                                      </label>
+                                      <p className="pr-1">או גרור ושחרר</p>
+                                  </div>
+                                  <p className="text-xs text-slate-500">התמונה הראשונה שתעלה תהיה תמונת הנושא</p>
+                              </div>
+                          </div>
+                      </div>
+                      
+                      {images.length > 0 && (
+                          <div>
+                              <h3 className="text-sm font-medium text-slate-300 mb-2">גרור כדי לסדר מחדש:</h3>
+                              <div className="grid grid-cols-3 sm:grid-cols-3 gap-3">
+                                  {images.map((img, index) => (
+                                      <div key={index} className="relative group cursor-grab active:cursor-grabbing aspect-w-1 aspect-h-1" draggable onDragStart={() => handleDragStart(index)} onDragEnter={() => handleDragEnter(index)} onDragEnd={handleDrop} onDragOver={(e) => e.preventDefault()}>
+                                          <img src={img} alt={`preview ${index}`} className="w-full h-full object-cover rounded-lg shadow-md pointer-events-none" />
+                                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all rounded-lg"></div>
+                                          <button type="button" onClick={() => handleDeleteImage(index)} className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full p-1 leading-none opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100" aria-label={`מחק תמונה ${index + 1}`}>
+                                              <DeleteIcon />
+                                          </button>
+                                      </div>
+                                  ))}
+                              </div>
+                          </div>
+                      )}
+
+                      <div>
+                          <label className="block text-sm font-medium text-slate-300 mb-2">לוגו המשרד (אופציונלי)</label>
+                          <div className="mt-1 flex items-center gap-4">
+                              <div className="h-20 w-20 bg-slate-700/50 border border-slate-700 rounded-md flex items-center justify-center">
+                                  {logo ? <img src={logo} alt="logo preview" className="h-full w-full object-contain rounded-md p-1" /> : <LogoIcon />}
+                              </div>
+                              <label htmlFor="logo-upload" className="cursor-pointer bg-slate-700 py-2 px-4 border border-slate-600 rounded-md shadow-sm text-sm font-medium text-slate-300 hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-blue-500 transition">
+                                  <span>{logo ? 'החלף לוגו' : 'בחר לוגו'}</span>
+                                  <input id="logo-upload" name="logo-upload" type="file" className="sr-only" accept="image/png, image/jpeg" onChange={handleLogoChange} />
+                              </label>
+                          </div>
+                      </div>
+                  </div>
+                </section>
               </div>
-              <InputField icon={<WhatsAppIcon/>} name="agentWhatsApp" label="מספר ווצאפ של הסוכן" placeholder="בפורמט בינלאומי, לדוגמה: 972501234567" value={formData.agentWhatsApp} onChange={handleChange} required />
-            </fieldset>
+            </div>
 
-            <fieldset className="space-y-6">
-                <legend className="text-xl font-semibold text-slate-700 border-b border-slate-200 w-full pb-2 mb-4">שלב 3: מדיה</legend>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">תמונות הנכס (עד 10)</label>
-                        <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-md">
-                            <div className="space-y-1 text-center">
-                                <FileUploadIcon/>
-                                <div className="flex text-sm text-slate-600">
-                                    <label htmlFor="file-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                                        <span>העלה קבצים</span>
-                                        <input id="file-upload" name="file-upload" type="file" className="sr-only" multiple accept="image/*" onChange={handleFileChange} />
-                                    </label>
-                                    <p className="pr-1">או גרור ושחרר</p>
-                                </div>
-                                <p className="text-xs text-slate-500">מומלץ להעלות את התמונה הראשית כתמונה ראשונה</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">לוגו המשרד (אופציונלי)</label>
-                        <div className="mt-1 flex items-center gap-4">
-                            <div className="h-24 w-24 bg-slate-100 rounded-md flex items-center justify-center">
-                                {logo ? <img src={logo} alt="logo preview" className="h-full w-full object-contain rounded-md p-1" /> : <LogoIcon />}
-                            </div>
-                            <label htmlFor="logo-upload" className="cursor-pointer bg-white py-2 px-3 border border-slate-300 rounded-md shadow-sm text-sm leading-4 font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                <span>{logo ? 'החלף לוגו' : 'בחר לוגו'}</span>
-                                <input id="logo-upload" name="logo-upload" type="file" className="sr-only" accept="image/png, image/jpeg" onChange={handleLogoChange} />
-                            </label>
-                        </div>
-                    </div>
-                </div>
-              
-                {images.length > 0 && (
-                    <div>
-                        <h3 className="text-sm font-medium text-slate-700 mb-2">גרור כדי לסדר מחדש:</h3>
-                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                            {images.map((img, index) => (
-                                <div key={index} className="relative group cursor-grab active:cursor-grabbing aspect-w-1 aspect-h-1" draggable onDragStart={() => handleDragStart(index)} onDragEnter={() => handleDragEnter(index)} onDragEnd={handleDrop} onDragOver={(e) => e.preventDefault()}>
-                                    <img src={img} alt={`preview ${index}`} className="w-full h-full object-cover rounded-lg shadow-md pointer-events-none" />
-                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all rounded-lg"></div>
-                                    <button type="button" onClick={() => handleDeleteImage(index)} className="absolute top-1 right-1 bg-black bg-opacity-60 text-white rounded-full p-1 leading-none opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100" aria-label={`מחק תמונה ${index + 1}`}>
-                                        <DeleteIcon />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </fieldset>
-
-            <button type="submit" disabled={isLoading} className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-lg shadow-lg text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-slate-400 transition-all duration-300 transform hover:scale-105">
-              {isLoading ? (<><Spinner />מעבד ויוצר קסם...</>) : 'צור דף נחיתה'}
-            </button>
+            <div className="mt-12 pt-8 border-t border-slate-700">
+              <button type="submit" disabled={isLoading} className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-lg shadow-lg text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-blue-500 disabled:bg-slate-600 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105">
+                {isLoading ? (<><Spinner />מעבד ויוצר קסם...</>) : 'צור דף נחיתה'}
+              </button>
+            </div>
           </form>
         </div>
       </div>
@@ -174,10 +190,10 @@ export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => v
 
 const InputField: React.FC<{ icon: React.ReactNode; name: string; label: string; placeholder: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; required?: boolean; type?: string; }> = ({ icon, name, label, ...props }) => (
     <div>
-        <label htmlFor={name} className="block text-sm font-medium text-slate-700 mb-1">{label}</label>
+        <label htmlFor={name} className="block text-sm font-medium text-slate-300 mb-2">{label}</label>
         <div className="relative">
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">{icon}</div>
-            <input id={name} name={name} {...props} className="form-input w-full pr-10" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5">{icon}</div>
+            <input id={name} name={name} {...props} className="form-input w-full pr-10 bg-slate-700 border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-blue-500 focus:border-blue-500 transition" />
         </div>
     </div>
 );
