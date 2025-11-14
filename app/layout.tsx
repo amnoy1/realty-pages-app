@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="he" dir="rtl">
-      <body className={`${heebo.className} bg-slate-900 text-slate-200`}>{children}</body>
+      <body className={`${heebo.className} bg-slate-900 text-white`}>{children}</body>
     </html>
   );
 }
