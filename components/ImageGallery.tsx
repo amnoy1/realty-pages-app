@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 
 interface ImageGalleryProps {
   images: string[];
@@ -35,7 +36,14 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
   return (
     <div className="relative w-full h-full group">
       <div className="w-full h-full">
-        <img src={images[currentIndex]} alt={`Gallery image ${currentIndex + 1}`} className="w-full h-full object-cover transition-opacity duration-500 ease-in-out" />
+        <Image 
+          src={images[currentIndex]} 
+          alt={`Gallery image ${currentIndex + 1}`} 
+          className="w-full h-full object-cover transition-opacity duration-500 ease-in-out" 
+          fill
+          sizes="100vw"
+          priority={currentIndex === 0}
+        />
       </div>
       <button 
         onClick={goToPrevious} 

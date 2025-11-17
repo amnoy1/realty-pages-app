@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-    background-color: #0f172a; /* slate-900 */
+@layer base {
+    body {
+        /* This ensures the base background color is applied correctly within Tailwind's layer system. */
+        @apply bg-slate-900;
+    }
 }

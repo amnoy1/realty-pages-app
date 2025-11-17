@@ -11,13 +11,15 @@ export const LeadForm: React.FC<LeadFormProps> = ({ agentWhatsApp, agentEmail, p
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName || !phone) {
-      alert('נא למלא את כל השדות.');
+      setError('נא למלא את כל שדות החובה.');
       return;
     }
+    setError('');
 
     // WhatsApp Message
     const message = `היי, אני מעוניין/ת לקבוע סיור בנכס "${propertyTitle}".\nשמי: ${fullName}\nטלפון: ${phone}`;
@@ -61,7 +63,10 @@ export const LeadForm: React.FC<LeadFormProps> = ({ agentWhatsApp, agentEmail, p
             className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 placeholder-slate-400"
             placeholder="ישראל ישראלי"
             value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+            onChange={(e) => {
+              setFullName(e.target.value);
+              if (error) setError('');
+            }}
             required
             aria-required="true"
           />
@@ -75,11 +80,21 @@ export const LeadForm: React.FC<LeadFormProps> = ({ agentWhatsApp, agentEmail, p
             className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 placeholder-slate-400"
             placeholder="050-123-4567"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => {
+              setPhone(e.target.value);
+              if (error) setError('');
+            }}
             required
             aria-required="true"
           />
         </div>
+
+        {error && (
+            <div className="bg-red-50 p-3 rounded-lg border border-red-200 text-center">
+                <p className="text-sm font-medium text-red-700">{error}</p>
+            </div>
+        )}
+
         <button
           type="submit"
           className="w-full flex justify-center py-4 px-4 border border-transparent rounded-lg shadow-lg text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105"

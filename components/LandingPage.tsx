@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import Image from 'next/image';
 import type { PropertyDetails, PropertyFeatures } from '../types';
 import { ImageGallery } from './ImageGallery';
 import { LeadForm } from './LeadForm';
@@ -28,7 +29,7 @@ const formatPhoneNumber = (phone: string) => {
 
 // --- Feature Icons ---
 const iconClasses = "w-7 h-7 text-blue-600";
-const AreaIcon = () => <svg xmlns="http://www.w.3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/><path d="M3 16v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/></svg>;
+const AreaIcon = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/><path d="M3 16v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/></svg>;
 const BedIcon = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M2 4v16h20V4H2z"/><path d="M2 10h20"/><path d="M12 4v6"/></svg>;
 const FloorIcon = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M12 3v18"/><path d="M16 17l-4-4-4 4"/><path d="M16 7l-4 4-4-4"/></svg>;
 const ParkingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M14 16.94V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h1.3L8 5.86A2 2 0 0 1 9.62 5h4.76A2 2 0 0 1 16 6.86L18.7 12H20a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-2.06Z"/><circle cx="6.5" cy="16.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg>;
@@ -123,7 +124,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20"></div>
         
         {details.logo && (
-          <img src={details.logo} alt="לוגו המשרד" className="absolute top-6 right-6 h-20 md:h-24 w-auto max-w-[200px] object-contain bg-white/20 backdrop-blur-sm p-2 rounded-lg" />
+          <Image 
+            src={details.logo} 
+            alt="לוגו המשרד" 
+            width={200}
+            height={96}
+            className="absolute top-6 right-6 h-20 md:h-24 w-auto max-w-[200px] object-contain bg-white/20 backdrop-blur-sm p-2 rounded-lg" />
         )}
 
         <div className="absolute bottom-0 right-0 p-6 md:p-12 w-full">
