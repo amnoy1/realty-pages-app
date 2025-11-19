@@ -7,23 +7,28 @@ const config: Config = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}", // Added just in case
-    "./src/**/*.{js,ts,jsx,tsx,mdx}", // Added just in case
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
         brand: {
-          dark: '#0f172a', // Slate 900
-          primary: '#1e293b', // Slate 800
-          accent: '#d97706', // Amber 600 (Gold-like)
-          accentHover: '#b45309', // Amber 700
-          light: '#f8fafc', // Slate 50
+          dark: '#0B1120', // Deeper Slate
+          primary: '#1e293b',
+          accent: '#F59E0B', // Amber 500 - Gold
+          accentHover: '#D97706', // Amber 600
+          gold: '#FCD34D', // Amber 300
+          light: '#F8FAFC',
         }
       },
+      fontFamily: {
+        sans: ['Heebo', 'sans-serif'],
+      },
       animation: {
-        'fade-in': 'fadeIn 0.5s ease-out',
-        'slide-up': 'slideUp 0.5s ease-out',
+        'fade-in': 'fadeIn 0.8s ease-out',
+        'slide-up': 'slideUp 0.8s ease-out',
+        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
         fadeIn: {
