@@ -8,10 +8,11 @@
   }
   
   body {
-    @apply bg-slate-900 text-slate-100 font-sans antialiased;
+    @apply bg-slate-950 text-slate-100 font-sans antialiased;
     /* Explicit background color fallback */
-    background-color: #0f172a; 
-    background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 70%);
+    background-color: #020617; 
+    color: #ffffff;
+    background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #020617 70%);
     background-attachment: fixed;
     min-height: 100vh;
   }
