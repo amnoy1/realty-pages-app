@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useRef } from 'react';
@@ -41,7 +42,7 @@ const SafeRoomIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" he
 const StorageIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>;
 const WindIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>;
 const ElevatorIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M10 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4V3zm10 0h-4v18h4a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM15 9l-3-3-3 3M15 15l-3 3-3-3"/></svg>;
-const WhatsAppIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.269.655 4.536 1.907 6.344l-1.495 5.454 5.57-1.451zm.5-7.527c.08-.135.143-.225.246-.354.103-.13.21-.211.353-.267.143-.057.3-.086.48-.086.195 0 .358.03.49.09.13.06.23.145.302.26.07.115.105.245.105.39.0.15-.03.28-.09.4-.06.12-.135.225-.225.315-.09.09-.195.17-.315.235-.12.065-.255.115-.405.15-.15.035-.315.06-.495.06-.205 0-.39-.03-.56-.09-.17-.06-.315-.145-.445-.255-.13-.11-.235-.24-.315-.375s-.13-.285-.15-.45c-.02-.165-.03-.32-.03-.465.0-.15.015-.285.045-.405zm1.996 2.95c.12-.06.225-.135.315-.225.09-.09.165-.195.225-.315s.105-.255.135-.405.045-.315.045-.495c0-.21-.03-.4-.09-.56-.06-.16-.14-.295-.24-.41-.1-.115-.21-.2-.33-.255s-.25-.085-.39-.085c-.15 0-.285.03-.405.085s-.225.13-.315.225c-.09.09-.165.195-.225.315s-.105.255-.135.405-.045.315-.045.495c0 .21.03.4.09.56s.14.295.24.41c.1.115.21.2.33.255s.25.085.39.085c.15 0 .285-.03.405-.085zm2.12-1.935c.15-.045.285-.105.405-.18s.225-.165.315-.27c.09-.105.165-.225.225-.36.06-.135.09-.285.09-.45 0-.18-.03-.345-.09-.5-.06-.155-.14-.29-.24-.405-.1-.115-.21-.2-.33-.255s-.25-.085-.39-.085c-.165 0-.315.03-.45.085s-.255.135-.36.255c-.105.12-.195.27-.27.45s-.12.375-.15.585c-.03.21-.045.42-.045.615.0.21.015.405.045.585s.075.345.135.495.135.285.225.405.195.225.315.315c.12.09.255.165.405.225.15.06.315.09.495.09.195 0 .375-.03.54-.09s.31-.14.435-.25c.125-.11.225-.24.3-.39s.125-.315.15-.495c.025-.18.038-.36.038-.525.0-.195-.03-.375-.09-.54s-.135-.315-.225-.45c-.09-.135-.195-.255-.315-.36-.12-.105-.255-.18-.405-.225s-.315-.06-.495-.06c-.195 0-.375.03-.54.09s-.31.14-.435.25c-.125.11-.225.24-.3.39s-.125.315-.15-.495c-.025-.18-.038-.36-.038-.525z"/></svg>;
+const WhatsAppIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.269.655 4.536 1.907 6.344l-1.495 5.454 5.57-1.451zm.5-7.527c.08-.135.143-.225.246-.354.103-.13.21-.211.353-.267.143-.057.3-.086.48-.086.195 0 .358.03.49.09.13.06.23.145.302.26.07.115.105.245.105.39.0.15-.03.28-.09.4-.06.12-.135.225-.225.315-.09.09-.195.17-.315.235-.12.065-.255.115-.405.15-.15.035-.315.06-.495.06-.205 0-.39-.03-.56-.09-.17-.06-.315-.145-.445-.255-.13-.11-.235-.24-.315-.375s-.13-.285-.15-.45c-.02-.165-.03-.32-.03-.465.0-.15.015-.285.045-.405zm1.996 2.95c.12-.06.225-.135.315-.225.09-.09.165-.195.225-.315s.105-.255.135-.405.045-.315.045.495c0-.21-.03-.4-.09-.56-.06-.16-.14-.295-.24-.41-.1-.115-.21-.2-.33-.255s-.25-.085-.39-.085c-.15 0-.285.03-.405.085s-.225.13-.315.225c-.09.09-.165.195-.225.315s-.105.255-.135.405-.045.315-.045.495c0 .21.03.4.09.56s.14.295.24.41c.1.115.21.2.33.255s.25.085.39.085c.15 0 .285-.03.405-.085zm2.12-1.935c.15-.045.285-.105.405-.18s.225-.165.315-.27c.09-.105.165-.225.225-.36.06-.135.09-.285.09-.45 0-.18-.03-.345-.09-.5-.06-.155-.14-.29-.24-.405-.1-.115-.21-.2-.33-.255s-.25-.085-.39-.085c-.165 0-.315.03-.45.085s-.255.135-.36.255c-.105.12-.195.27-.27.45s-.12.375-.15.585c-.03.21-.045.42-.045.615.0.21.015.405.045.585s.075.345.135.495.135.285.225.405.195.225.315.315c.12.09.255.165.405.225.15.06.315.09.495.09.195 0 .375-.03.54-.09s.31-.14.435-.25c.125-.11.225-.24.3-.39s.125-.315.15-.495c.025-.18.038-.36.038-.525.0-.195-.03-.375-.09-.54s-.135-.315-.225-.45c-.09-.135-.195-.255-.315-.36-.12-.105-.255-.18-.405-.225s-.315-.06-.495-.06c-.195 0-.375.03-.54.09s-.31.14-.435.25c-.125.11-.225.24-.3.39s-.125.315-.15-.495c-.025-.18-.038-.36-.038-.525z"/></svg>;
 
 
 const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: string }> = ({ icon, label, value }) => {
@@ -60,11 +61,11 @@ const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: stri
 const KeyFeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: string }> = ({ icon, label, value }) => {
     if (!value) return null;
     return (
-        <div className="flex items-center gap-3 text-white bg-slate-900/40 backdrop-blur-md p-4 rounded-xl border border-white/20 shadow-lg hover:bg-slate-900/60 transition-all">
+        <div className="flex items-center gap-3 text-white bg-black/30 backdrop-blur-md p-4 rounded-xl border border-white/20 shadow-lg hover:bg-black/50 transition-all">
             <div className="text-brand-accent bg-white/10 p-2 rounded-full">{icon}</div>
             <div>
                 <p className="font-bold text-lg leading-none mb-1">{value}</p>
-                <p className="text-xs text-slate-300 font-medium opacity-90">{label}</p>
+                <p className="text-xs text-slate-200 font-medium opacity-90">{label}</p>
             </div>
         </div>
     );
@@ -108,7 +109,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
   };
 
   const formattedPrice = details.price.replace(/₪/g, '').trim();
-  const shekelSign = details.price.includes('₪') ? '₪' : '';
   const keyFeatures = [
       {icon: <BedIcon />, label: "חדרים", value: details.features.rooms },
       {icon: <AreaIcon />, label: 'מ"ר בנוי', value: details.features.apartmentArea },
@@ -127,11 +127,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         <div className="absolute inset-0 bg-slate-900">
           <ImageGallery images={details.images} />
         </div>
-        {/* Gradient Overlay - Fixed: Added pointer-events-none so it doesn't block gallery clicks */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-transparent opacity-95 pointer-events-none"></div>
+        {/* Gradient Overlay Removed to keep images natural. 
+            Text readability is handled by the glassmorphism container below. */}
         
         {details.logo && (
-          <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-lg animate-fade-in">
+          <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-lg animate-fade-in z-30">
              {/* Replaced Next Image with standard img for Preview compatibility */}
              <img 
                 src={details.logo} 
@@ -143,15 +143,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
           </div>
         )}
 
-        <div className="absolute bottom-0 right-0 w-full p-6 md:p-16 pb-24">
+        <div className="absolute bottom-0 right-0 w-full p-6 md:p-16 pb-24 z-20 pointer-events-none">
             <div className="container mx-auto max-w-7xl">
-                <div className="max-w-5xl animate-slide-up">
-                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold leading-[1.1] mb-6 text-white text-shadow tracking-tight">
+                {/* Glassmorphism Container for Text Readability without Darkening Image */}
+                <div className="max-w-5xl animate-slide-up p-8 md:p-12 rounded-[2rem] bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-2xl pointer-events-auto">
+                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold leading-[1.1] mb-6 text-white tracking-tight drop-shadow-xl">
                         {details.generatedTitle}
                     </h1>
-                    <p className="text-2xl md:text-3xl font-light text-slate-100 mb-10 flex items-center gap-3 bg-black/20 backdrop-blur-sm w-fit px-4 py-2 rounded-lg border border-white/10">
-                        <span className="inline-block w-1.5 h-8 bg-brand-accent rounded-full"></span>
-                        {details.address}
+                    <p className="text-2xl md:text-3xl font-light text-slate-100 mb-10 flex items-center gap-3 w-fit">
+                        <span className="inline-block w-1.5 h-8 bg-brand-accent rounded-full shadow-[0_0_15px_rgba(217,119,6,0.8)]"></span>
+                        <span className="drop-shadow-md">{details.address}</span>
                     </p>
 
                     <div className="flex flex-wrap gap-4 mb-12">
@@ -247,7 +248,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                     <p className="text-slate-400 mb-3 text-sm uppercase tracking-widest font-bold">מחיר מבוקש</p>
                     <div className="flex items-start justify-center gap-1 text-white direction-ltr">
                         <span className="text-5xl md:text-6xl font-extrabold tracking-tight">{formattedPrice}</span>
-                        <span className="text-3xl font-light mt-2 text-brand-accent">{shekelSign}</span>
+                        {/* Always show the Shekel sign */}
+                        <span className="text-3xl font-light mt-2 text-brand-accent">₪</span>
                     </div>
                 </div>
 
