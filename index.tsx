@@ -2,7 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import HomePage from './app/page';
 import { MockRouterProvider } from './components/RouterContext';
-import './app/globals.css';
+// import './app/globals.css'; // REMOVED: This causes "Failed to load module script" in browser environments. Styles are loaded via CDN in index.html.
 
 const container = document.getElementById('root');
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef } from 'react';
-import Image from 'next/image';
+// import Image from 'next/image'; // Replaced with standard <img> for preview compatibility
 import type { PropertyDetails, PropertyFeatures } from '../types';
 import { ImageGallery } from './ImageGallery';
 import { LeadForm } from './LeadForm';
@@ -132,7 +132,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         
         {details.logo && (
           <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-lg animate-fade-in">
-             <Image 
+             {/* Replaced Next Image with standard img for Preview compatibility */}
+             <img 
                 src={details.logo} 
                 alt="לוגו המשרד" 
                 width={160}

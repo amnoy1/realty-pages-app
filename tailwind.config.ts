@@ -9,7 +9,7 @@ const config: Config = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
-    "./*.{js,ts,jsx,tsx}" // Added to support index.tsx in root
+    "./*.{js,ts,jsx,tsx}"
   ],
   theme: {
     extend: {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Image from 'next/image';
+// import Image from 'next/image'; // Replaced with standard <img> for preview compatibility
 
 interface ImageGalleryProps {
   images: string[];
@@ -36,13 +36,11 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
   return (
     <div className="relative w-full h-full group">
       <div className="w-full h-full">
-        <Image 
+        {/* Replaced standard Next.js Image with regular img tag for preview compatibility */}
+        <img 
           src={images[currentIndex]} 
           alt={`Gallery image ${currentIndex + 1}`} 
           className="w-full h-full object-cover transition-opacity duration-500 ease-in-out" 
-          fill
-          sizes="100vw"
-          priority={currentIndex === 0}
         />
       </div>
       <button 
