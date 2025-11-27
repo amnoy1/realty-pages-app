@@ -45,19 +45,19 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
       </div>
       <button 
         onClick={goToPrevious} 
-        className="absolute top-1/2 -translate-y-1/2 left-4 bg-black/30 text-white p-3 rounded-full hover:bg-black/50 transition-all focus:outline-none z-10 opacity-0 group-hover:opacity-100"
+        className="absolute top-1/2 -translate-y-1/2 left-4 bg-black/40 text-white p-3 rounded-full hover:bg-black/70 transition-all focus:outline-none z-20 opacity-70 hover:opacity-100"
         aria-label="Previous Image"
       >
         <ChevronLeftIcon />
       </button>
       <button 
         onClick={goToNext}
-        className="absolute top-1/2 -translate-y-1/2 right-4 bg-black/30 text-white p-3 rounded-full hover:bg-black/50 transition-all focus:outline-none z-10 opacity-0 group-hover:opacity-100"
+        className="absolute top-1/2 -translate-y-1/2 right-4 bg-black/40 text-white p-3 rounded-full hover:bg-black/70 transition-all focus:outline-none z-20 opacity-70 hover:opacity-100"
         aria-label="Next Image"
       >
         <ChevronRightIcon />
       </button>
-       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 space-x-reverse z-10">
+       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2 space-x-reverse z-20">
         {images.map((_, index) => (
             <div
                 key={index}

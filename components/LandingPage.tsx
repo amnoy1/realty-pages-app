@@ -127,8 +127,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         <div className="absolute inset-0 bg-slate-900">
           <ImageGallery images={details.images} />
         </div>
-        {/* Gradient Overlay - Improved visibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-transparent opacity-95"></div>
+        {/* Gradient Overlay - Fixed: Added pointer-events-none so it doesn't block gallery clicks */}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-transparent opacity-95 pointer-events-none"></div>
         
         {details.logo && (
           <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-lg animate-fade-in">
@@ -162,7 +162,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
 
                     <button
                         onClick={handleCtaClick}
-                        className="py-5 px-12 rounded-full shadow-2xl shadow-orange-600/30 text-xl font-bold text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 border border-white/20"
+                        className="py-5 px-12 rounded-full shadow-2xl shadow-orange-600/30 text-xl font-bold text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 border border-white/20 pointer-events-auto"
                     >
                         תיאום סיור בנכס
                     </button>
