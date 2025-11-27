@@ -133,9 +133,13 @@ export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => v
                                 <label className="block text-sm font-medium text-brand-accent mb-2">תיאור הנכס (טקסט חופשי)</label>
                                 <textarea 
                                     name="description" 
-                                    rows={6} 
-                                    className={`${inputClasses} resize-none leading-relaxed`} 
-                                    placeholder="ספרו לנו על הנכס בחופשיות... כמה חדרים? איזה קומה? יש מרפסת? חניה? כיווני אוויר? ה-AI שלנו ייקח את המידע הזה ויבנה ממנו סיפור מכירה מנצח." 
+                                    rows={8} 
+                                    className={`${inputClasses} resize-none leading-relaxed h-auto`} 
+                                    placeholder={`פרטו כאן את כל המידע על הנכס. ה-AI יחלץ מתוכו את הנתונים המדויקים.
+דוגמה:
+"דירת 4 חדרים מהממת בקומה 3 מתוך 8. כ-110 מ"ר בנוי + 12 מ"ר מרפסת שמש מפנקת.
+יש 2 חניות תת קרקעיות ומחסן צמוד. כיווני אוויר דרום ומערב עם בריזה מהים.
+בבניין יש מעלית וממ"ד תקני. הדירה משופצת מהיסוד..."`} 
                                     value={formData.description} 
                                     onChange={handleChange} 
                                     required 
