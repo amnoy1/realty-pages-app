@@ -58,14 +58,15 @@ const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: stri
   );
 };
 
+// Features in the hero section - now without background box, using heavy text shadow
 const KeyFeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: string }> = ({ icon, label, value }) => {
     if (!value) return null;
     return (
-        <div className="flex items-center gap-3 text-white bg-black/30 backdrop-blur-md p-4 rounded-xl border border-white/20 shadow-lg hover:bg-black/50 transition-all">
-            <div className="text-brand-accent bg-white/10 p-2 rounded-full">{icon}</div>
+        <div className="flex items-center gap-3 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] transition-all">
+            <div className="text-brand-accent">{icon}</div>
             <div>
                 <p className="font-bold text-lg leading-none mb-1">{value}</p>
-                <p className="text-xs text-slate-200 font-medium opacity-90">{label}</p>
+                <p className="text-xs text-slate-100 font-medium opacity-90">{label}</p>
             </div>
         </div>
     );
@@ -127,9 +128,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         <div className="absolute inset-0 bg-slate-900">
           <ImageGallery images={details.images} />
         </div>
-        {/* Gradient Overlay Removed to keep images natural. 
-            Text readability is handled by the glassmorphism container below. */}
         
+        {/* Logo */}
         {details.logo && (
           <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-lg animate-fade-in z-30">
              {/* Replaced Next Image with standard img for Preview compatibility */}
@@ -143,19 +143,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
           </div>
         )}
 
-        <div className="absolute bottom-0 right-0 w-full p-6 md:p-16 pb-24 z-20 pointer-events-none">
+        {/* Text Container - Minimal, No Background, Heavy Shadow */}
+        <div className="absolute bottom-0 right-0 w-full p-6 md:p-16 pb-20 z-20 pointer-events-none">
             <div className="container mx-auto max-w-7xl">
-                {/* Glassmorphism Container for Text Readability without Darkening Image */}
-                <div className="max-w-5xl animate-slide-up p-8 md:p-12 rounded-[2rem] bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-2xl pointer-events-auto">
-                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold leading-[1.1] mb-6 text-white tracking-tight drop-shadow-xl">
+                {/* 
+                   Removed: bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-2xl 
+                   Added: heavy drop-shadows to individual elements
+                */}
+                <div className="max-w-5xl animate-slide-up pointer-events-auto">
+                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold leading-[1.1] mb-6 text-white tracking-tight drop-shadow-[0_5px_5px_rgba(0,0,0,0.9)]">
                         {details.generatedTitle}
                     </h1>
-                    <p className="text-2xl md:text-3xl font-light text-slate-100 mb-10 flex items-center gap-3 w-fit">
+                    <p className="text-2xl md:text-3xl font-light text-slate-100 mb-10 flex items-center gap-3 w-fit drop-shadow-[0_3px_3px_rgba(0,0,0,0.9)]">
                         <span className="inline-block w-1.5 h-8 bg-brand-accent rounded-full shadow-[0_0_15px_rgba(217,119,6,0.8)]"></span>
-                        <span className="drop-shadow-md">{details.address}</span>
+                        <span className="font-medium">{details.address}</span>
                     </p>
 
-                    <div className="flex flex-wrap gap-4 mb-12">
+                    <div className="flex flex-wrap gap-6 mb-12">
                         {keyFeatures.slice(0, 4).map((feature, i) => (
                             <KeyFeatureItem key={i} {...feature} />
                         ))}
@@ -163,7 +167,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
 
                     <button
                         onClick={handleCtaClick}
-                        className="py-5 px-12 rounded-full shadow-2xl shadow-orange-600/30 text-xl font-bold text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 border border-white/20 pointer-events-auto"
+                        className="py-4 px-10 rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.5)] text-xl font-bold text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 border border-white/20 pointer-events-auto"
                     >
                         תיאום סיור בנכס
                     </button>
