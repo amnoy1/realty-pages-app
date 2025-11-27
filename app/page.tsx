@@ -10,7 +10,8 @@ import { CreationForm } from '../components/CreationForm';
 import { LandingPage } from '../components/LandingPage';
 
 // --- Smart Fallback Logic (Client Side "AI") ---
-// This runs if the real API fails or keys are missing, ensuring data accuracy based on user input.
+// This runs if the real API fails or keys are missing.
+// UPDATED: Now generates more "Sales-y" copy based on user requirements.
 const generateSmartFallback = (description: string, address: string) => {
     const desc = description.toLowerCase();
     
@@ -25,22 +26,13 @@ const generateSmartFallback = (description: string, address: string) => {
     };
 
     // 1. Extract Features strictly from text
-    // Handles "2.5 rooms", "3 rooms", "3.5 rooms"
     const rooms = extractNumber(/(\d+(\.\d+)?)\s*חדר/i) || "";
-    
-    // Handles "Floor 3", "3rd floor", "Floor 3 out of 5"
     const floor = extractNumber(/קומה\s*(\d+)/) || extractNumber(/(\d+)\s*מתוך/) || "";
-    
-    // Handles "100 sqm", "100 meters"
     const apartmentArea = extractNumber(/(\d+)\s*מ"ר/) || extractNumber(/(\d+)\s*מטר/) || "";
-    
-    // Handles "12 sqm balcony", "balcony 12 meters"
     const balconyArea = extractNumber(/(\d+)\s*מ"ר\s*מרפסת/) || extractNumber(/מרפסת\s*(\d+)/) || "";
     
-    // Parking extraction - explicitly looks for number or defaults to 1 if just mentioned
     let parking = extractNumber(/(\d+)\s*חני/);
     if (!parking) {
-        // Check for Hebrew word "two"
         if (desc.includes("שתי חניות") || desc.includes("2 חניות")) parking = "2";
         else if (desc.includes("חניה") || desc.includes("חנייה")) parking = "1";
     }
@@ -49,7 +41,6 @@ const generateSmartFallback = (description: string, address: string) => {
     const safeRoom = hasKeyword(['ממ"ד', 'ממד', 'מרחב מוגן']) ? 'ממ"ד' : "";
     const storage = hasKeyword(["מחסן"]) ? "יש" : "";
     
-    // Air directions extraction
     const directions = [];
     if (desc.includes("צפון")) directions.push("צפון");
     if (desc.includes("דרום")) directions.push("דרום");
@@ -69,17 +60,23 @@ const generateSmartFallback = (description: string, address: string) => {
         airDirections
     };
 
-    // 2. Generate Contextual Text
-    const title = `הזדמנות נדירה: ${rooms ? `דירת ${rooms} חדרים` : 'נכס ייחודי'} ב${address.split(',')[0]}`;
+    // 2. Generate Contextual "Copywriter" Text (Fallback)
+    
+    // Title logic: Try to find a unique feature or default to benefit
+    let titlePrefix = "לחיות את החלום:";
+    if (balconyArea) titlePrefix = "שקיעות ועוצמה:";
+    else if (desc.includes("שקט")) titlePrefix = "השקט של הכפר, בלב העיר:";
+    
+    const title = `${titlePrefix} ${rooms ? `דירת ${rooms} חדרים` : 'נכס ייחודי'} ב${address.split(',')[0]}`;
     
     const generatedDescription = {
-        area: `הנכס ממוקם בכתובת המבוקשת ${address}. סביבה איכותית המשלבת נגישות מצוינת, קהילה טובה וקרבה לכל השירותים החיוניים.`,
-        property: `דירה המציעה ${rooms ? `${rooms} חדרים מרווחים` : 'חללים מרווחים'} ${apartmentArea ? `בשטח של כ-${apartmentArea} מ"ר` : ''}. 
-        ${balconyArea ? `כולל מרפסת מפנקת בגודל ${balconyArea} מ"ר.` : ''}
-        ${floor ? `ממוקמת בקומה ${floor}.` : ''} 
-        ${parking ? `כולל ${parking} חניות.` : ''}
-        ${description.length > 50 ? `פרטים נוספים: ${description.substring(0, 100)}...` : description}`,
-        cta: "נכס כזה לא נשאר הרבה זמן בשוק. השאירו פרטים עכשיו לתיאום סיור בנכס."
+        area: `דמיינו את הקפה של הבוקר במיקום המנצח של ${address}. סביבה המעניקה תחושת קהילה, נגישות מקסימלית ושקט נדיר.`,
+        property: `גלו מרחב מחיה שתוכנן בקפידה. 
+        ${rooms ? `תיהנו מ-${rooms} חדרים מרווחים ומוארים.` : ''} 
+        ${balconyArea ? `צאו למרפסת שמש של ${balconyArea} מ"ר והרגישו את הבריזה.` : ''}
+        ${parking ? `פתרון חניה מושלם: ${parking} חניות פרטיות.` : ''}
+        זהו לא עוד "נכס", אלא הבית הבא שלכם.`,
+        cta: "הזדמנות נדירה שלא תחזור – תיאומים השבוע בלבד."
     };
 
     return {
@@ -96,7 +93,6 @@ const HomePage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isClient, setIsClient] = useState(false);
   
-  // Use our safe router wrapper
   const router = useAppRouter();
 
   useEffect(() => {
@@ -118,7 +114,6 @@ const HomePage: React.FC = () => {
       
       try {
           console.log("Sending request to Gemini API...");
-          // Attempt real API call
           const response = await fetch('/api/generate-content', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -135,7 +130,6 @@ const HomePage: React.FC = () => {
 
       } catch (err) {
           console.warn("⚠️ API Failed, switching to Smart Fallback:", err);
-          // Use the Smart Fallback that actually parses the user's text
           generatedData = generateSmartFallback(formData.description, formData.address);
       }
 
@@ -155,7 +149,6 @@ const HomePage: React.FC = () => {
   };
 
   const uploadFile = async (base64: string, path: string): Promise<string> => {
-    // If in mock mode, return a dummy URL immediately
     if (isMockMode) {
         return "https://placehold.co/800x600/1e293b/FFF?text=Property+Image";
     }
@@ -169,7 +162,6 @@ const HomePage: React.FC = () => {
     
     if (isMockMode) {
         alert("⚠️ שים לב: המערכת פועלת במצב הדגמה (ללא מפתחות Firebase).\nהדף לא באמת יישמר, אך תוכל לראות את התהליך.");
-        // Simulate delay
         setIsSaving(true);
         setTimeout(() => {
             setIsSaving(false);

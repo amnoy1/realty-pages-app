@@ -26,41 +26,52 @@ export async function POST(request: Request) {
         });
     }
 
-    // System instruction to force strict data extraction
+    // System instruction: Hybrid role - Creative Copywriter + Strict Data Analyst
     const systemInstruction = `
-    You are a specialized Real Estate Data Extraction Engine.
-    Your goal is to extract specific property features from a description text with 100% accuracy.
+    You are an Expert Real Estate Copywriter and a Strict Data Analyst.
     
-    RULES:
-    1. DO NOT HALLUCINATE. If a feature is not explicitly mentioned, return an empty string "".
-    2. Exact Numbers: If the text says "3 rooms", return "3". If it says "parking", but no number, return "1".
-    3. Output JSON only.
+    TASK 1: CREATIVE COPYWRITING (For 'title' and 'description' fields)
+    Transform the user's input into high-converting Hebrew marketing copy.
+    
+    COPYWRITING RULES:
+    1.  **Headline (Title):** Do NOT write generic titles like "Apartment for sale". Start with a specific BENEFIT or emotional hook (e.g., "Open view to the sea," "Kibbutz atmosphere in the city center").
+    2.  **Specifics over Generics:** Avoid fluffy phrases like "One of the most impressive properties." Instead, describe exactly *why* it's impressive based on the data.
+    3.  **Action Verbs:** Use words like "Discover," "Wake up to," "Host," "Fall in love" (גלו, הרגישו, תתאהבו).
+    4.  **Location:** Don't just list the street. Explain the *lifestyle benefit* of the location (e.g., "Coffee shops just steps away," "Quiet street that feels like a village").
+    5.  **Structure:** Break text into short, punchy paragraphs, potentially with mini-subheaders if the text is long enough.
+    6.  **Urgency (CTA):** The call to action must create urgency (e.g., "Rare opportunity – viewings this week only").
+    
+    TASK 2: STRICT DATA EXTRACTION (For 'features' object)
+    1.  **NO HALLUCINATIONS:** If a feature (parking, balcony, elevator) is not explicitly written in the text, return an empty string "".
+    2.  **Exact Numbers:** If text says "3 rooms", return "3". If text says "parking" without a number, return "1".
+    
+    OUTPUT FORMAT: JSON ONLY.
     `;
 
     const prompt = `
-    Analyze the following property description and address. Extract the data exactly as written.
-
+    Analyze the following property description and address. 
+    
     Address: ${address}
     Description: "${originalDescription}"
 
     Required Output JSON Format:
     {
-      "title": "A catchy marketing title in Hebrew based on the data (e.g. 'דירת 4 חדרים מדהימה בתל אביב')",
+      "title": "A Benefit-Driven Title in Hebrew (e.g., 'הפנינה של גבעת טל - שקט פסטורלי דקות מהמרכז')",
       "description": {
-        "area": "Marketing text about the location/address in Hebrew",
-        "property": "Marketing text about the specific apartment features in Hebrew",
-        "cta": "Call to action text in Hebrew"
+        "area": "Marketing text about the location benefits in Hebrew (Use emotion: 'Feel the community...', 'Enjoy the convenience...')",
+        "property": "Main marketing copy about the apartment. Use action verbs. Break into short concepts.",
+        "cta": "Urgent Call to Action in Hebrew (e.g., 'הזדמנות נדירה - תיאומים השבוע בלבד')"
       },
       "features": {
-        "rooms": "The number of rooms (e.g. '3', '4.5', '5'). Empty if not found.",
-        "apartmentArea": "Built square meters (numbers only). Empty if not found.",
-        "balconyArea": "Balcony square meters (numbers only). Empty if not found.",
-        "floor": "Floor number. Empty if not found.",
-        "parking": "Number of parking spots. Return '1' if mentioned without number. Empty if not found.",
+        "rooms": "Number only. Empty if not found.",
+        "apartmentArea": "Number only. Empty if not found.",
+        "balconyArea": "Number only. Empty if not found.",
+        "floor": "Number only. Empty if not found.",
+        "parking": "Number only. Return '1' if mentioned without number. Empty if not found.",
         "elevator": "Return 'יש' if mentioned, otherwise empty string.",
-        "safeRoom": "Return 'ממ\"ד' if mentioned (mamad/shelter), otherwise empty string.",
+        "safeRoom": "Return 'ממ\"ד' if mentioned, otherwise empty string.",
         "storage": "Return 'יש' if mentioned, otherwise empty string.",
-        "airDirections": "List of directions (e.g. 'צפון, דרום') if mentioned, otherwise empty string."
+        "airDirections": "List directions if mentioned, otherwise empty string."
       }
     }
     `;
@@ -71,8 +82,6 @@ export async function POST(request: Request) {
       config: {
         systemInstruction: systemInstruction,
         responseMimeType: "application/json",
-        // We do not use strict schema validation enum here to allow flexibility in extracted text,
-        // but the prompt enforces the structure.
       },
     });
 
