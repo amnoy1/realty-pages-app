@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Heebo } from "next/font/google";
 import "./globals.css";
 import React from "react";
+import { NextRouterProvider } from "../components/RouterContext";
 
 const heebo = Heebo({ subsets: ["hebrew", "latin"] });
 
@@ -17,15 +18,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="he" dir="rtl">
-      {/* 
-         Inline styles added to body to force Dark Mode immediately, 
-         preventing the "white flash" even if CSS takes a moment to load.
-      */}
-      <body 
-        className={`${heebo.className} bg-slate-950 text-white`}
-        style={{ backgroundColor: '#020617', color: '#ffffff', minHeight: '100vh' }}
-      >
-        {children}
+      <body className={`${heebo.className} bg-slate-900 text-white`}>
+        <NextRouterProvider>
+          {children}
+        </NextRouterProvider>
       </body>
     </html>
   );

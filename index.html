@@ -1,19 +1,61 @@
-<script type="importmap">
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Realty Pages Generator</title>
+    <!-- Preload Font for Preview Mode -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
+    <script type="importmap">
 {
   "imports": {
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.28.0",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "next/": "https://aistudiocdn.com/next@^16.0.1/",
-    "next": "https://aistudiocdn.com/next@^16.0.1",
-    "tailwindcss": "https://aistudiocdn.com/tailwindcss@^4.1.16",
-    "firebase/": "https://aistudiocdn.com/firebase@^12.4.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.0/client",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0",
+    "next/": "https://aistudiocdn.com/next@^16.0.5/",
+    "next": "https://aistudiocdn.com/next@^16.0.5",
     "@tailwindcss/typography": "https://aistudiocdn.com/@tailwindcss/typography@^0.5.19",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "tailwindcss": "https://aistudiocdn.com/tailwindcss@^4.1.17",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.6.0/",
+    "firebase/app": "https://aistudiocdn.com/firebase@^12.6.0/app",
+    "firebase/auth": "https://aistudiocdn.com/firebase@^12.6.0/auth",
+    "firebase/firestore": "https://aistudiocdn.com/firebase@^12.6.0/firestore",
+    "firebase/storage": "https://aistudiocdn.com/firebase@^12.6.0/storage",
     "@tailwindcss/forms": "https://aistudiocdn.com/@tailwindcss/forms@^0.5.10",
-    "@tailwindcss/aspect-ratio": "https://aistudiocdn.com/@tailwindcss/aspect-ratio@^0.4.2"
+    "@tailwindcss/aspect-ratio": "https://aistudiocdn.com/@tailwindcss/aspect-ratio@^0.4.2",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
   }
 }
 </script>
-// This file is intentionally left empty.
-// It is a relic of the AI Studio environment and is not needed for the Next.js application.
-// Ignoring it via .gitignore and emptying it prevents deployment errors.
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                dark: '#0f172a',
+                primary: '#1e293b',
+                accent: '#d97706',
+                accentHover: '#b45309',
+                light: '#f8fafc',
+              }
+            },
+            fontFamily: {
+              sans: ['Heebo', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="bg-slate-900 text-white font-sans">
+    <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
+</body>
+</html>
