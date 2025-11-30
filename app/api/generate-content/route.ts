@@ -38,8 +38,9 @@ export async function POST(request: Request) {
     2.  **Specifics over Generics:** Avoid fluffy phrases like "One of the most impressive properties." Instead, describe exactly *why* it's impressive based on the data.
     3.  **Action Verbs:** Use words like "Discover," "Wake up to," "Host," "Fall in love" (גלו, הרגישו, תתאהבו).
     4.  **Location:** Don't just list the street. Explain the *lifestyle benefit* of the location (e.g., "Coffee shops just steps away," "Quiet street that feels like a village").
-    5.  **Structure:** Break text into short, punchy paragraphs, potentially with mini-subheaders if the text is long enough.
+    5.  **Structure:** Break text into short, punchy paragraphs.
     6.  **Urgency (CTA):** The call to action must create urgency (e.g., "Rare opportunity – viewings this week only").
+    7.  **CLEAN TEXT ONLY:** Do NOT use Markdown formatting. Do NOT use asterisks (*, **, ***) for bolding. Do NOT use bullet points or hash signs (#). Return clean, plain text.
     
     TASK 2: STRICT DATA EXTRACTION (For 'features' object)
     1.  **NO HALLUCINATIONS:** If a feature (parking, balcony, elevator) is not explicitly written in the text, return an empty string "".

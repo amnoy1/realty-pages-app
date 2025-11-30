@@ -60,7 +60,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ agentWhatsApp, agentEmail, p
             type="text"
             id="fullName"
             name="fullName"
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 placeholder-slate-400"
+            className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-brand-accent focus:border-brand-accent transition duration-150 placeholder-slate-400"
             placeholder="ישראל ישראלי"
             value={fullName}
             onChange={(e) => {
@@ -77,7 +77,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ agentWhatsApp, agentEmail, p
             type="tel"
             id="phone"
             name="phone"
-            className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 placeholder-slate-400"
+            className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg shadow-sm focus:ring-2 focus:ring-brand-accent focus:border-brand-accent transition duration-150 placeholder-slate-400"
             placeholder="050-123-4567"
             value={phone}
             onChange={(e) => {
@@ -97,7 +97,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ agentWhatsApp, agentEmail, p
 
         <button
           type="submit"
-          className="w-full flex justify-center py-4 px-4 border border-transparent rounded-lg shadow-lg text-lg font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105"
+          className="w-full flex justify-center py-4 px-4 border border-transparent rounded-lg shadow-lg text-lg font-bold text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all duration-300 transform hover:scale-105 hover:shadow-orange-500/40"
         >
           שליחה ותיאום סיור
         </button>
