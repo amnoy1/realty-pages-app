@@ -70,13 +70,13 @@ const generateSmartFallback = (description: string, address: string) => {
     const title = `${titlePrefix} ${rooms ? `דירת ${rooms} חדרים` : 'נכס ייחודי'} ב${address.split(',')[0]}`;
     
     const generatedDescription = {
-        area: `דמיינו את הקפה של הבוקר במיקום המנצח של ${address}. סביבה המעניקה תחושת קהילה, נגישות מקסימלית ושקט נדיר.`,
+        area: `דמיינו את הקפה של הבוקר במיקום המנצח של ${address}. סביבה המעניקה תחושת קהילה, נגישות מקסימלית ושקט נדיר. זה המקום בו כל יום מתחיל עם חיוך.`,
         property: `גלו מרחב מחיה שתוכנן בקפידה. 
-        ${rooms ? `תיהנו מ-${rooms} חדרים מרווחים ומוארים.` : ''} 
+        ${rooms ? `תיהנו מ-${rooms} חדרים מרווחים ומוארים, אידיאליים למשפחה.` : ''} 
         ${balconyArea ? `צאו למרפסת שמש של ${balconyArea} מ"ר והרגישו את הבריזה.` : ''}
-        ${parking ? `פתרון חניה מושלם: ${parking} חניות פרטיות.` : ''}
+        ${parking ? `פתרון חניה מושלם: ${parking} חניות פרטיות ונוחות.` : ''}
         זהו לא עוד נכס, אלא הבית הבא שלכם.`,
-        cta: "הזדמנות נדירה שלא תחזור – תיאומים השבוע בלבד"
+        cta: "הזדמנות נדירה שלא תחזור – תיאומים השבוע בלבד!"
     };
 
     return {
@@ -165,7 +165,9 @@ const HomePage: React.FC = () => {
         setIsSaving(true);
         setTimeout(() => {
             setIsSaving(false);
-            alert("הדף 'נשמר' בהצלחה (Mock Mode)!");
+            const mockUrl = `${window.location.origin}/p/mock-address-12345`;
+            navigator.clipboard.writeText(mockUrl);
+            alert("הדף 'נשמר' בהצלחה (Mock Mode)!\nהקישור הועתק אוטומטית ללוח.");
         }, 1500);
         return;
     }
@@ -196,8 +198,20 @@ const HomePage: React.FC = () => {
       };
 
       await docRef.set(dataToSave);
-      const finalUrl = `/p/${slug}-${newId}`;
-      router.push(finalUrl);
+
+      const finalUrlPath = `/p/${slug}-${newId}`;
+      const fullUrl = `${window.location.origin}${finalUrlPath}`;
+
+      // --- CRITICAL UX FIX: Auto-copy URL and notify user ---
+      navigator.clipboard.writeText(fullUrl).then(() => {
+        alert("הדף פורסם בהצלחה! הקישור הועתק אוטומטית.");
+        router.push(finalUrlPath);
+      }).catch(err => {
+        console.error("Failed to copy URL:", err);
+        alert("הדף פורסם! לא ניתן היה להעתיק את הקישור אוטומטית.");
+        router.push(finalUrlPath);
+      });
+
 
     } catch (error) {
         console.error("Error saving document: ", error);
