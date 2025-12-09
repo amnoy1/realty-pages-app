@@ -16,7 +16,7 @@ import { UserDashboard } from '../components/UserDashboard';
 
 // --- CONFIGURATION ---
 // Add your email here to get Admin access
-const ADMIN_EMAILS = ['YOUR_EMAIL@gmail.com', 'example@gmail.com']; 
+const ADMIN_EMAILS = ['amir@mango-realty.com']; 
 
 // --- Smart Fallback Logic (Client Side "AI") ---
 const generateSmartFallback = (description: string, address: string) => {
