@@ -17,8 +17,8 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
     setIsLoggingIn(true);
     
     try {
-      if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
-          throw new Error("מפתחות Firebase לא נמצאו בדפדפן. וודא שהגדרת את המשתנים ב-Vercel עם הקידומת NEXT_PUBLIC_");
+      if (!auth) {
+        throw new Error("מערכת האימות (Auth) לא אותחלה. בדוק את מפתחות ה-Firebase.");
       }
 
       console.log("Starting Google Popup...");
@@ -48,6 +48,7 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
   };
 
   const handleLogout = async () => {
+    if (!auth) return;
     try {
       await signOut(auth);
       onViewChange('create');

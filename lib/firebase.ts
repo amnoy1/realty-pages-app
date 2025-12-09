@@ -23,26 +23,36 @@ let db = null;
 let storage = null;
 let auth = null;
 let initializationError = null;
+let debugEnv = {};
 
 try {
-    // Validate keys exist before trying to initialize
+    // Debug helper to see what's missing in the UI
+    debugEnv = {
+        apiKey: !!firebaseConfig.apiKey,
+        authDomain: !!firebaseConfig.authDomain,
+        projectId: !!firebaseConfig.projectId,
+        storageBucket: !!firebaseConfig.storageBucket,
+        appId: !!firebaseConfig.appId,
+    };
+
+    // Strict check for required keys
     const missingKeys = Object.entries(firebaseConfig)
-        .filter(([_, value]) => !value)
+        .filter(([key, value]) => !value && key !== 'messagingSenderId') // SenderId is optional sometimes
         .map(([key]) => key);
 
     if (missingKeys.length > 0) {
-        throw new Error(`Missing environment variables: ${missingKeys.join(', ')}. Ensure they start with NEXT_PUBLIC_ in Vercel.`);
+        initializationError = `Missing Keys: ${missingKeys.join(', ')}`;
+    } else {
+        app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+        db = getFirestore(app);
+        storage = getStorage(app);
+        auth = getAuth(app);
     }
-
-    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-    db = getFirestore(app);
-    storage = getStorage(app);
-    auth = getAuth(app);
     
 } catch (error: any) {
     console.error("Firebase Initialization Failed:", error);
     initializationError = error.message;
 }
 
-export { db, storage, auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, initializationError };
+export { db, storage, auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, initializationError, debugEnv };
 export type { User } from 'firebase/auth';

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { db, storage, auth, onAuthStateChanged, User, initializationError } from '../lib/firebase';
+import { db, storage, auth, onAuthStateChanged, User, initializationError, debugEnv } from '../lib/firebase';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { slugify } from '../lib/slugify';
@@ -108,7 +108,7 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     setIsClient(true);
     
-    // Stop if initialization failed
+    // Stop if initialization failed or auth is missing
     if (initializationError || !auth) return;
 
     const unsubscribe = onAuthStateChanged(auth, async (currentUser: User | null) => {
@@ -273,27 +273,38 @@ const HomePage: React.FC = () => {
   }
 
   // --- CRITICAL ERROR UI ---
-  // If Firebase keys are missing, show this instead of crashing
-  if (initializationError) {
+  // Shows exactly which keys are missing
+  if (initializationError || !auth) {
       return (
-          <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-              <div className="bg-red-900/20 border border-red-500/50 p-8 rounded-2xl max-w-2xl text-center">
+          <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4" dir="rtl">
+              <div className="bg-red-900/20 border border-red-500/50 p-8 rounded-2xl max-w-2xl w-full text-center shadow-2xl">
                   <div className="w-16 h-16 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                   </div>
                   <h1 className="text-3xl font-bold text-white mb-4">נדרשת הגדרת מערכת</h1>
-                  <p className="text-xl text-red-200 mb-6 font-bold">האפליקציה אינה מצליחה להתחבר ל-Firebase.</p>
+                  <p className="text-xl text-red-200 mb-6 font-bold">האפליקציה לא מזהה את מפתחות ה-Firebase.</p>
                   
-                  <div className="bg-black/40 p-4 rounded-xl text-left text-sm font-mono text-slate-300 mb-6 overflow-auto" dir="ltr">
-                      {initializationError}
+                  <div className="bg-black/40 p-6 rounded-xl text-right text-sm font-mono text-slate-300 mb-6 overflow-auto">
+                      <p className="font-bold text-white border-b border-slate-700 pb-2 mb-2">סטטוס מפתחות (Diagnostic):</p>
+                      <ul className="space-y-1" dir="ltr">
+                        {Object.entries(debugEnv as Record<string, boolean>).map(([key, exists]) => (
+                            <li key={key} className="flex justify-between">
+                                <span>NEXT_PUBLIC_FIREBASE_{key.replace(/[a-z](?=[A-Z])/g, '$&_').toUpperCase()}:</span>
+                                <span className={exists ? "text-green-400 font-bold" : "text-red-500 font-bold"}>
+                                    {exists ? "OK" : "MISSING"}
+                                </span>
+                            </li>
+                        ))}
+                      </ul>
                   </div>
                   
-                  <div className="text-slate-300 space-y-4 text-right">
-                      <p className="font-bold text-white">כיצד לתקן ב-Vercel:</p>
-                      <ol className="list-decimal list-inside space-y-2">
-                          <li>כנס ל-Settings &gt; Environment Variables.</li>
-                          <li>וודא ששמות המשתנים מתחילים ב-<code>NEXT_PUBLIC_</code> (למשל: <code>NEXT_PUBLIC_FIREBASE_API_KEY</code>).</li>
-                          <li>לאחר השינוי, חובה לבצע <strong>Redeploy</strong> כדי שהשינויים ייכנסו לתוקף.</li>
+                  <div className="text-slate-300 space-y-4 text-right bg-slate-800/50 p-4 rounded-xl">
+                      <p className="font-bold text-white">צעדים לפתרון:</p>
+                      <ol className="list-decimal list-inside space-y-2 text-sm">
+                          <li>אם כולם מסומנים כ-<span className="text-red-500">MISSING</span>: לא ביצעת <strong>Redeploy</strong> ב-Vercel לאחר עדכון המשתנים.</li>
+                          <li>כנס ל-Vercel &gt; Deployments.</li>
+                          <li>לחץ על 3 הנקודות בשורה הראשונה &gt; בחר <strong>Redeploy</strong>.</li>
+                          <li>המתן לסיום (עיגול ירוק) ורענן את הדף הזה.</li>
                       </ol>
                   </div>
               </div>
