@@ -23,6 +23,12 @@ const getPropertyDetails = cache(async (slug: string): Promise<PropertyDetails |
       }
       
       const id = idMatch[0];
+
+      if (!db) {
+        console.error("Firestore is not initialized.");
+        return null;
+      }
+
       const docRef = doc(db, 'landingPages', id);
       const docSnap = await getDoc(docRef);
   

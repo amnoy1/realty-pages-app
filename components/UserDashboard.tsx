@@ -14,6 +14,11 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, onCreateNe
 
   useEffect(() => {
     const fetchMyProperties = async () => {
+      if (!db) {
+          console.error("Database not initialized");
+          setLoading(false);
+          return;
+      }
       try {
         const q = query(
             collection(db, 'landingPages'), 

@@ -1,12 +1,13 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { getFirestore, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { 
   getAuth, 
   GoogleAuthProvider, 
   signInWithPopup, 
   signOut, 
-  onAuthStateChanged 
+  onAuthStateChanged, 
+  Auth
 } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -18,12 +19,12 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-let app = null;
-let db = null;
-let storage = null;
-let auth = null;
-let initializationError = null;
-let debugEnv = {};
+let app: FirebaseApp | null = null;
+let db: Firestore | null = null;
+let storage: FirebaseStorage | null = null;
+let auth: Auth | null = null;
+let initializationError: string | null = null;
+let debugEnv: Record<string, boolean> = {};
 
 try {
     // Debug helper to see what's missing in the UI

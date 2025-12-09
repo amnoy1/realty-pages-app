@@ -10,6 +10,11 @@ export const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (!db) {
+          console.error("Database not initialized");
+          setLoading(false);
+          return;
+      }
       try {
         // Fetch Users
         const usersSnap = await getDocs(query(collection(db, 'users'), orderBy('lastLogin', 'desc')));
