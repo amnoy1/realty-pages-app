@@ -32,7 +32,8 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
       
       // Detailed Error Handling for User Feedback
       if (error.code === 'auth/unauthorized-domain') {
-        alert("שגיאה: הדומיין חסום.\nיש להיכנס ל-Firebase Console -> Authentication -> Settings -> Authorized Domains ולהוסיף את הדומיין של Vercel.");
+        const currentDomain = window.location.hostname;
+        alert(`שגיאה: הדומיין חסום ב-Firebase.\n\nהכתובת הנוכחית שלך היא:\n${currentDomain}\n\nעליך להעתיק את הכתובת הזו (ללא https) ולהוסיף אותה ב:\nFirebase Console -> Authentication -> Settings -> Authorized Domains`);
       } else if (error.code === 'auth/operation-not-allowed') {
         alert("שגיאה: כניסה עם גוגל לא מופעלת.\nיש להיכנס ל-Firebase Console -> Authentication -> Sign-in method ולהפעיל את Google.");
       } else if (error.code === 'auth/popup-closed-by-user') {
@@ -63,7 +64,7 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
         <div className="flex items-center gap-3 bg-slate-800/90 backdrop-blur-md p-2 pr-4 pl-2 rounded-full border border-slate-700 shadow-lg animate-fade-in">
            <div className="flex flex-col text-right hidden sm:flex">
               <span className="text-sm font-bold text-white leading-none">{user.displayName}</span>
-              <span className="text-[10px] text-slate-400 mt-0.5">{isAdmin ? 'מנהל מערכת' : 'משתמש רשום'}</span>
+              <span className="text-sm text-slate-400 mt-0.5">{isAdmin ? 'מנהל מערכת' : 'משתמש רשום'}</span>
            </div>
            
            {user.photoURL ? (
