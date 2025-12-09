@@ -1,9 +1,8 @@
-import firebase from "firebase/compat/app";
-import "firebase/compat/firestore";
-import "firebase/compat/storage";
-import "firebase/compat/auth";
+import { initializeApp, getApp, getApps, FirebaseApp } from 'firebase/app';
+import { getFirestore, Firestore } from 'firebase/firestore';
+import { getStorage, FirebaseStorage } from 'firebase/storage';
+import { getAuth, Auth } from 'firebase/auth';
 
-// הגדרת המפתחות
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -13,63 +12,35 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-let db: firebase.firestore.Firestore;
-let storage: firebase.storage.Storage;
-let auth: firebase.auth.Auth;
-
-// משתנה שבודק אם אנחנו במצב דמה (ללא מפתחות)
+let app: FirebaseApp;
+let db: Firestore;
+let storage: FirebaseStorage;
+let auth: Auth;
 export let isMockMode = false;
 
-// בדיקה האם יש מפתחות קונפיגורציה
-const hasKeys = !!firebaseConfig.apiKey; 
+const hasKeys = !!firebaseConfig.apiKey;
 
 if (!hasKeys) {
-    console.warn("⚠️ חסרים מפתחות Firebase. האפליקציה עברה למצב MOCK (הדגמה) כדי למנוע קריסה.");
+    console.warn("⚠️ Firebase keys are missing. App is running in MOCK mode to prevent crashing.");
     isMockMode = true;
-
-    // --- יצירת אובייקטים מזויפים (Mocks) כדי שהאפליקציה תעלה ---
-    
-    // Mock Database
-    db = {
-        collection: (name: string) => ({
-            doc: (id?: string) => ({
-                id: id || 'mock-id-' + Date.now(),
-                set: async (data: any) => { console.log('Mock DB: Data "saved"', data); },
-                get: async () => ({ exists: false, data: () => null }),
-            })
-        })
-    } as unknown as firebase.firestore.Firestore;
-
-    // Mock Storage
-    storage = {
-        ref: (path: string) => ({
-            putString: async (data: string, format: string) => ({
-                ref: { 
-                    getDownloadURL: async () => "https://placehold.co/800x600/1e293b/FFF?text=Mock+Image" 
-                }
-            })
-        })
-    } as unknown as firebase.storage.Storage;
-
-    // Mock Auth
-    auth = {} as unknown as firebase.auth.Auth;
-
+    // Assign empty objects to satisfy type-checking and prevent runtime errors.
+    // The actual logic will be handled inside components that also check for isMockMode.
+    db = {} as Firestore;
+    storage = {} as FirebaseStorage;
+    auth = {} as Auth;
 } else {
-    // יש מפתחות - מנסים להתחבר באמת
     try {
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
-        db = firebase.firestore();
-        storage = firebase.storage();
-        auth = firebase.auth();
+        app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+        db = getFirestore(app);
+        storage = getStorage(app);
+        auth = getAuth(app);
     } catch (error) {
         console.error("Firebase Initialization Error:", error);
-        // במקרה של שגיאה (למשל מפתח לא תקין), עוברים ל-Mock כדי לא להקריס
         isMockMode = true;
-        db = { collection: () => ({ doc: () => ({ set: async () => {}, get: async () => ({ exists: false }) }) }) } as any;
-        storage = { ref: () => ({ putString: async () => ({ ref: { getDownloadURL: async () => "" } }) }) } as any;
-        auth = {} as any;
+        // Fallback to mock objects if initialization fails
+        db = {} as Firestore;
+        storage = {} as FirebaseStorage;
+        auth = {} as Auth;
     }
 }
 

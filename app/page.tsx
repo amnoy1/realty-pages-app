@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { db, storage, isMockMode } from '../lib/firebase';
+import { collection, doc, setDoc } from 'firebase/firestore';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { slugify } from '../lib/slugify';
 import { useAppRouter } from '../components/RouterContext';
 
@@ -152,9 +154,9 @@ const HomePage: React.FC = () => {
     if (isMockMode) {
         return "https://placehold.co/800x600/1e293b/FFF?text=Property+Image";
     }
-    const storageRef = storage.ref(path);
-    const snapshot = await storageRef.putString(base64, 'data_url');
-    return snapshot.ref.getDownloadURL();
+    const storageRef = ref(storage, path);
+    const snapshot = await uploadString(storageRef, base64, 'data_url');
+    return getDownloadURL(snapshot.ref);
   };
   
   const handleSaveAndPublish = async () => {
@@ -174,7 +176,7 @@ const HomePage: React.FC = () => {
 
     setIsSaving(true);
     try {
-      const docRef = db.collection("landingPages").doc();
+      const docRef = doc(collection(db, "landingPages"));
       const newId = docRef.id;
       const slug = slugify(propertyDetails.address);
 
@@ -197,7 +199,7 @@ const HomePage: React.FC = () => {
         logo: logoUrl,
       };
 
-      await docRef.set(dataToSave);
+      await setDoc(docRef, dataToSave);
 
       const finalUrlPath = `/p/${slug}-${newId}`;
       const fullUrl = `${window.location.origin}${finalUrlPath}`;
