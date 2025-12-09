@@ -15,9 +15,23 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Login failed", error);
-      alert("התחברות נכשלה. אנא נסה שנית.");
+    } catch (error: any) {
+      console.error("Login failed details:", error);
+      
+      // Handle specific Firebase errors to help the user debug
+      if (error.code === 'auth/unauthorized-domain') {
+        alert("שגיאת קונפיגורציה: הדומיין של האפליקציה אינו מאושר ב-Firebase.\n\nפתרון: כנס ל-Firebase Console -> Authentication -> Settings -> Authorized domains והוסף את הדומיין של Vercel.");
+      } else if (error.code === 'auth/operation-not-allowed') {
+        alert("שגיאת קונפיגורציה: התחברות באמצעות Google לא הופעלה.\n\nפתרון: כנס ל-Firebase Console -> Authentication -> Sign-in method והפעל את Google.");
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        // User just closed the popup, no need to alert error
+        return;
+      } else if (error.code === 'auth/api-key-not-valid') {
+        alert("שגיאה: מפתח ה-API של Firebase אינו תקין. בדוק את המשתנים ב-Vercel.");
+      } else {
+        // General error fallback
+        alert(`התחברות נכשלה:\n${error.message}`);
+      }
     }
   };
 

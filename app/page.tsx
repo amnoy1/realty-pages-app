@@ -114,7 +114,8 @@ const HomePage: React.FC = () => {
       setUser(currentUser);
       
       if (currentUser) {
-        const isUserAdmin = currentUser.email ? ADMIN_EMAILS.includes(currentUser.email) : false;
+        const userEmail = currentUser.email?.toLowerCase() || '';
+        const isUserAdmin = ADMIN_EMAILS.some(email => email.toLowerCase() === userEmail);
         setIsAdmin(isUserAdmin);
 
         // Sync user to Firestore only if NOT in mock mode
