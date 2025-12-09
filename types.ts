@@ -30,7 +30,19 @@ export interface EnhancedDescription {
 export interface PropertyDetails extends PropertyFormData {
   id?: string; // Optional because it's added on save
   slug?: string; // Optional because it's added on save
+  userId?: string; // The Google UID of the creator
+  userEmail?: string; // The email of the creator (for admin view)
+  createdAt?: number; // Timestamp
   generatedTitle: string;
   enhancedDescription: EnhancedDescription;
   features: PropertyFeatures;
+}
+
+export interface UserProfile {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+  role: 'user' | 'admin';
+  lastLogin: number;
 }

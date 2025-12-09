@@ -1,19 +1,24 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { db, storage, isMockMode } from '../lib/firebase';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { db, storage, isMockMode, auth, onAuthStateChanged, User } from '../lib/firebase';
+import { collection, doc, setDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { slugify } from '../lib/slugify';
 import { useAppRouter } from '../components/RouterContext';
 
-import type { PropertyDetails, PropertyFormData, PropertyFeatures } from '../types';
+import type { PropertyDetails, PropertyFormData, PropertyFeatures, UserProfile } from '../types';
 import { CreationForm } from '../components/CreationForm';
 import { LandingPage } from '../components/LandingPage';
+import { Auth } from '../components/Auth';
+import { AdminDashboard } from '../components/AdminDashboard';
+import { UserDashboard } from '../components/UserDashboard';
+
+// --- CONFIGURATION ---
+// Add your email here to get Admin access
+const ADMIN_EMAILS = ['YOUR_EMAIL@gmail.com', 'example@gmail.com']; 
 
 // --- Smart Fallback Logic (Client Side "AI") ---
-// This runs if the real API fails or keys are missing.
-// UPDATED: Now generates more "Sales-y" copy based on user requirements.
 const generateSmartFallback = (description: string, address: string) => {
     const desc = description.toLowerCase();
     
@@ -63,8 +68,6 @@ const generateSmartFallback = (description: string, address: string) => {
     };
 
     // 2. Generate Contextual "Copywriter" Text (Fallback)
-    
-    // Title logic: Try to find a unique feature or default to benefit
     let titlePrefix = "לחיות את החלום:";
     if (balconyArea) titlePrefix = "שקיעות ועוצמה:";
     else if (desc.includes("שקט")) titlePrefix = "השקט של הכפר, בלב העיר:";
@@ -95,16 +98,56 @@ const HomePage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isClient, setIsClient] = useState(false);
   
+  // Auth State
+  const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [currentView, setCurrentView] = useState<'create' | 'dashboard' | 'admin'>('create');
+  
   const router = useAppRouter();
 
   useEffect(() => {
     setIsClient(true);
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🚀 Application started');
-    }
+    
+    // Safely attach the listener. 
+    // In mock mode, this will just call the callback with null immediately.
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser: User | null) => {
+      setUser(currentUser);
+      
+      if (currentUser) {
+        const isUserAdmin = currentUser.email ? ADMIN_EMAILS.includes(currentUser.email) : false;
+        setIsAdmin(isUserAdmin);
+
+        // Sync user to Firestore only if NOT in mock mode
+        if (!isMockMode) {
+            try {
+                const userRef = doc(db, 'users', currentUser.uid);
+                await setDoc(userRef, {
+                    uid: currentUser.uid,
+                    email: currentUser.email,
+                    displayName: currentUser.displayName,
+                    photoURL: currentUser.photoURL,
+                    lastLogin: Date.now(),
+                    role: isUserAdmin ? 'admin' : 'user'
+                } as UserProfile, { merge: true });
+            } catch (e) {
+                console.error("Error syncing user profile:", e);
+            }
+        }
+      } else {
+        setIsAdmin(false);
+        setCurrentView('create'); // Reset to create view on logout
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const handleFormSubmit = async (formData: PropertyFormData) => {
+    if (!user) {
+        alert("עליך להתחבר למערכת כדי ליצור דף נחיתה.");
+        return;
+    }
+
     if (formData.images.length === 0) {
       alert('אנא העלה לפחות תמונה אחת.');
       return;
@@ -115,7 +158,6 @@ const HomePage: React.FC = () => {
       let generatedData;
       
       try {
-          console.log("Sending request to Gemini API...");
           const response = await fetch('/api/generate-content', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -128,7 +170,6 @@ const HomePage: React.FC = () => {
           }
           
           generatedData = await response.json();
-          console.log("Gemini API Success:", generatedData);
 
       } catch (err) {
           console.warn("⚠️ API Failed, switching to Smart Fallback:", err);
@@ -160,16 +201,19 @@ const HomePage: React.FC = () => {
   };
   
   const handleSaveAndPublish = async () => {
-    if (!propertyDetails) return;
+    if (!propertyDetails || !user) {
+        if (!user) alert("אנא התחבר כדי לשמור.");
+        return;
+    }
     
     if (isMockMode) {
-        alert("⚠️ שים לב: המערכת פועלת במצב הדגמה (ללא מפתחות Firebase).\nהדף לא באמת יישמר, אך תוכל לראות את התהליך.");
+        alert("⚠️ שים לב: המערכת פועלת במצב הדגמה (ללא מפתחות Firebase).\nהדף לא באמת יישמר.");
         setIsSaving(true);
         setTimeout(() => {
             setIsSaving(false);
             const mockUrl = `${window.location.origin}/p/mock-address-12345`;
             navigator.clipboard.writeText(mockUrl);
-            alert("הדף 'נשמר' בהצלחה (Mock Mode)!\nהקישור הועתק אוטומטית ללוח.");
+            alert("הדף 'נשמר' בהצלחה (Mock Mode)! הקישור הועתק.");
         }, 1500);
         return;
     }
@@ -195,6 +239,9 @@ const HomePage: React.FC = () => {
         ...propertyDetails,
         id: newId,
         slug: slug,
+        userId: user.uid, // LINK TO USER
+        userEmail: user.email || 'unknown',
+        createdAt: Date.now(),
         images: imageUrls,
         logo: logoUrl,
       };
@@ -204,7 +251,6 @@ const HomePage: React.FC = () => {
       const finalUrlPath = `/p/${slug}-${newId}`;
       const fullUrl = `${window.location.origin}${finalUrlPath}`;
 
-      // --- CRITICAL UX FIX: Auto-copy URL and notify user ---
       navigator.clipboard.writeText(fullUrl).then(() => {
         alert("הדף פורסם בהצלחה! הקישור הועתק אוטומטית.");
         router.push(finalUrlPath);
@@ -213,7 +259,6 @@ const HomePage: React.FC = () => {
         alert("הדף פורסם! לא ניתן היה להעתיק את הקישור אוטומטית.");
         router.push(finalUrlPath);
       });
-
 
     } catch (error) {
         console.error("Error saving document: ", error);
@@ -236,23 +281,57 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen relative bg-slate-900">
-      {isMockMode && (
-        <div className="fixed top-0 inset-x-0 bg-orange-600 text-white text-xs font-bold px-2 py-1 z-[100] text-center shadow-md">
-          מצב הדגמה (ללא חיבור Firebase פעיל) - הנתונים ישמרו מקומית בלבד
-        </div>
-      )}
+      {/* Header Bar */}
+      <div className="absolute top-0 left-0 right-0 p-4 z-50 flex justify-between items-start pointer-events-none">
+          <div className="pointer-events-auto">
+             <Auth 
+                user={user} 
+                isAdmin={isAdmin} 
+                onViewChange={(view) => {
+                    setCurrentView(view);
+                    resetApp(); // Clear any active draft when switching views
+                }} 
+                currentView={currentView}
+             />
+          </div>
+          {isMockMode && (
+             <div className="bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded shadow-md pointer-events-auto">
+                מצב הדגמה - אין מפתחות
+             </div>
+          )}
+      </div>
       
-      {propertyDetails ? (
-        <LandingPage 
-            details={propertyDetails} 
-            isPreview={true}
-            onReset={resetApp} 
-            onSave={handleSaveAndPublish}
-            isSaving={isSaving}
-        />
-      ) : (
-        <CreationForm onSubmit={handleFormSubmit} isLoading={isLoading} />
-      )}
+      {/* Main Content Router */}
+      <div className="pt-16">
+          {currentView === 'admin' && isAdmin ? (
+              <AdminDashboard />
+          ) : currentView === 'dashboard' && user ? (
+              <UserDashboard userId={user.uid} onCreateNew={() => setCurrentView('create')} />
+          ) : (
+              // Create View (Default)
+              propertyDetails ? (
+                <LandingPage 
+                    details={propertyDetails} 
+                    isPreview={true}
+                    onReset={resetApp} 
+                    onSave={handleSaveAndPublish}
+                    isSaving={isSaving}
+                />
+              ) : (
+                <div className="relative">
+                   {!user && (
+                       <div className="absolute inset-0 z-40 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
+                           <h2 className="text-3xl font-bold text-white mb-4">ברוכים הבאים למחולל דפי הנחיתה</h2>
+                           <p className="text-slate-300 mb-8 max-w-md">התחבר באמצעות חשבון Google כדי ליצור, לשמור ולנהל את דפי הנחיתה שלך במקום אחד.</p>
+                           <div className="pointer-events-none opacity-50"><Auth user={null} isAdmin={false} onViewChange={()=>{}} currentView='create' /></div>
+                           <p className="mt-4 text-sm text-slate-500">לחץ על כפתור ההתחברות בפינה למעלה כדי להתחיל</p>
+                       </div>
+                   )}
+                   <CreationForm onSubmit={handleFormSubmit} isLoading={isLoading} />
+                </div>
+              )
+          )}
+      </div>
     </div>
   );
 };
