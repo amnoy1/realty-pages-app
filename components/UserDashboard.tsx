@@ -26,7 +26,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, onCreateNe
             orderBy('createdAt', 'desc')
         );
         const querySnapshot = await getDocs(q);
-        const propsData = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as PropertyDetails));
+        const propsData = querySnapshot.docs.map(doc => ({ ...doc.data() as any, id: doc.id } as PropertyDetails));
         setMyProperties(propsData);
       } catch (error) {
         console.error("Error fetching user properties:", error);

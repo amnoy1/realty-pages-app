@@ -18,12 +18,12 @@ export const AdminDashboard: React.FC = () => {
       try {
         // Fetch Users
         const usersSnap = await getDocs(query(collection(db, 'users'), orderBy('lastLogin', 'desc')));
-        const usersData = usersSnap.docs.map(doc => ({ ...doc.data(), uid: doc.id } as UserProfile));
+        const usersData = usersSnap.docs.map(doc => ({ ...doc.data() as any, uid: doc.id } as UserProfile));
         setUsers(usersData);
 
         // Fetch Properties
         const propsSnap = await getDocs(query(collection(db, 'landingPages'), orderBy('createdAt', 'desc')));
-        const propsData = propsSnap.docs.map(doc => ({ ...doc.data(), id: doc.id } as PropertyDetails));
+        const propsData = propsSnap.docs.map(doc => ({ ...doc.data() as any, id: doc.id } as PropertyDetails));
         setProperties(propsData);
 
       } catch (error) {
