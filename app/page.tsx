@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -19,6 +20,7 @@ import { UserDashboard } from '../components/UserDashboard';
 const ADMIN_EMAILS = ['amir@mango-realty.com']; 
 
 // --- Smart Fallback Logic (Client Side "AI") ---
+// This is ONLY used if the server is completely unreachable or crashes
 const generateSmartFallback = (description: string, address: string) => {
     const desc = description.toLowerCase();
     
@@ -173,8 +175,19 @@ const HomePage: React.FC = () => {
           
           generatedData = await response.json();
 
-      } catch (err) {
-          console.warn("⚠️ API Failed, switching to Smart Fallback:", err);
+      } catch (err: any) {
+          console.error("⚠️ API Call Failed:", err);
+          
+          // CRITICAL CHANGE: Alert the user if the server failed, so they know it's not the "real" AI
+          let errorMsg = "שגיאה בחיבור לשרת ה-AI.\n";
+          if (err.message && err.message.includes("500")) {
+              errorMsg += "נראה שמפתח ה-API (API_KEY) חסר או לא מוגדר נכון ב-Vercel.\n";
+          }
+          errorMsg += "המערכת משתמשת במנגנון גיבוי מקומי בינתיים.";
+          
+          alert(errorMsg);
+          
+          // Fallback logic
           generatedData = generateSmartFallback(formData.description, formData.address);
       }
 
@@ -253,9 +266,17 @@ const HomePage: React.FC = () => {
         router.push(finalUrlPath);
       });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error saving document: ", error);
-        alert("אירעה שגיאה בשמירת דף הנחיתה. וודא שאתה מחובר ושיש לך הרשאות.");
+        
+        let msg = "אירעה שגיאה בשמירת דף הנחיתה.";
+        if (error.code === 'permission-denied') {
+            msg += "\nשגיאת הרשאות: וודא שחוקי האבטחה (Rules) ב-Firebase מוגדרים נכון.";
+        } else if (error.code === 'storage/unauthorized') {
+             msg += "\nשגיאת אחסון: אין הרשאה להעלות תמונות.";
+        }
+        
+        alert(msg);
         setIsSaving(false);
     }
   };
