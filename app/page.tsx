@@ -27,8 +27,12 @@ const SystemCheckModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     
     // Check Backend Keys (via a small ping)
     const [serverStatus, setServerStatus] = useState("Checking...");
+    const [currentDomain, setCurrentDomain] = useState("");
 
     useEffect(() => {
+        // Get current domain for Firebase allowlist
+        setCurrentDomain(window.location.hostname);
+
         fetch('/api/generate-content', { method: 'POST', body: JSON.stringify({ ping: true }) })
             .then(async (res) => {
                 if (res.status === 500) {
@@ -50,6 +54,20 @@ const SystemCheckModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 <h3 className="text-xl font-bold text-white mb-4">בדיקת מערכת (System Check)</h3>
                 
                 <div className="space-y-3 mb-6">
+                     {/* Domain Helper */}
+                     <div className="bg-blue-900/30 border border-blue-500/30 p-3 rounded-lg mb-4">
+                        <p className="text-xs text-blue-200 mb-1">הדומיין הנוכחי (להוספה ב-Firebase Auth):</p>
+                        <div className="flex items-center justify-between bg-slate-900/50 p-2 rounded border border-slate-700">
+                            <code className="text-sm font-mono text-white select-all">{currentDomain}</code>
+                            <button 
+                                onClick={() => navigator.clipboard.writeText(currentDomain)}
+                                className="text-xs text-brand-accent hover:text-white px-2"
+                            >
+                                העתק
+                            </button>
+                        </div>
+                    </div>
+
                     <div className="bg-slate-900 p-3 rounded-lg flex justify-between items-center">
                         <span className="text-slate-300">Gemini API Key (Server)</span>
                         <span className={`font-mono font-bold px-2 py-0.5 rounded text-xs ${serverStatus === "OK" ? "bg-green-900 text-green-400" : "bg-red-900 text-red-400"}`}>
@@ -66,9 +84,12 @@ const SystemCheckModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                     ))}
                 </div>
 
-                <div className="bg-blue-900/20 border border-blue-500/30 p-4 rounded-lg text-sm text-blue-200 mb-6">
-                    <p className="font-bold mb-1">אם יש שגיאה ב-Firebase:</p>
-                    <p>פתח את הקובץ <code>lib/firebase.ts</code> והדבק את פרטי ה-Firebase שלך במקום הטקסט באנגלית.</p>
+                <div className="bg-slate-900/50 border border-slate-700 p-4 rounded-lg text-sm text-slate-400 mb-6">
+                    <p className="font-bold mb-1 text-white">אם יש שגיאה ב-Firebase:</p>
+                    <ul className="list-disc list-inside space-y-1">
+                        <li>פתח את <code>lib/firebase.ts</code> ומלא את <code>HARDCODED_CONFIG</code>.</li>
+                        <li>הוסף את הדומיין למעלה ל-Authorized Domains ב-Firebase Console.</li>
+                    </ul>
                 </div>
 
                 <button onClick={onClose} className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-colors">
