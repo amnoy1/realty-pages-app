@@ -227,18 +227,19 @@ const HomePage: React.FC = () => {
                   <div className="w-16 h-16 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                   </div>
-                  <h1 className="text-3xl font-bold text-white mb-4">הגדרת Firebase חסרה</h1>
+                  <h1 className="text-3xl font-bold text-white mb-4">שגיאת התחברות ל-Firebase</h1>
                   <p className="text-lg text-slate-300 mb-6">
-                    האפליקציה לא מצאה את מפתחות ההתחברות.
+                    האפליקציה לא הצליחה לטעון את המפתחות שהגדרת ב-Vercel.
                   </p>
                   
                   <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 text-right mb-6">
-                      <h3 className="text-brand-accent font-bold mb-2">איך פותרים את זה עכשיו?</h3>
+                      <h3 className="text-brand-accent font-bold mb-2">פתרון הבעיה:</h3>
                       <ol className="list-decimal list-inside text-slate-300 space-y-2 text-sm">
-                          <li>פתח את הקובץ <code className="bg-slate-800 px-1 rounded text-white">lib/firebase.ts</code></li>
-                          <li>בראש הקובץ, תראה את המשתנה <code className="bg-slate-800 px-1 rounded text-white">HARDCODED_CONFIG</code></li>
-                          <li>הדבק שם את המפתחות שלך במקום המילים PASTE_HERE</li>
-                          <li>שמור את הקובץ והדף יתעדכן אוטומטית</li>
+                          <li>היכנס ל-<strong>Vercel</strong> לפרויקט שלך.</li>
+                          <li>לך ל-<strong>Settings</strong> ואז ל-<strong>Environment Variables</strong>.</li>
+                          <li>וודא שכל המשתנים מתחילים ב-<code>NEXT_PUBLIC_FIREBASE_</code>.</li>
+                          <li>וודא שהם מסומנים ב-V תחת כל הסביבות (Production, Preview, Development).</li>
+                          <li><strong>חשוב מאוד:</strong> בצע Redeploy לאחר השינויים כדי שהם ייכנסו לתוקף.</li>
                       </ol>
                   </div>
               </div>

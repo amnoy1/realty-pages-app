@@ -20,24 +20,16 @@ const HARDCODED_CONFIG = {
     appId: "PASTE_HERE"
 };
 
-// Utility to safely access environment variables
-const getEnvVar = (key: string): string | undefined => {
-    try {
-        if (typeof process !== 'undefined' && process.env && process.env[key]) return process.env[key];
-        // @ts-ignore
-        if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env[key]) return import.meta.env[key];
-    } catch (e) {}
-    return undefined;
-};
-
 // 1. Try Environment Variables (Vercel)
+// IMPORTANT: In Next.js Client Side, we must access process.env.NEXT_PUBLIC_* directly 
+// so the bundler can replace them at build time. Dynamic access (process.env[key]) returns undefined.
 const envConfig = {
-  apiKey: getEnvVar('NEXT_PUBLIC_FIREBASE_API_KEY'),
-  authDomain: getEnvVar('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN'),
-  projectId: getEnvVar('NEXT_PUBLIC_FIREBASE_PROJECT_ID'),
-  storageBucket: getEnvVar('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET'),
-  messagingSenderId: getEnvVar('NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID'),
-  appId: getEnvVar('NEXT_PUBLIC_FIREBASE_APP_ID'),
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
 // 2. Determine which config to use
