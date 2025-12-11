@@ -12,12 +12,12 @@ import {
 
 // --- הוראות: הדבק את המפתחות שלך כאן כדי שהאפליקציה תעבוד ב-PREVIEW ---
 const HARDCODED_CONFIG = {
-    apiKey: "AIzaSyAfOc-ZLtl4mnwj6_f30KL7J6LhX2GvDOE", 
-    authDomain: "realty-pages-app.firebaseapp.com",
-    projectId: "realty-pages-app",
-    storageBucket: "realty-pages-app.firebasestorage.app",
-    messagingSenderId: "942386233517",
-    appId: "1:942386233517:web:1c7f198bb4f10d5b1c8624HERE"
+    apiKey: "PASTE_HERE", 
+    authDomain: "PASTE_HERE",
+    projectId: "PASTE_HERE",
+    storageBucket: "PASTE_HERE",
+    messagingSenderId: "PASTE_HERE",
+    appId: "PASTE_HERE"
 };
 
 // Utility to safely access environment variables

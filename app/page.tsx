@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -18,81 +17,6 @@ import { UserDashboard } from '../components/UserDashboard';
 // --- CONFIGURATION ---
 // Add your email here to get Admin access
 const ADMIN_EMAILS = ['amir@mango-realty.com']; 
-
-// --- Smart Fallback Logic (Client Side "AI") ---
-// This is ONLY used if the server is completely unreachable or crashes
-const generateSmartFallback = (description: string, address: string) => {
-    const desc = description.toLowerCase();
-    
-    // Helper regex extractors
-    const extractNumber = (regex: RegExp): string => {
-        const match = description.match(regex);
-        return match ? match[1] : "";
-    };
-
-    const hasKeyword = (keywords: string[]): string => {
-        return keywords.some(k => description.includes(k)) ? "יש" : "";
-    };
-
-    // 1. Extract Features strictly from text
-    const rooms = extractNumber(/(\d+(\.\d+)?)\s*חדר/i) || "";
-    const floor = extractNumber(/קומה\s*(\d+)/) || extractNumber(/(\d+)\s*מתוך/) || "";
-    const apartmentArea = extractNumber(/(\d+)\s*מ"ר/) || extractNumber(/(\d+)\s*מטר/) || "";
-    const balconyArea = extractNumber(/(\d+)\s*מ"ר\s*מרפסת/) || extractNumber(/מרפסת\s*(\d+)/) || "";
-    
-    let parking = extractNumber(/(\d+)\s*חני/);
-    if (!parking) {
-        if (desc.includes("שתי חניות") || desc.includes("2 חניות")) parking = "2";
-        else if (desc.includes("חניה") || desc.includes("חנייה")) parking = "1";
-    }
-    
-    const elevator = hasKeyword(["מעלית"]) ? "יש" : "";
-    const safeRoom = hasKeyword(['ממ"ד', 'ממד', 'מרחב מוגן']) ? 'ממ"ד' : "";
-    const storage = hasKeyword(["מחסן"]) ? "יש" : "";
-    
-    const directions = [];
-    if (desc.includes("צפון")) directions.push("צפון");
-    if (desc.includes("דרום")) directions.push("דרום");
-    if (desc.includes("מזרח")) directions.push("מזרח");
-    if (desc.includes("מערב")) directions.push("מערב");
-    const airDirections = directions.join(", ");
-
-    const features: PropertyFeatures = {
-        rooms,
-        floor,
-        apartmentArea,
-        balconyArea,
-        parking,
-        elevator,
-        safeRoom,
-        storage,
-        airDirections
-    };
-
-    // 2. Generate Contextual "Copywriter" Text (Fallback)
-    let titlePrefix = "לחיות את החלום:";
-    if (balconyArea) titlePrefix = "שקיעות ועוצמה:";
-    else if (desc.includes("שקט")) titlePrefix = "השקט של הכפר, בלב העיר:";
-    
-    const title = `${titlePrefix} ${rooms ? `דירת ${rooms} חדרים` : 'נכס ייחודי'} ב${address.split(',')[0]}`;
-    
-    const generatedDescription = {
-        area: `דמיינו את הקפה של הבוקר במיקום המנצח של ${address}. סביבה המעניקה תחושת קהילה, נגישות מקסימלית ושקט נדיר. זה המקום בו כל יום מתחיל עם חיוך.`,
-        property: `גלו מרחב מחיה שתוכנן בקפידה. 
-        ${rooms ? `תיהנו מ-${rooms} חדרים מרווחים ומוארים, אידיאליים למשפחה.` : ''} 
-        ${balconyArea ? `צאו למרפסת שמש של ${balconyArea} מ"ר והרגישו את הבריזה.` : ''}
-        ${parking ? `פתרון חניה מושלם: ${parking} חניות פרטיות ונוחות.` : ''}
-        זהו לא עוד נכס, אלא הבית הבא שלכם.`,
-        cta: "הזדמנות נדירה שלא תחזור – תיאומים השבוע בלבד!"
-    };
-
-    return {
-        title,
-        description: generatedDescription,
-        features
-    };
-};
-
 
 const HomePage: React.FC = () => {
   const [propertyDetails, setPropertyDetails] = useState<PropertyDetails | null>(null);
@@ -178,17 +102,18 @@ const HomePage: React.FC = () => {
       } catch (err: any) {
           console.error("⚠️ API Call Failed:", err);
           
-          // CRITICAL CHANGE: Alert the user if the server failed, so they know it's not the "real" AI
-          let errorMsg = "שגיאה בחיבור לשרת ה-AI.\n";
-          if (err.message && err.message.includes("500")) {
-              errorMsg += "נראה שמפתח ה-API (API_KEY) חסר או לא מוגדר נכון ב-Vercel.\n";
+          let errorMsg = "שגיאה בחיבור לשרת ה-AI.\n\n";
+          
+          if (err.message && (err.message.includes("500") || err.message.includes("API key"))) {
+              errorMsg += "סיבה: מפתח ה-API (API_KEY) חסר בהגדרות השרת ב-Vercel.\n";
+              errorMsg += "פתרון: יש להוסיף את המשתנה API_KEY ב-Settings -> Environment Variables ולבצע Redeploy.";
+          } else {
+              errorMsg += `פרטים טכניים: ${err.message}`;
           }
-          errorMsg += "המערכת משתמשת במנגנון גיבוי מקומי בינתיים.";
-          
+
           alert(errorMsg);
-          
-          // Fallback logic
-          generatedData = generateSmartFallback(formData.description, formData.address);
+          setIsLoading(false);
+          return; // STOP HERE: Do not use fallback, do not proceed.
       }
 
       const newDetails: PropertyDetails = {
@@ -200,7 +125,7 @@ const HomePage: React.FC = () => {
       setPropertyDetails(newDetails);
     } catch (error) {
       console.error("Critical error in form submission:", error);
-      alert("אירעה שגיאה. אנא נסה שנית.");
+      alert("אירעה שגיאה כללית. אנא נסה שנית.");
     } finally {
       setIsLoading(false);
     }
