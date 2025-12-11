@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { db, storage, auth, onAuthStateChanged, User, initializationError, debugEnv, saveManualConfig, clearManualConfig } from '../lib/firebase';
+import { db, storage, auth, onAuthStateChanged, User, initializationError, debugEnv } from '../lib/firebase';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { slugify } from '../lib/slugify';
@@ -97,7 +97,6 @@ const HomePage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const [manualConfigInput, setManualConfigInput] = useState('');
   
   // Auth State
   const [user, setUser] = useState<User | null>(null);
@@ -273,52 +272,28 @@ const HomePage: React.FC = () => {
     );
   }
 
-  // --- CRITICAL ERROR UI & MANUAL OVERRIDE ---
-  // If Env Vars failed, allow user to Paste JSON Config
+  // --- CRITICAL ERROR UI ---
+  // If Env Vars failed AND hardcoded config is empty
   if (initializationError || !auth) {
       return (
           <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4" dir="rtl">
-              <div className="bg-slate-800/80 border border-slate-700 p-8 rounded-2xl max-w-3xl w-full text-center shadow-2xl animate-fade-in">
-                  <div className="w-16 h-16 bg-brand-accent/20 text-brand-accent rounded-full flex items-center justify-center mx-auto mb-6">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              <div className="bg-slate-800/80 border border-slate-700 p-8 rounded-2xl max-w-2xl w-full text-center shadow-2xl animate-fade-in">
+                  <div className="w-16 h-16 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                   </div>
-                  <h1 className="text-3xl font-bold text-white mb-2">נדרשת הגדרת מערכת</h1>
+                  <h1 className="text-3xl font-bold text-white mb-4">הגדרת Firebase חסרה</h1>
                   <p className="text-lg text-slate-300 mb-6">
-                    האפליקציה פועלת בסביבה שאינה מכילה את מפתחות ה-Firebase (כמו Preview מקומי).
+                    האפליקציה לא מצאה את מפתחות ההתחברות.
                   </p>
                   
-                  {/* Detailed Diagnostics Table */}
                   <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 text-right mb-6">
-                      <h3 className="text-white font-bold border-b border-slate-700 pb-2 mb-4">סטטוס משתנים מזוהים:</h3>
-                      <div className="grid grid-cols-1 gap-2 text-sm font-mono">
-                         {debugEnv && Object.entries(debugEnv).map(([key, status]) => (
-                             <div key={key} className="flex justify-between items-center p-2 rounded bg-slate-900/50">
-                                 <span className="text-slate-400">NEXT_PUBLIC_FIREBASE_{key.replace(/[a-z](?=[A-Z])/g, '$&_').toUpperCase()}</span>
-                                 <span className={`font-bold px-2 py-1 rounded text-xs ${status === 'Loaded' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
-                                     {status === 'Loaded' ? '✅ קיים' : '❌ חסר'}
-                                 </span>
-                             </div>
-                         ))}
-                      </div>
-                  </div>
-
-                  {/* Manual Override Form */}
-                  <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
-                      <h3 className="text-white font-bold mb-2">הגדרה ידנית (פיתוח בלבד):</h3>
-                      <p className="text-sm text-slate-400 mb-4">הדבק כאן את אובייקט הקונפיגורציה (JSON) מ-Firebase Console כדי לעבוד מיד:</p>
-                      <textarea
-                        className="w-full h-32 bg-slate-900 border border-slate-600 rounded-lg p-3 text-left text-sm font-mono text-green-400 mb-4 focus:ring-2 focus:ring-brand-accent outline-none"
-                        placeholder='{ "apiKey": "AIzaSy...", "authDomain": "...", ... }'
-                        value={manualConfigInput}
-                        onChange={(e) => setManualConfigInput(e.target.value)}
-                        dir="ltr"
-                      />
-                      <button 
-                        onClick={() => saveManualConfig(manualConfigInput)}
-                        className="w-full bg-brand-accent hover:bg-brand-accentHover text-white font-bold py-3 rounded-lg transition-colors shadow-lg"
-                      >
-                        שמור והפעל ידנית
-                      </button>
+                      <h3 className="text-brand-accent font-bold mb-2">איך פותרים את זה עכשיו?</h3>
+                      <ol className="list-decimal list-inside text-slate-300 space-y-2 text-sm">
+                          <li>פתח את הקובץ <code className="bg-slate-800 px-1 rounded text-white">lib/firebase.ts</code></li>
+                          <li>בראש הקובץ, תראה את המשתנה <code className="bg-slate-800 px-1 rounded text-white">HARDCODED_CONFIG</code></li>
+                          <li>הדבק שם את המפתחות שלך במקום המילים PASTE_HERE</li>
+                          <li>שמור את הקובץ והדף יתעדכן אוטומטית</li>
+                      </ol>
                   </div>
               </div>
           </div>
@@ -340,17 +315,6 @@ const HomePage: React.FC = () => {
                 currentView={currentView}
              />
           </div>
-          
-          {/* Debug: Clear Manual Config Button */}
-          {((debugEnv && Object.values(debugEnv).some(v => v === 'Missing')) || (typeof window !== 'undefined' && localStorage.getItem('firebase_manual_config'))) && (
-              <button 
-                onClick={clearManualConfig}
-                className="pointer-events-auto text-xs text-slate-600 hover:text-red-400 transition-colors bg-slate-900/50 px-2 py-1 rounded"
-                title="נקה הגדרות ידניות"
-              >
-                  Reset Config
-              </button>
-          )}
       </div>
       
       {/* Main Content Router */}
