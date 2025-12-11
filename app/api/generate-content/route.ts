@@ -1,20 +1,28 @@
 import { GoogleGenAI } from "@google/genai";
 
-const apiKey = process.env.API_KEY;
-
-if (!apiKey) {
-  console.error("CRITICAL: API_KEY environment variable is not set on the server.");
-}
-
-const ai = new GoogleGenAI({ apiKey: apiKey || '' });
-
+// We strictly read the API key inside the handler to avoid build-time caching issues
 export async function POST(request: Request) {
+  // Try multiple naming conventions to be helpful to the user
+  const apiKey = process.env.API_KEY || 
+                 process.env.GEMINI_API_KEY || 
+                 process.env.NEXT_PUBLIC_API_KEY || 
+                 process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: "Server is not configured with an API key." }), {
+    console.error("CRITICAL ERROR: API_KEY is missing from server environment variables.");
+    // Log available keys (security safe: only keys, not values) to help debug in Vercel Logs
+    console.log("Available Env Var Keys:", Object.keys(process.env).filter(k => k.includes('KEY') || k.includes('API')));
+
+    return new Response(JSON.stringify({ 
+        error: "Server configuration error: API_KEY is missing. Did you perform a Redeploy after adding the key in Vercel Settings?" 
+    }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
   }
+
+  // Initialize client per request to ensure it uses the current key
+  const ai = new GoogleGenAI({ apiKey });
 
   try {
     const { originalDescription, address } = await request.json();

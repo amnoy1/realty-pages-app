@@ -105,8 +105,8 @@ const HomePage: React.FC = () => {
           let errorMsg = "שגיאה בחיבור לשרת ה-AI.\n\n";
           
           if (err.message && (err.message.includes("500") || err.message.includes("API key"))) {
-              errorMsg += "סיבה: מפתח ה-API (API_KEY) חסר בהגדרות השרת ב-Vercel.\n";
-              errorMsg += "פתרון: יש להוסיף את המשתנה API_KEY ב-Settings -> Environment Variables ולבצע Redeploy.";
+              errorMsg += "סיבה: השרת לא מזהה את מפתח ה-API (API_KEY).\n";
+              errorMsg += "פתרון: אם הוספת את המפתח ל-Vercel כרגע, עליך לבצע REDEPLOY כדי שהשינוי ייכנס לתוקף.\n(Deployments -> Redeploy)";
           } else {
               errorMsg += `פרטים טכניים: ${err.message}`;
           }
