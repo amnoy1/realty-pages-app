@@ -10,19 +10,30 @@ import {
   Auth
 } from 'firebase/auth';
 
-// --- הוראות: הדבק את המפתחות שלך כאן כדי שהאפליקציה תעבוד ב-PREVIEW ---
+// --- הוראות אבטחה חשובות ---
+// 1. המפתחות למטה הם מפתחות FIREBASE בלבד. הם *ציבוריים* ובטוחים לשימוש בקוד זה.
+// 2. את מפתח ה-Gemini AI (הסודי) יש לשמור *רק* ב-Vercel Environment Variables. אל תדביק אותו כאן!
+
 const HARDCODED_CONFIG = {
-    apiKey: "PASTE_HERE", 
-    authDomain: "PASTE_HERE",
-    projectId: "PASTE_HERE",
-    storageBucket: "PASTE_HERE",
-    messagingSenderId: "PASTE_HERE",
-    appId: "PASTE_HERE"
+    // העתק לכאן את ה-apiKey מתוך Firebase Console -> Project Settings
+    apiKey: "PASTE_YOUR_FIREBASE_API_KEY_HERE", 
+    
+    // העתק את שאר הערכים:
+    authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "PASTE_YOUR_PROJECT_ID",
+    storageBucket: "PASTE_YOUR_PROJECT_ID.appspot.com",
+    messagingSenderId: "PASTE_SENDER_ID",
+    appId: "PASTE_YOUR_APP_ID"
 };
 
-// 1. Try Environment Variables (Vercel)
-// IMPORTANT: In Next.js Client Side, we must access process.env.NEXT_PUBLIC_* directly 
-// so the bundler can replace them at build time. Dynamic access (process.env[key]) returns undefined.
+// בדיקה: האם המשתמש אכן מילא את הפרטים הידניים?
+const isHardcodedFilled = 
+    HARDCODED_CONFIG.apiKey && 
+    !HARDCODED_CONFIG.apiKey.includes("PASTE_YOUR") &&
+    HARDCODED_CONFIG.projectId &&
+    !HARDCODED_CONFIG.projectId.includes("PASTE_YOUR");
+
+// ניסיון למשוך משתנים מ-Vercel
 const envConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -32,12 +43,8 @@ const envConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// 2. Determine which config to use
-// If env vars are missing (like in Preview), check if user pasted keys in HARDCODED_CONFIG
-const isEnvLoaded = !!envConfig.apiKey;
-const isHardcodedLoaded = HARDCODED_CONFIG.apiKey !== "PASTE_HERE";
-
-const firebaseConfig = isEnvLoaded ? envConfig : (isHardcodedLoaded ? HARDCODED_CONFIG : null);
+// בחירת התצורה: עדיפות ל-Hardcoded אם הוא מולא תקין (כדי לעקוף בעיות Vercel)
+const firebaseConfig = isHardcodedFilled ? HARDCODED_CONFIG : (envConfig.apiKey ? envConfig : null);
 
 let app: FirebaseApp | null = null;
 let db: Firestore | null = null;
@@ -45,15 +52,15 @@ let storage: FirebaseStorage | null = null;
 let auth: Auth | null = null;
 let initializationError: string | null = null;
 
-// Debug info for UI
+// מידע לדיבוג (יוצג ב-"System Check")
 let debugEnv: Record<string, string> = {
-    method: isEnvLoaded ? 'Vercel Env' : (isHardcodedLoaded ? 'Hardcoded File' : 'Missing'),
-    apiKey: (isEnvLoaded || isHardcodedLoaded) ? 'Loaded' : 'Missing',
+    source: isHardcodedFilled ? 'Hardcoded File (Manual)' : (envConfig.apiKey ? 'Vercel Env Vars' : 'None - Missing Config'),
+    details: isHardcodedFilled ? 'Using manually pasted keys' : 'Using process.env keys'
 };
 
 try {
     if (!firebaseConfig) {
-        console.warn("[Firebase Init] No configuration found (Env vars missing and HARDCODED_CONFIG is empty).");
+        console.warn("[Firebase Init] No valid configuration found.");
         initializationError = "Missing Configuration";
     } else {
         // Initialize
@@ -61,7 +68,7 @@ try {
         db = getFirestore(app);
         storage = getStorage(app);
         auth = getAuth(app);
-        console.log('[Firebase Init] Success using:', isEnvLoaded ? 'Environment Variables' : 'Hardcoded Config');
+        console.log('[Firebase Init] Success using source:', debugEnv.source);
     }
 } catch (error: any) {
     console.error("[Firebase Init] Exception:", error);

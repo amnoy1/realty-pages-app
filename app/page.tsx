@@ -15,14 +15,76 @@ import { AdminDashboard } from '../components/AdminDashboard';
 import { UserDashboard } from '../components/UserDashboard';
 
 // --- CONFIGURATION ---
-// Add your email here to get Admin access
 const ADMIN_EMAILS = ['amir@mango-realty.com']; 
+
+// --- TROUBLESHOOTING MODAL COMPONENT ---
+const SystemCheckModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+    // Check Frontend Keys
+    const checks = [
+        { name: "Firebase Config Source", status: debugEnv.source },
+        { name: "Firebase Auth Ready", status: auth ? "OK" : "FAIL" },
+    ];
+    
+    // Check Backend Keys (via a small ping)
+    const [serverStatus, setServerStatus] = useState("Checking...");
+
+    useEffect(() => {
+        fetch('/api/generate-content', { method: 'POST', body: JSON.stringify({ ping: true }) })
+            .then(async (res) => {
+                if (res.status === 500) {
+                     const text = await res.text();
+                     if (text.includes("API_KEY is missing")) setServerStatus("MISSING API_KEY");
+                     else setServerStatus("SERVER ERROR");
+                } else if (res.status === 400) {
+                    setServerStatus("OK");
+                } else {
+                    setServerStatus("UNKNOWN");
+                }
+            })
+            .catch(() => setServerStatus("CONNECTION FAILED"));
+    }, []);
+
+    return (
+        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4" dir="rtl">
+            <div className="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-md w-full shadow-2xl">
+                <h3 className="text-xl font-bold text-white mb-4">בדיקת מערכת (System Check)</h3>
+                
+                <div className="space-y-3 mb-6">
+                    <div className="bg-slate-900 p-3 rounded-lg flex justify-between items-center">
+                        <span className="text-slate-300">Gemini API Key (Server)</span>
+                        <span className={`font-mono font-bold px-2 py-0.5 rounded text-xs ${serverStatus === "OK" ? "bg-green-900 text-green-400" : "bg-red-900 text-red-400"}`}>
+                            {serverStatus}
+                        </span>
+                    </div>
+                    {checks.map((check, i) => (
+                        <div key={i} className="bg-slate-900 p-3 rounded-lg flex justify-between items-center">
+                            <span className="text-slate-300">{check.name}</span>
+                            <span className={`font-mono font-bold px-2 py-0.5 rounded text-xs ${check.status.includes("OK") || check.status.includes("Manual") || check.status.includes("Vercel") ? "bg-green-900 text-green-400" : "bg-red-900 text-red-400"}`}>
+                                {check.status}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="bg-blue-900/20 border border-blue-500/30 p-4 rounded-lg text-sm text-blue-200 mb-6">
+                    <p className="font-bold mb-1">אם יש שגיאה ב-Firebase:</p>
+                    <p>פתח את הקובץ <code>lib/firebase.ts</code> והדבק את פרטי ה-Firebase שלך במקום הטקסט באנגלית.</p>
+                </div>
+
+                <button onClick={onClose} className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-colors">
+                    סגור
+                </button>
+            </div>
+        </div>
+    );
+};
 
 const HomePage: React.FC = () => {
   const [propertyDetails, setPropertyDetails] = useState<PropertyDetails | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [showSystemCheck, setShowSystemCheck] = useState(false);
   
   // Auth State
   const [user, setUser] = useState<User | null>(null);
@@ -102,18 +164,18 @@ const HomePage: React.FC = () => {
       } catch (err: any) {
           console.error("⚠️ API Call Failed:", err);
           
-          let errorMsg = "שגיאה בחיבור לשרת ה-AI.\n\n";
+          let errorMsg = "שגיאה בחיבור לשרת ה-AI.\n";
           
           if (err.message && (err.message.includes("500") || err.message.includes("API key"))) {
-              errorMsg += "סיבה: השרת לא מזהה את מפתח ה-API (API_KEY).\n";
-              errorMsg += "פתרון: אם הוספת את המפתח ל-Vercel כרגע, עליך לבצע REDEPLOY כדי שהשינוי ייכנס לתוקף.\n(Deployments -> Redeploy)";
-          } else {
-              errorMsg += `פרטים טכניים: ${err.message}`;
-          }
-
-          alert(errorMsg);
+              // Trigger the System Check modal automatically if it's an API Key error
+              setShowSystemCheck(true);
+              setIsLoading(false);
+              return; 
+          } 
+          
+          alert(errorMsg + err.message);
           setIsLoading(false);
-          return; // STOP HERE: Do not use fallback, do not proceed.
+          return;
       }
 
       const newDetails: PropertyDetails = {
@@ -218,8 +280,8 @@ const HomePage: React.FC = () => {
     );
   }
 
-  // --- CRITICAL ERROR UI ---
-  // If Env Vars failed AND hardcoded config is empty
+  // --- CRITICAL INITIALIZATION ERROR UI ---
+  // Only show this if Client Side Firebase keys are strictly missing or incorrect
   if (initializationError || !auth) {
       return (
           <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4" dir="rtl">
@@ -227,21 +289,23 @@ const HomePage: React.FC = () => {
                   <div className="w-16 h-16 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                   </div>
-                  <h1 className="text-3xl font-bold text-white mb-4">שגיאת התחברות ל-Firebase</h1>
+                  <h1 className="text-3xl font-bold text-white mb-4">נדרשת הגדרת מפתחות</h1>
                   <p className="text-lg text-slate-300 mb-6">
-                    האפליקציה לא הצליחה לטעון את המפתחות שהגדרת ב-Vercel.
+                    האפליקציה לא הצליחה לטעון את הגדרות Firebase.
                   </p>
                   
-                  <div className="bg-slate-950 p-6 rounded-xl border border-slate-800 text-right mb-6">
-                      <h3 className="text-brand-accent font-bold mb-2">פתרון הבעיה:</h3>
-                      <ol className="list-decimal list-inside text-slate-300 space-y-2 text-sm">
-                          <li>היכנס ל-<strong>Vercel</strong> לפרויקט שלך.</li>
-                          <li>לך ל-<strong>Settings</strong> ואז ל-<strong>Environment Variables</strong>.</li>
-                          <li>וודא שכל המשתנים מתחילים ב-<code>NEXT_PUBLIC_FIREBASE_</code>.</li>
-                          <li>וודא שהם מסומנים ב-V תחת כל הסביבות (Production, Preview, Development).</li>
-                          <li><strong>חשוב מאוד:</strong> בצע Redeploy לאחר השינויים כדי שהם ייכנסו לתוקף.</li>
-                      </ol>
+                  <div className="text-right bg-slate-950 p-4 rounded-lg text-sm text-slate-300 mb-6 border border-slate-700">
+                     <p className="font-bold text-brand-accent mb-2">פתרון מהיר:</p>
+                     <ol className="list-decimal list-inside space-y-2">
+                         <li>גש לקובץ <code>lib/firebase.ts</code> בפרויקט שלך.</li>
+                         <li>הדבק את פרטי ה-Firebase שלך בתוך האובייקט <code>HARDCODED_CONFIG</code>.</li>
+                         <li>וודא שמחקת את הטקסט "PASTE_YOUR..." ושמת את המפתחות האמיתיים.</li>
+                     </ol>
                   </div>
+                  
+                  <button onClick={() => window.location.reload()} className="bg-brand-accent text-white px-6 py-3 rounded-xl font-bold hover:bg-orange-700 transition-colors w-full">
+                      רענן עמוד (לאחר ביצוע השינויים)
+                  </button>
               </div>
           </div>
       );
@@ -249,6 +313,9 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen relative bg-slate-900">
+      {/* System Check Modal */}
+      {showSystemCheck && <SystemCheckModal onClose={() => setShowSystemCheck(false)} />}
+    
       {/* Header Bar */}
       <div className="absolute top-0 left-0 right-0 p-4 z-50 flex justify-between items-start pointer-events-none">
           <div className="pointer-events-auto">
@@ -294,6 +361,16 @@ const HomePage: React.FC = () => {
                 </div>
               )
           )}
+      </div>
+
+      {/* Debug Trigger Footer */}
+      <div className="fixed bottom-2 left-2 z-50 opacity-30 hover:opacity-100 transition-opacity">
+          <button 
+            onClick={() => setShowSystemCheck(true)}
+            className="text-[10px] text-slate-500 bg-slate-900/50 px-2 py-1 rounded border border-slate-700 hover:text-white"
+          >
+              System Check
+          </button>
       </div>
     </div>
   );
