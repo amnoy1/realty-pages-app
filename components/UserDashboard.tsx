@@ -7,9 +7,10 @@ interface UserDashboardProps {
     userId: string;
     userEmail?: string | null;
     onCreateNew: () => void;
+    onEdit?: (property: PropertyDetails) => void;
 }
 
-export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail, onCreateNew }) => {
+export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail, onCreateNew, onEdit }) => {
   const [myProperties, setMyProperties] = useState<PropertyDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,12 +29,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
     
     setLoading(true);
     setError(null);
-    console.log("--- Dashboard Fetch Diagnostic ---");
-    console.log("Current Auth UID:", userId);
-    console.log("Current Auth Email:", userEmail);
 
     try {
-      // 1. Primary Query: Search by userId
       const uidQuery = query(
           collection(db, 'landingPages'), 
           where('userId', '==', userId)
@@ -41,7 +38,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
       const uidSnapshot = await getDocs(uidQuery);
       const uidResults = uidSnapshot.docs.map(doc => ({ ...doc.data() as any, id: doc.id } as PropertyDetails));
       
-      // 2. Fallback Query: Search by userEmail (in case UID mismatched during save)
       let emailResults: PropertyDetails[] = [];
       if (userEmail) {
           const emailQuery = query(
@@ -52,7 +48,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
           emailResults = emailSnapshot.docs.map(doc => ({ ...doc.data() as any, id: doc.id } as PropertyDetails));
       }
 
-      // 3. Global Count (Quick check to see if collection is readable at all)
       let totalCount: number | string = 'Unknown';
       try {
           const globalSnapshot = await getDocs(query(collection(db, 'landingPages'), limit(1)));
@@ -67,7 +62,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
           totalInCollection: totalCount
       });
 
-      // Merge results, removing duplicates by ID
       const mergedMap = new Map<string, PropertyDetails>();
       uidResults.forEach(p => p.id && mergedMap.set(p.id, p));
       emailResults.forEach(p => p.id && mergedMap.set(p.id, p));
@@ -76,11 +70,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
       finalResults.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
       setMyProperties(finalResults);
-      
-      if (finalResults.length === 0 && totalCount !== 0) {
-          console.warn("User has 0 docs but collection is not empty. Possible UID/Email mismatch.");
-      }
-
     } catch (err: any) {
       console.error("Dashboard error:", err);
       setError(`שגיאה בתקשורת עם Firebase: ${err.message}`);
@@ -94,7 +83,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
   }, [userId, userEmail]);
 
   const copyToClipboard = (slug: string, id: string) => {
-    // URL structure now directly after domain
     const url = `${window.location.origin}/${slug}-${id}`;
     navigator.clipboard.writeText(url);
     alert('הקישור הועתק ללוח');
@@ -135,20 +123,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
           </div>
       )}
 
-      {/* Diagnostic Info Box - Visible only when empty or for debugging */}
-      {myProperties.length === 0 && (
-          <div className="bg-blue-900/20 border border-blue-500/30 p-4 rounded-xl mb-8 text-blue-200 text-xs font-mono">
-              <p className="font-bold mb-2 uppercase border-b border-blue-500/20 pb-1">אבחון מערכת (Diagnostics):</p>
-              <div className="grid grid-cols-2 gap-x-8 gap-y-1">
-                  <span>UID: <span className="text-white">{userId.substring(0, 8)}...</span></span>
-                  <span>Email: <span className="text-white">{userEmail}</span></span>
-                  <span>Docs by UID: <span className={diagnostics.uidCount > 0 ? "text-green-400" : "text-yellow-500"}>{diagnostics.uidCount}</span></span>
-                  <span>Docs by Email: <span className={diagnostics.emailCount > 0 ? "text-green-400" : "text-yellow-500"}>{diagnostics.emailCount}</span></span>
-                  <span>Global Collection Status: <span className="text-white">{diagnostics.totalInCollection}</span></span>
-              </div>
-          </div>
-      )}
-
       {myProperties.length === 0 ? (
           <div className="text-center py-24 bg-slate-800/30 rounded-3xl border border-slate-700 border-dashed">
               <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-600">
@@ -157,7 +131,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
               <h3 className="text-xl font-bold text-slate-200 mb-2">לא נמצאו נכסים תחת חשבון זה</h3>
               <p className="text-slate-500 mb-8 max-w-sm mx-auto">
                   אם יצרת נכסים בעבר והם לא מופיעים, וודא שאתה מחובר עם אותו חשבון Google. 
-                  <br/>ניתן גם לנסות לרענן את העמוד.
               </p>
               <button onClick={onCreateNew} className="bg-slate-700 hover:bg-slate-600 text-white px-8 py-3 rounded-xl font-bold transition-all border border-white/5">
                   צור את הנכס הראשון שלך
@@ -176,6 +149,15 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
                           <div className="absolute top-3 right-3 bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded backdrop-blur-md border border-white/10 uppercase tracking-wider">
                               {prop.features?.rooms ? `${prop.features.rooms} חדרים` : 'נכס למכירה'}
                           </div>
+                          {onEdit && (
+                            <button 
+                                onClick={() => onEdit(prop)}
+                                className="absolute top-3 left-3 bg-white/10 hover:bg-white/30 text-white p-2 rounded-full backdrop-blur-md border border-white/10 transition-all shadow-lg"
+                                title="ערוך נכס"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </button>
+                          )}
                       </div>
                       <div className="p-6 flex flex-col flex-1">
                           <h3 className="text-white font-bold text-lg mb-2 line-clamp-1 leading-tight group-hover:text-brand-accent transition-colors">{prop.generatedTitle}</h3>

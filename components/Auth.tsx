@@ -13,35 +13,27 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   
   const handleLogin = async () => {
-    console.log("Login button clicked"); // Debug log
+    if (!auth) {
+      alert("שגיאה: מערכת ה-Firebase לא מוגדרת.\n\nכדי להפעיל את ההתחברות והשמירה, עליך:\n1. להגדיר Environment Variables ב-Vercel.\n2. או להזין את המפתחות בקובץ lib/firebase.ts.");
+      return;
+    }
+
     setIsLoggingIn(true);
     
     try {
-      if (!auth) {
-        throw new Error("מערכת האימות (Auth) לא אותחלה. בדוק את מפתחות ה-Firebase.");
-      }
-
-      console.log("Starting Google Popup...");
       const provider = new GoogleAuthProvider();
+      // Ensure the popup doesn't get blocked by some browsers in preview mode
       await signInWithPopup(auth, provider);
-      console.log("Login successful");
-      
     } catch (error: any) {
       console.error("Login failed details:", error);
-      setIsLoggingIn(false);
       
-      // Detailed Error Handling for User Feedback
       if (error.code === 'auth/unauthorized-domain') {
         const currentDomain = window.location.hostname;
-        alert(`שגיאה: הדומיין חסום ב-Firebase.\n\nהכתובת הנוכחית שלך היא:\n${currentDomain}\n\nעליך להעתיק את הכתובת הזו (ללא https) ולהוסיף אותה ב:\nFirebase Console -> Authentication -> Settings -> Authorized Domains`);
-      } else if (error.code === 'auth/operation-not-allowed') {
-        alert("שגיאה: כניסה עם גוגל לא מופעלת.\nיש להיכנס ל-Firebase Console -> Authentication -> Sign-in method ולהפעיל את Google.");
+        alert(`הדומיין ${currentDomain} לא מורשה ב-Firebase.\nיש להוסיף אותו ב-Firebase Console -> Auth -> Settings -> Authorized Domains`);
       } else if (error.code === 'auth/popup-closed-by-user') {
-        // Ignore close
-      } else if (error.code === 'auth/api-key-not-valid' || error.message.includes("API key")) {
-        alert("שגיאה: מפתח ה-API אינו תקין.\n1. בדוק שהעתקת את המפתחות נכון ל-Vercel.\n2. וודא ששמות המשתנים מתחילים ב-NEXT_PUBLIC_");
+        // User closed the popup, do nothing
       } else {
-        alert(`התחברות נכשלה:\n${error.message}`);
+        alert(`התחברות נכשלה: ${error.message}`);
       }
     } finally {
         setIsLoggingIn(false);
@@ -77,7 +69,6 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
            
            <div className="h-6 w-px bg-slate-600 mx-1"></div>
 
-           {/* Navigation Buttons */}
            <div className="flex items-center gap-1.5">
              {isAdmin && (
                 <button 

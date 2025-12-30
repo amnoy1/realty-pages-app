@@ -10,6 +10,21 @@ import {
   Auth
 } from 'firebase/auth';
 
+// Helper to safely get environment variables in both Next.js and browser ESM environments
+const getEnv = (key: string): string | undefined => {
+  try {
+    if (typeof process !== 'undefined' && process.env && process.env[key]) {
+      return process.env[key];
+    }
+  } catch (e) {}
+  
+  // Fallback for some preview environments
+  if (typeof window !== 'undefined' && (window as any).ENV?.[key]) {
+    return (window as any).ENV[key];
+  }
+  return undefined;
+};
+
 const HARDCODED_CONFIG = {
     apiKey: "PASTE_YOUR_FIREBASE_API_KEY_HERE", 
     authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
@@ -26,12 +41,12 @@ const isHardcodedFilled =
     !HARDCODED_CONFIG.projectId.includes("PASTE_YOUR");
 
 const envConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: getEnv('NEXT_PUBLIC_FIREBASE_API_KEY'),
+  authDomain: getEnv('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN'),
+  projectId: getEnv('NEXT_PUBLIC_FIREBASE_PROJECT_ID'),
+  storageBucket: getEnv('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET'),
+  messagingSenderId: getEnv('NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID'),
+  appId: getEnv('NEXT_PUBLIC_FIREBASE_APP_ID'),
 };
 
 const firebaseConfig = isHardcodedFilled ? HARDCODED_CONFIG : (envConfig.apiKey ? envConfig : null);
@@ -42,12 +57,6 @@ let storage: FirebaseStorage | null = null;
 let auth: Auth | null = null;
 let initializationError: string | null = null;
 
-let debugEnv: Record<string, string> = {
-    source: isHardcodedFilled ? 'Hardcoded File (Manual)' : (envConfig.apiKey ? 'Vercel Env Vars' : 'None - Missing Config'),
-    details: isHardcodedFilled ? 'Using manually pasted keys' : 'Using process.env keys'
-};
-
-// Only initialize if we have a config, otherwise we skip to let the build pass
 if (firebaseConfig) {
     try {
         app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
@@ -59,8 +68,14 @@ if (firebaseConfig) {
         initializationError = error.message;
     }
 } else {
-    console.warn("[Firebase] No configuration found. Auth and DB will be unavailable.");
+    console.warn("[Firebase] No configuration found. Authentication and Database will be unavailable.");
 }
+
+// Diagnostics for the System Check modal
+let debugEnv: Record<string, string> = {
+    source: isHardcodedFilled ? 'Hardcoded File (Manual)' : (envConfig.apiKey ? 'Environment Variables' : 'None - Missing Config'),
+    status: firebaseConfig ? 'Config present' : 'Config missing'
+};
 
 export { db, storage, auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, initializationError, debugEnv };
 export type { User } from 'firebase/auth';

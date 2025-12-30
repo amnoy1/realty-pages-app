@@ -2,17 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { db, storage, auth, onAuthStateChanged, User, initializationError, debugEnv } from '../lib/firebase';
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { slugify } from '../lib/slugify';
 import { useAppRouter } from '../components/RouterContext';
 
-import type { PropertyDetails, PropertyFormData, PropertyFeatures, UserProfile } from '../types';
+import type { PropertyDetails, PropertyFormData, UserProfile } from '../types';
 import { CreationForm } from '../components/CreationForm';
 import { LandingPage } from '../components/LandingPage';
 import { Auth } from '../components/Auth';
 import { AdminDashboard } from '../components/AdminDashboard';
 import { UserDashboard } from '../components/UserDashboard';
+import { EditForm } from '../components/EditForm';
 
 // --- CONFIGURATION ---
 const ADMIN_EMAILS = ['amir@mango-realty.com']; 
@@ -70,13 +71,14 @@ const SystemCheckModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
 const HomePage: React.FC = () => {
   const [propertyDetails, setPropertyDetails] = useState<PropertyDetails | null>(null);
+  const [editingProperty, setEditingProperty] = useState<PropertyDetails | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [showSystemCheck, setShowSystemCheck] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [currentView, setCurrentView] = useState<'create' | 'dashboard' | 'admin'>('create');
+  const [currentView, setCurrentView] = useState<'create' | 'dashboard' | 'admin' | 'edit'>('create');
   const router = useAppRouter();
 
   useEffect(() => {
@@ -138,7 +140,6 @@ const HomePage: React.FC = () => {
     } finally { setIsLoading(false); }
   };
 
-  // Helper function to convert base64 to Blob
   const base64ToBlob = (base64: string): Blob => {
     const parts = base64.split(';base64,');
     const contentType = parts[0].split(':')[1];
@@ -154,20 +155,13 @@ const HomePage: React.FC = () => {
   const uploadFile = async (base64: string, path: string): Promise<string> => {
     if (!storage) throw new Error("Storage not initialized");
     try {
-        console.log(`Starting upload for: ${path}`);
         const storageRef = ref(storage, path);
         const blob = base64ToBlob(base64);
-        
-        // Using uploadBytes instead of uploadString for reliability
         const snapshot = await uploadBytes(storageRef, blob);
         const downloadURL = await getDownloadURL(snapshot.ref);
-        console.log(`Upload success: ${downloadURL}`);
         return downloadURL;
     } catch (error: any) {
-        console.error("Upload error for path:", path, error);
-        if (error.code === 'storage/unauthorized') {
-            throw new Error("אין הרשאה להעלות תמונות. וודא שב-Firebase Console מוגדר ב-Storage Rules: allow read, write: if request.auth != null;");
-        }
+        console.error("Upload error:", error);
         throw error;
     }
   };
@@ -177,35 +171,27 @@ const HomePage: React.FC = () => {
     if (!db || !storage) { alert("שגיאת חיבור לשירותי Firebase."); return; }
 
     setIsSaving(true);
-    console.log("Saving process started...");
-
     try {
       const docRef = doc(collection(db, "landingPages"));
       const newId = docRef.id;
       const slug = slugify(propertyDetails.address);
 
-      // 1. Upload Images
       let imageUrls: string[] = [];
       if (propertyDetails.images && propertyDetails.images.length > 0) {
-          console.log(`Uploading ${propertyDetails.images.length} images...`);
           imageUrls = await Promise.all(
             propertyDetails.images.map((img, index) => 
-                uploadFile(img, `properties/${newId}/image_${index}.jpg`)
+                img.startsWith('data:') 
+                ? uploadFile(img, `properties/${newId}/image_${index}_${Date.now()}.jpg`)
+                : Promise.resolve(img)
             )
           );
-      } else {
-          throw new Error("לא נמצאו תמונות להעלאה.");
       }
       
-      // 2. Upload Logo
-      let logoUrl = '';
-      if (propertyDetails.logo) {
-        try {
-            logoUrl = await uploadFile(propertyDetails.logo, `properties/${newId}/logo.png`);
-        } catch (logoErr) { console.warn("Logo upload failed, continuing without logo"); }
+      let logoUrl = propertyDetails.logo || '';
+      if (propertyDetails.logo && propertyDetails.logo.startsWith('data:')) {
+        logoUrl = await uploadFile(propertyDetails.logo, `properties/${newId}/logo_${Date.now()}.png`);
       }
 
-      // 3. Save to Firestore
       const dataToSave: PropertyDetails = {
         ...propertyDetails,
         id: newId,
@@ -213,19 +199,13 @@ const HomePage: React.FC = () => {
         userId: user.uid,
         userEmail: user.email || 'unknown',
         createdAt: Date.now(),
-        images: imageUrls, // REMOTE URLS replacing local base64
+        images: imageUrls,
         logo: logoUrl,
       };
 
-      console.log("Saving document to Firestore...");
       await setDoc(docRef, dataToSave);
-      console.log("Firestore save successful.");
-
-      // New URL structure: Hebrew address slug + hyphen + 20-char unique ID
       const finalUrlPath = `/${slug}-${newId}`;
-      const fullUrl = `${window.location.origin}${finalUrlPath}`;
-
-      navigator.clipboard.writeText(fullUrl).then(() => {
+      navigator.clipboard.writeText(`${window.location.origin}${finalUrlPath}`).then(() => {
         alert("הדף פורסם בהצלחה! הקישור הועתק.");
         router.push(finalUrlPath);
       }).catch(() => router.push(finalUrlPath));
@@ -236,22 +216,45 @@ const HomePage: React.FC = () => {
         setIsSaving(false);
     }
   };
+
+  const handleUpdateProperty = async (updated: PropertyDetails) => {
+    if (!db || !user || !updated.id) return;
+    setIsSaving(true);
+    try {
+        const docRef = doc(db, 'landingPages', updated.id);
+        
+        const imageUrls = await Promise.all(
+            updated.images.map(async (img, index) => {
+                if (img.startsWith('data:')) {
+                    return await uploadFile(img, `properties/${updated.id}/image_${index}_${Date.now()}.jpg`);
+                }
+                return img;
+            })
+        );
+
+        const dataToUpdate = {
+            ...updated,
+            images: imageUrls,
+            lastUpdatedAt: Date.now()
+        };
+
+        await updateDoc(docRef, dataToUpdate);
+        alert("השינויים נשמרו בהצלחה!");
+        setCurrentView('dashboard');
+    } catch (err: any) {
+        console.error("Update error:", err);
+        alert("שגיאה בעדכון הנכס: " + err.message);
+    } finally {
+        setIsSaving(false);
+    }
+  };
   
-  const resetApp = () => setPropertyDetails(null);
+  const resetApp = () => {
+      setPropertyDetails(null);
+      setEditingProperty(null);
+  };
 
   if (!isClient) return <div className="flex justify-center items-center min-h-screen bg-slate-900"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-brand-accent"></div></div>;
-
-  if (initializationError || !auth) {
-      return (
-          <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4" dir="rtl">
-              <div className="bg-slate-800/80 border border-slate-700 p-8 rounded-2xl max-w-2xl w-full text-center shadow-2xl">
-                  <h1 className="text-3xl font-bold text-white mb-4">נדרשת הגדרת מפתחות</h1>
-                  <p className="text-slate-300 mb-6 text-right">האפליקציה לא הצליחה להתחבר ל-Firebase. וודא שערכת את קובץ <code>lib/firebase.ts</code> ומילאת את <code>HARDCODED_CONFIG</code>.</p>
-                  <button onClick={() => window.location.reload()} className="bg-brand-accent text-white px-6 py-3 rounded-xl font-bold w-full">רענן עמוד</button>
-              </div>
-          </div>
-      );
-  }
 
   return (
     <div className="min-h-screen relative bg-slate-900">
@@ -262,10 +265,22 @@ const HomePage: React.FC = () => {
           </div>
       </div>
       <div className="pt-16">
-          {currentView === 'admin' && isAdmin ? (
+          {currentView === 'edit' && editingProperty ? (
+              <EditForm 
+                property={editingProperty} 
+                onSave={handleUpdateProperty} 
+                onCancel={() => setCurrentView('dashboard')} 
+                isSaving={isSaving} 
+              />
+          ) : currentView === 'admin' && isAdmin ? (
               <AdminDashboard />
           ) : currentView === 'dashboard' && user ? (
-              <UserDashboard userId={user.uid} userEmail={user.email} onCreateNew={() => setCurrentView('create')} />
+              <UserDashboard 
+                userId={user.uid} 
+                userEmail={user.email} 
+                onCreateNew={() => setCurrentView('create')} 
+                onEdit={(p) => { setEditingProperty(p); setCurrentView('edit'); }}
+              />
           ) : (
               propertyDetails ? (
                 <LandingPage details={propertyDetails} isPreview={true} onReset={resetApp} onSave={handleSaveAndPublish} isSaving={isSaving} />
