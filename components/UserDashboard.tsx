@@ -94,7 +94,8 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
   }, [userId, userEmail]);
 
   const copyToClipboard = (slug: string, id: string) => {
-    const url = `${window.location.origin}/p/${slug}-${id}`;
+    // URL structure now directly after domain
+    const url = `${window.location.origin}/${slug}-${id}`;
     navigator.clipboard.writeText(url);
     alert('הקישור הועתק ללוח');
   };
@@ -185,7 +186,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
                           
                           <div className="mt-auto flex gap-2">
                               <a 
-                                href={`/p/${prop.slug}-${prop.id}`} 
+                                href={`/${prop.slug}-${prop.id}`} 
                                 target="_blank"
                                 className="flex-1 bg-slate-700 hover:bg-slate-600 text-white text-center py-2.5 rounded-xl text-sm font-bold transition-all border border-slate-600"
                               >

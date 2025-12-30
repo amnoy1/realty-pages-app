@@ -81,7 +81,7 @@ export const AdminDashboard: React.FC = () => {
                                  <td className="p-3 text-slate-300">{prop.userEmail || 'אנונימי'}</td>
                                  <td className="p-3 text-slate-400">{prop.createdAt ? new Date(prop.createdAt).toLocaleDateString('he-IL') : '-'}</td>
                                  <td className="p-3">
-                                     <a href={`/p/${prop.slug}-${prop.id}`} target="_blank" className="text-brand-accent hover:text-white transition-colors">צפה</a>
+                                     <a href={`/${prop.slug}-${prop.id}`} target="_blank" className="text-brand-accent hover:text-white transition-colors">צפה</a>
                                  </td>
                              </tr>
                          ))}
