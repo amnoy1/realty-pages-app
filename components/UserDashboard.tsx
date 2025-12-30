@@ -1,185 +1,128 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../lib/firebase';
-import { collection, getDocs, query, where, limit } from 'firebase/firestore';
+import { collection, getDocs, query, where, deleteDoc, doc } from 'firebase/firestore';
 import type { PropertyDetails } from '../types';
 
 interface UserDashboardProps {
     userId: string;
     userEmail?: string | null;
     onCreateNew: () => void;
-    onEdit?: (property: PropertyDetails) => void;
+    onEdit: (property: PropertyDetails) => void;
 }
+
+const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>;
+const EditIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>;
 
 export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail, onCreateNew, onEdit }) => {
   const [myProperties, setMyProperties] = useState<PropertyDetails[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [diagnostics, setDiagnostics] = useState<{
-    uidCount: number;
-    emailCount: number;
-    totalInCollection: number | string;
-  }>({ uidCount: 0, emailCount: 0, totalInCollection: 'Checking...' });
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   const fetchMyProperties = async () => {
-    if (!db) {
-        setError("מסד הנתונים לא מחובר.");
-        setLoading(false);
-        return;
-    }
-    
+    if (!db || !userId) return;
     setLoading(true);
-    setError(null);
-
     try {
-      const uidQuery = query(
-          collection(db, 'landingPages'), 
-          where('userId', '==', userId)
-      );
-      const uidSnapshot = await getDocs(uidQuery);
-      const uidResults = uidSnapshot.docs.map(doc => ({ ...doc.data() as any, id: doc.id } as PropertyDetails));
-      
-      let emailResults: PropertyDetails[] = [];
-      if (userEmail) {
-          const emailQuery = query(
-              collection(db, 'landingPages'), 
-              where('userEmail', '==', userEmail)
-          );
-          const emailSnapshot = await getDocs(emailQuery);
-          emailResults = emailSnapshot.docs.map(doc => ({ ...doc.data() as any, id: doc.id } as PropertyDetails));
-      }
-
-      let totalCount: number | string = 'Unknown';
-      try {
-          const globalSnapshot = await getDocs(query(collection(db, 'landingPages'), limit(1)));
-          totalCount = globalSnapshot.empty ? 0 : '1+';
-      } catch (e) {
-          totalCount = 'Permission Denied';
-      }
-
-      setDiagnostics({
-          uidCount: uidResults.length,
-          emailCount: emailResults.length,
-          totalInCollection: totalCount
-      });
-
-      const mergedMap = new Map<string, PropertyDetails>();
-      uidResults.forEach(p => p.id && mergedMap.set(p.id, p));
-      emailResults.forEach(p => p.id && mergedMap.set(p.id, p));
-      
-      const finalResults = Array.from(mergedMap.values());
-      finalResults.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-
-      setMyProperties(finalResults);
-    } catch (err: any) {
-      console.error("Dashboard error:", err);
-      setError(`שגיאה בתקשורת עם Firebase: ${err.message}`);
+      const q = query(collection(db, 'landingPages'), where('userId', '==', userId));
+      const snapshot = await getDocs(q);
+      const results = snapshot.docs.map(doc => ({ ...doc.data() as any, id: doc.id } as PropertyDetails));
+      results.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      setMyProperties(results);
+    } catch (err) {
+      console.error("Dashboard fetch error:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (userId) fetchMyProperties();
-  }, [userId, userEmail]);
+    fetchMyProperties();
+  }, [userId]);
 
-  const copyToClipboard = (slug: string, id: string) => {
-    const url = `${window.location.origin}/${slug}-${id}`;
-    navigator.clipboard.writeText(url);
-    alert('הקישור הועתק ללוח');
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!db || !window.confirm('האם אתה בטוח שברצונך למחוק את דף הנחיתה הזה? פעולה זו אינה ניתנת לביטול.')) return;
+
+    setIsDeleting(id);
+    try {
+      await deleteDoc(doc(db, 'landingPages', id));
+      setMyProperties(prev => prev.filter(p => p.id !== id));
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("שגיאה במחיקת הנכס.");
+    } finally {
+      setIsDeleting(null);
+    }
   };
 
   if (loading) return (
-    <div className="text-white text-center py-20">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-accent mx-auto"></div>
-      <p className="mt-4 animate-pulse">מחפש את הנכסים שלך במסד הנתונים...</p>
+    <div className="text-white text-center py-20 animate-pulse">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-accent mx-auto mb-4"></div>
+      <p>טוען את הנכסים שלך...</p>
     </div>
   );
 
   return (
     <div className="container mx-auto px-4 py-8 animate-fade-in" dir="rtl">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-slate-700 pb-6 gap-4">
+      <div className="flex justify-between items-center mb-10 border-b border-slate-700 pb-6">
           <div>
             <h1 className="text-3xl font-bold text-white">הנכסים שלי</h1>
-            <p className="text-slate-400 text-sm mt-1">ניהול והפצה של דפי הנחיתה שיצרת</p>
+            <p className="text-slate-400 text-sm mt-1">ניהול, עריכה והפצה</p>
           </div>
-          <div className="flex gap-3">
-              <button 
-                onClick={fetchMyProperties}
-                className="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2.5 rounded-xl border border-slate-700 transition-all group"
-                title="רענן רשימה"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="group-active:rotate-180 transition-transform duration-500"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>
-              </button>
-              <button onClick={onCreateNew} className="bg-brand-accent hover:bg-brand-accentHover text-white px-6 py-2.5 rounded-xl font-bold shadow-lg transition-all border border-white/10">
-                  + צור דף חדש
-              </button>
-          </div>
+          <button onClick={onCreateNew} className="bg-brand-accent hover:bg-brand-accentHover text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all border border-white/10">
+              + צור דף חדש
+          </button>
       </div>
-
-      {error && (
-          <div className="bg-red-900/30 border border-red-500/50 p-4 rounded-xl mb-6 text-red-200 text-sm flex items-center gap-3">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-              <p>{error}</p>
-          </div>
-      )}
 
       {myProperties.length === 0 ? (
           <div className="text-center py-24 bg-slate-800/30 rounded-3xl border border-slate-700 border-dashed">
-              <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-600">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
-              </div>
-              <h3 className="text-xl font-bold text-slate-200 mb-2">לא נמצאו נכסים תחת חשבון זה</h3>
-              <p className="text-slate-500 mb-8 max-w-sm mx-auto">
-                  אם יצרת נכסים בעבר והם לא מופיעים, וודא שאתה מחובר עם אותו חשבון Google. 
-              </p>
-              <button onClick={onCreateNew} className="bg-slate-700 hover:bg-slate-600 text-white px-8 py-3 rounded-xl font-bold transition-all border border-white/5">
+              <h3 className="text-xl font-bold text-slate-200 mb-4">עדיין לא יצרת דפי נחיתה</h3>
+              <button onClick={onCreateNew} className="bg-slate-700 hover:bg-slate-600 text-white px-8 py-3 rounded-xl font-bold transition-all">
                   צור את הנכס הראשון שלך
               </button>
           </div>
       ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {myProperties.map((prop) => (
-                  <div key={prop.id} className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden hover:border-brand-accent/50 transition-all group flex flex-col h-full shadow-xl">
-                      <div className="h-52 overflow-hidden relative shrink-0">
+                  <div key={prop.id} className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden hover:border-brand-accent/50 transition-all flex flex-col h-full shadow-xl relative group">
+                      <div className="h-48 overflow-hidden relative">
                           {prop.images && prop.images[0] ? (
-                              <img src={prop.images[0]} alt={prop.generatedTitle} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                              <img src={prop.images[0]} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           ) : (
                               <div className="w-full h-full bg-slate-700 flex items-center justify-center text-slate-500">אין תמונה</div>
                           )}
-                          <div className="absolute top-3 right-3 bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded backdrop-blur-md border border-white/10 uppercase tracking-wider">
-                              {prop.features?.rooms ? `${prop.features.rooms} חדרים` : 'נכס למכירה'}
+                          <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md text-white text-[10px] px-2 py-1 rounded font-bold uppercase">
+                              {prop.features?.rooms || 'נכס'} חדרים
                           </div>
-                          {onEdit && (
-                            <button 
-                                onClick={() => onEdit(prop)}
-                                className="absolute top-3 left-3 bg-white/10 hover:bg-white/30 text-white p-2 rounded-full backdrop-blur-md border border-white/10 transition-all shadow-lg"
-                                title="ערוך נכס"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                            </button>
-                          )}
                       </div>
+                      
                       <div className="p-6 flex flex-col flex-1">
-                          <h3 className="text-white font-bold text-lg mb-2 line-clamp-1 leading-tight group-hover:text-brand-accent transition-colors">{prop.generatedTitle}</h3>
-                          <div className="flex items-center gap-2 text-slate-400 text-xs mb-6">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                              <span className="truncate">{prop.address}</span>
-                          </div>
+                          <h3 className="text-white font-bold text-lg mb-2 line-clamp-1">{prop.generatedTitle}</h3>
+                          <p className="text-slate-400 text-sm mb-4 line-clamp-1">{prop.address}</p>
+                          <p className="text-brand-accent font-bold text-lg mb-6">{prop.price}</p>
                           
-                          <div className="mt-auto flex gap-2">
+                          <div className="mt-auto flex gap-2 border-t border-slate-700 pt-4">
                               <a 
                                 href={`/${prop.slug}-${prop.id}`} 
                                 target="_blank"
-                                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white text-center py-2.5 rounded-xl text-sm font-bold transition-all border border-slate-600"
+                                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white text-center py-2 rounded-lg text-sm font-bold transition-all"
                               >
-                                  צפה בדף
+                                  צפה
                               </a>
                               <button 
-                                onClick={() => copyToClipboard(prop.slug || '', prop.id || '')}
-                                className="bg-slate-700 hover:bg-brand-accent text-white p-2.5 rounded-xl transition-all border border-slate-600"
-                                title="העתק קישור"
+                                onClick={() => onEdit(prop)}
+                                className="bg-slate-700 hover:bg-brand-accent text-white p-2 rounded-lg transition-all"
+                                title="ערוך"
                               >
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                  <EditIcon />
+                              </button>
+                              <button 
+                                onClick={(e) => handleDelete(e, prop.id!)}
+                                disabled={isDeleting === prop.id}
+                                className="bg-red-900/20 hover:bg-red-600 text-red-500 hover:text-white p-2 rounded-lg transition-all"
+                                title="מחק"
+                              >
+                                  {isDeleting === prop.id ? <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div> : <TrashIcon />}
                               </button>
                           </div>
                       </div>

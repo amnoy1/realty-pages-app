@@ -14,11 +14,7 @@ const UploadIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" heig
 
 export const EditForm: React.FC<EditFormProps> = ({ property, onSave, onCancel, isSaving }) => {
   const [data, setData] = useState<PropertyDetails>({ ...property });
-  const [newImages, setNewImages] = useState<string[]>([]);
   
-  const dragItem = useRef<number | null>(null);
-  const dragOverItem = useRef<number | null>(null);
-
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     if (name.includes('.')) {
@@ -46,8 +42,6 @@ export const EditForm: React.FC<EditFormProps> = ({ property, onSave, onCancel, 
       }));
       Promise.all(filePromises)
         .then(base64Images => {
-            // newImages are just for UI display before save
-            setNewImages(prev => [...prev, ...base64Images]);
             setData(prev => ({
                 ...prev,
                 images: [...prev.images, ...base64Images]
@@ -64,110 +58,94 @@ export const EditForm: React.FC<EditFormProps> = ({ property, onSave, onCancel, 
     }));
   };
 
-  const handleDragStart = (position: number) => dragItem.current = position;
-  const handleDragEnter = (position: number) => dragOverItem.current = position;
-  const handleDrop = () => {
-    if (dragItem.current === null || dragOverItem.current === null || dragItem.current === dragOverItem.current) return;
-    const newImagesList = [...data.images];
-    const dragItemContent = newImagesList.splice(dragItem.current, 1)[0];
-    newImagesList.splice(dragOverItem.current, 0, dragItemContent);
-    setData(prev => ({ ...prev, images: newImagesList }));
-    dragItem.current = null;
-    dragOverItem.current = null;
-  };
-
   const inputClasses = "w-full px-5 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:ring-2 focus:ring-brand-accent outline-none transition-all";
   const labelClasses = "block text-sm font-medium text-slate-400 mb-2 mt-4";
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12 animate-fade-in" dir="rtl">
+    <div className="max-w-5xl mx-auto px-4 py-12 animate-fade-in" dir="rtl">
         <div className="flex justify-between items-center mb-8 border-b border-slate-700 pb-6">
             <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                <span className="text-brand-accent"><BuildingIcon /></span>
-                עריכת דף נחיתה
+                עריכת נכס
             </h1>
             <button onClick={onCancel} className="text-slate-400 hover:text-white transition-colors">ביטול וחזרה</button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-                <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
-                    <h3 className="text-lg font-bold text-white mb-4">תוכן טקסטואלי</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column: Content */}
+            <div className="lg:col-span-2 space-y-6">
+                <div className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700">
+                    <h3 className="text-xl font-bold text-white mb-6 border-b border-slate-700 pb-2">תוכן שיווקי</h3>
                     
-                    <label className={labelClasses}>כותרת ראשית (Beneficial Title)</label>
+                    <label className={labelClasses}>כותרת דף הנחיתה</label>
                     <input name="generatedTitle" value={data.generatedTitle} onChange={handleTextChange} className={inputClasses} />
 
-                    <label className={labelClasses}>תיאור האזור והסביבה</label>
+                    <label className={labelClasses}>תיאור האזור</label>
                     <textarea name="enhancedDescription.area" rows={4} value={data.enhancedDescription.area} onChange={handleTextChange} className={inputClasses} />
 
                     <label className={labelClasses}>תיאור הנכס</label>
-                    <textarea name="enhancedDescription.property" rows={4} value={data.enhancedDescription.property} onChange={handleTextChange} className={inputClasses} />
+                    <textarea name="enhancedDescription.property" rows={5} value={data.enhancedDescription.property} onChange={handleTextChange} className={inputClasses} />
 
-                    <label className={labelClasses}>קריאה לפעולה (CTA)</label>
+                    <label className={labelClasses}>קריאה לפעולה</label>
                     <input name="enhancedDescription.cta" value={data.enhancedDescription.cta} onChange={handleTextChange} className={inputClasses} />
                 </div>
 
-                <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700">
-                    <h3 className="text-lg font-bold text-white mb-4">פרטי קשר ומחיר</h3>
-                    <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700">
+                    <h3 className="text-xl font-bold text-white mb-6 border-b border-slate-700 pb-2">פרטים טכניים</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className={labelClasses}>מחיר</label>
+                            <label className={labelClasses}>מחיר מבוקש</label>
                             <input name="price" value={data.price} onChange={handleTextChange} className={inputClasses} />
                         </div>
                         <div>
-                            <label className={labelClasses}>שם סוכן</label>
+                            <label className={labelClasses}>שם הסוכן</label>
                             <input name="agentName" value={data.agentName} onChange={handleTextChange} className={inputClasses} />
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div className="space-y-4">
-                <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 h-full">
-                    <h3 className="text-lg font-bold text-white mb-4">ניהול תמונות</h3>
+            {/* Right Column: Media */}
+            <div className="space-y-6">
+                <div className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700">
+                    <h3 className="text-xl font-bold text-white mb-6 border-b border-slate-700 pb-2">תמונות הנכס</h3>
                     
                     <div className="relative mb-6">
                         <input type="file" multiple accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
                         <div className="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-brand-accent transition-colors flex flex-col items-center">
                             <UploadIcon />
-                            <p className="mt-2 text-sm text-slate-400">הוסף תמונות חדשות</p>
+                            <p className="mt-2 text-sm text-slate-400">הוסף תמונות</p>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                         {data.images.map((img, idx) => (
-                            <div 
-                                key={idx} 
-                                className="relative aspect-video group rounded-lg overflow-hidden border border-slate-700 cursor-move"
-                                draggable
-                                onDragStart={() => handleDragStart(idx)}
-                                onDragEnter={() => handleDragEnter(idx)}
-                                onDragEnd={handleDrop}
-                                onDragOver={(e) => e.preventDefault()}
-                            >
+                            <div key={idx} className="relative aspect-video rounded-lg overflow-hidden border border-slate-700 group">
                                 <img src={img} className="w-full h-full object-cover" alt="" />
                                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button onClick={() => handleDeleteImage(idx)} className="text-red-400 p-2"><TrashIcon /></button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => handleDeleteImage(idx)} 
+                                        className="bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors"
+                                    >
+                                        <TrashIcon />
+                                    </button>
                                 </div>
-                                {idx === 0 && <div className="absolute top-0 right-0 bg-brand-accent text-white text-[10px] px-1.5 py-0.5 font-bold rounded-bl">ראשי</div>}
+                                {idx === 0 && <div className="absolute top-0 right-0 bg-brand-accent text-white text-[10px] px-2 py-0.5 font-bold rounded-bl">תמונה ראשית</div>}
                             </div>
                         ))}
                     </div>
                 </div>
+                
+                <button 
+                    onClick={() => onSave(data)} 
+                    disabled={isSaving}
+                    className="w-full bg-brand-accent hover:bg-brand-accentHover text-white py-4 rounded-xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-2"
+                >
+                    {isSaving ? (
+                        <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    ) : 'שמור ופרסם שינויים'}
+                </button>
             </div>
-        </div>
-
-        <div className="mt-12 flex gap-4">
-            <button 
-                onClick={() => onSave(data)} 
-                disabled={isSaving}
-                className="flex-1 bg-brand-accent hover:bg-brand-accentHover text-white py-4 rounded-xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-2"
-            >
-                {isSaving ? (
-                    <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
-                ) : 'שמור שינויים'}
-            </button>
-            <button onClick={onCancel} className="px-8 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-bold transition-all">ביטול</button>
         </div>
     </div>
   );
