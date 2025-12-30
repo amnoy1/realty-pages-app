@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { db, storage, auth, onAuthStateChanged, User, initializationError, debugEnv } from '../lib/firebase';
 import { collection, doc, setDoc } from 'firebase/firestore';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { slugify } from '../lib/slugify';
 import { useAppRouter } from '../components/RouterContext';
 
@@ -138,18 +138,35 @@ const HomePage: React.FC = () => {
     } finally { setIsLoading(false); }
   };
 
+  // Helper function to convert base64 to Blob
+  const base64ToBlob = (base64: string): Blob => {
+    const parts = base64.split(';base64,');
+    const contentType = parts[0].split(':')[1];
+    const raw = window.atob(parts[1]);
+    const rawLength = raw.length;
+    const uInt8Array = new Uint8Array(rawLength);
+    for (let i = 0; i < rawLength; ++i) {
+        uInt8Array[i] = raw.charCodeAt(i);
+    }
+    return new Blob([uInt8Array], { type: contentType });
+  };
+
   const uploadFile = async (base64: string, path: string): Promise<string> => {
     if (!storage) throw new Error("Storage not initialized");
     try {
+        console.log(`Starting upload for: ${path}`);
         const storageRef = ref(storage, path);
-        const snapshot = await uploadString(storageRef, base64, 'data_url');
-        return await getDownloadURL(snapshot.ref);
+        const blob = base64ToBlob(base64);
+        
+        // Using uploadBytes instead of uploadString for reliability
+        const snapshot = await uploadBytes(storageRef, blob);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        console.log(`Upload success: ${downloadURL}`);
+        return downloadURL;
     } catch (error: any) {
         console.error("Upload error for path:", path, error);
         if (error.code === 'storage/unauthorized') {
-            throw new Error("אין הרשאה להעלות תמונות. בדוק את ה-Rules ב-Storage.");
-        } else if (error.code === 'storage/project-not-found') {
-            throw new Error("פרויקט Firebase לא נמצא. וודא ש-projectId ו-storageBucket נכונים.");
+            throw new Error("אין הרשאה להעלות תמונות. וודא שב-Firebase Console מוגדר ב-Storage Rules: allow read, write: if request.auth != null;");
         }
         throw error;
     }
@@ -160,7 +177,7 @@ const HomePage: React.FC = () => {
     if (!db || !storage) { alert("שגיאת חיבור לשירותי Firebase."); return; }
 
     setIsSaving(true);
-    console.log("Saving new property for user:", user.uid, user.email);
+    console.log("Saving process started...");
 
     try {
       const docRef = doc(collection(db, "landingPages"));
@@ -169,14 +186,15 @@ const HomePage: React.FC = () => {
 
       // 1. Upload Images
       let imageUrls: string[] = [];
-      try {
+      if (propertyDetails.images && propertyDetails.images.length > 0) {
+          console.log(`Uploading ${propertyDetails.images.length} images...`);
           imageUrls = await Promise.all(
             propertyDetails.images.map((img, index) => 
                 uploadFile(img, `properties/${newId}/image_${index}.jpg`)
             )
           );
-      } catch (uploadErr: any) {
-          throw new Error("כישלון בהעלאת תמונות: " + uploadErr.message);
+      } else {
+          throw new Error("לא נמצאו תמונות להעלאה.");
       }
       
       // 2. Upload Logo
@@ -195,12 +213,13 @@ const HomePage: React.FC = () => {
         userId: user.uid,
         userEmail: user.email || 'unknown',
         createdAt: Date.now(),
-        images: imageUrls,
+        images: imageUrls, // REMOTE URLS replacing local base64
         logo: logoUrl,
       };
 
+      console.log("Saving document to Firestore...");
       await setDoc(docRef, dataToSave);
-      console.log("Property saved successfully with ID:", newId);
+      console.log("Firestore save successful.");
 
       const finalUrlPath = `/p/${slug}-${newId}`;
       const fullUrl = `${window.location.origin}${finalUrlPath}`;
