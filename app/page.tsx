@@ -221,7 +221,7 @@ const HomePage: React.FC = () => {
       await setDoc(docRef, dataToSave);
       console.log("Firestore save successful.");
 
-      // New URL structure: Directly after the slash, using address slug and unique ID
+      // New URL structure: Hebrew address slug + hyphen + 20-char unique ID
       const finalUrlPath = `/${slug}-${newId}`;
       const fullUrl = `${window.location.origin}${finalUrlPath}`;
 

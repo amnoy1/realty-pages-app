@@ -17,13 +17,16 @@ const getPropertyDetails = cache(async (slug: string): Promise<PropertyDetails |
   if (!slug) return null;
   
   try {
+    // Decoding the slug in case it's URL-encoded (common with Hebrew characters)
+    const decodedSlug = decodeURIComponent(slug);
+    
     // Extract the unique 20-character Firestore ID from the end of the slug
-    // Format expected: address-slug-ID (where ID is 20 chars)
-    const idMatch = slug.match(/([a-zA-Z0-9]{20})$/);
+    // Firestore IDs are exactly 20 characters of [a-zA-Z0-9]
+    const idMatch = decodedSlug.match(/([a-zA-Z0-9]{20})$/);
     const id = idMatch ? idMatch[0] : null;
 
     if (!id || !db) {
-      console.warn(`[PropertyPage] Missing ID or DB connection for slug: ${slug}`);
+      console.warn(`[PropertyPage] Missing ID or DB connection for slug: ${decodedSlug}`);
       return null;
     }
 
