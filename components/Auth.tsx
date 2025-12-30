@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User } from 'firebase/auth';
-import { signInWithPopup, signOut, auth, GoogleAuthProvider } from '../lib/firebase';
+import { signInWithPopup, signOut, auth, GoogleAuthProvider, initializationError } from '../lib/firebase';
 
 interface AuthProps {
   user: User | null;
@@ -13,8 +13,16 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   
   const handleLogin = async () => {
+    // If auth is null, explain why based on our initialization logic
     if (!auth) {
-      alert("שגיאה: מערכת ה-Firebase לא מוגדרת.\n\nכדי להפעיל את ההתחברות והשמירה, עליך:\n1. להגדיר Environment Variables ב-Vercel.\n2. או להזין את המפתחות בקובץ lib/firebase.ts.");
+      let errorMsg = "מערכת האימות (Auth) לא אותחלה.";
+      if (initializationError) {
+          errorMsg += `\nשגיאת Firebase: ${initializationError}`;
+      } else {
+          errorMsg += "\nסיבה: מפתחות Firebase חסרים ב-Environment Variables או בקובץ lib/firebase.ts.";
+      }
+      alert(errorMsg);
+      console.error("Firebase Auth object is null. Check your configuration.");
       return;
     }
 
@@ -22,18 +30,20 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
     
     try {
       const provider = new GoogleAuthProvider();
-      // Ensure the popup doesn't get blocked by some browsers in preview mode
+      // Ensure we are calling this correctly
       await signInWithPopup(auth, provider);
     } catch (error: any) {
-      console.error("Login failed details:", error);
+      console.error("Login attempt failed:", error);
       
       if (error.code === 'auth/unauthorized-domain') {
         const currentDomain = window.location.hostname;
         alert(`הדומיין ${currentDomain} לא מורשה ב-Firebase.\nיש להוסיף אותו ב-Firebase Console -> Auth -> Settings -> Authorized Domains`);
       } else if (error.code === 'auth/popup-closed-by-user') {
-        // User closed the popup, do nothing
+        // No action needed
+      } else if (error.code === 'auth/configuration-not-found') {
+        alert("שגיאת תצורה: האימות לא הוגדר כראוי ב-Firebase Console. וודא שאישרת כניסה באמצעות Google.");
       } else {
-        alert(`התחברות נכשלה: ${error.message}`);
+        alert(`התחברות נכשלה: ${error.message || 'שגיאה לא ידועה'}`);
       }
     } finally {
         setIsLoggingIn(false);

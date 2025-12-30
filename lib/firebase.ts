@@ -10,21 +10,37 @@ import {
   Auth
 } from 'firebase/auth';
 
-// Helper to safely get environment variables in both Next.js and browser ESM environments
+// Safely get environment variables across different environments (Next.js, Vite, Browser ESM)
 const getEnv = (key: string): string | undefined => {
+  // 1. Try process.env (Node/Next.js/some previewers)
   try {
     if (typeof process !== 'undefined' && process.env && process.env[key]) {
       return process.env[key];
     }
   } catch (e) {}
   
-  // Fallback for some preview environments
-  if (typeof window !== 'undefined' && (window as any).ENV?.[key]) {
-    return (window as any).ENV[key];
+  // 2. Try window.ENV or global ENV
+  try {
+    const globalObj = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : {});
+    if ((globalObj as any).ENV?.[key]) {
+      return (globalObj as any).ENV[key];
+    }
+    // Check for process.env on globalObj too
+    if ((globalObj as any).process?.env?.[key]) {
+      return (globalObj as any).process.env[key];
+    }
+  } catch (e) {}
+
+  // 3. Special case for the Gemini API Key which is often injected as 'API_KEY'
+  if (key.includes('FIREBASE_API_KEY')) {
+    const fallback = getEnv('API_KEY') || getEnv('GEMINI_API_KEY');
+    if (fallback) return fallback;
   }
+
   return undefined;
 };
 
+// Check if hardcoded keys were pasted
 const HARDCODED_CONFIG = {
     apiKey: "PASTE_YOUR_FIREBASE_API_KEY_HERE", 
     authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
@@ -40,11 +56,13 @@ const isHardcodedFilled =
     HARDCODED_CONFIG.projectId &&
     !HARDCODED_CONFIG.projectId.includes("PASTE_YOUR");
 
+// Build config from environment or defaults
+const projectId = getEnv('NEXT_PUBLIC_FIREBASE_PROJECT_ID') || getEnv('FIREBASE_PROJECT_ID');
 const envConfig = {
-  apiKey: getEnv('NEXT_PUBLIC_FIREBASE_API_KEY'),
-  authDomain: getEnv('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN'),
-  projectId: getEnv('NEXT_PUBLIC_FIREBASE_PROJECT_ID'),
-  storageBucket: getEnv('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET'),
+  apiKey: getEnv('NEXT_PUBLIC_FIREBASE_API_KEY') || getEnv('FIREBASE_API_KEY') || getEnv('API_KEY'),
+  authDomain: getEnv('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN') || (projectId ? `${projectId}.firebaseapp.com` : undefined),
+  projectId: projectId,
+  storageBucket: getEnv('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET') || (projectId ? `${projectId}.appspot.com` : undefined),
   messagingSenderId: getEnv('NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID'),
   appId: getEnv('NEXT_PUBLIC_FIREBASE_APP_ID'),
 };
@@ -57,8 +75,9 @@ let storage: FirebaseStorage | null = null;
 let auth: Auth | null = null;
 let initializationError: string | null = null;
 
-if (firebaseConfig) {
+if (firebaseConfig && firebaseConfig.apiKey) {
     try {
+        // We use a more permissive initialization to let Firebase provide specific errors if keys are weak
         app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
         db = getFirestore(app);
         storage = getStorage(app);
@@ -67,15 +86,13 @@ if (firebaseConfig) {
         console.error("[Firebase Init Error]", error);
         initializationError = error.message;
     }
-} else {
-    console.warn("[Firebase] No configuration found. Authentication and Database will be unavailable.");
 }
 
-// Diagnostics for the System Check modal
-let debugEnv: Record<string, string> = {
-    source: isHardcodedFilled ? 'Hardcoded File (Manual)' : (envConfig.apiKey ? 'Environment Variables' : 'None - Missing Config'),
-    status: firebaseConfig ? 'Config present' : 'Config missing'
+export const debugEnv: Record<string, string> = {
+    source: isHardcodedFilled ? 'Hardcoded' : (envConfig.apiKey ? 'Env Vars' : 'None'),
+    hasApiKey: !!(envConfig.apiKey || HARDCODED_CONFIG.apiKey) ? 'Yes' : 'No',
+    hasProjectId: !!(envConfig.projectId || HARDCODED_CONFIG.projectId) ? 'Yes' : 'No',
 };
 
-export { db, storage, auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, initializationError, debugEnv };
+export { db, storage, auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, initializationError };
 export type { User } from 'firebase/auth';
