@@ -6,86 +6,67 @@ import type { PropertyDetails } from '../../types';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 
-
 interface PageProps {
   params: {
     slug: string;
   };
 }
 
+// Optimized fetcher with better error handling for build time
 const getPropertyDetails = cache(async (slug: string): Promise<PropertyDetails | null> => {
-    try {
-      // Extract the 20-character Firestore ID from the end of the slug
-      const idMatch = slug.match(/([a-zA-Z0-9]{20})$/);
+  if (!slug) return null;
   
-      if (!idMatch || !idMatch[0]) {
-        console.warn(`Could not extract ID from slug: ${slug}`);
-        return null;
-      }
-      
-      const id = idMatch[0];
+  try {
+    // Extract the unique 20-character Firestore ID from the end of the slug
+    // Format expected: address-slug-ID (where ID is 20 chars)
+    const idMatch = slug.match(/([a-zA-Z0-9]{20})$/);
+    const id = idMatch ? idMatch[0] : null;
 
-      if (!db) {
-        console.error("Firestore is not initialized.");
-        return null;
-      }
-
-      const docRef = doc(db, 'landingPages', id);
-      const docSnap = await getDoc(docRef);
-  
-      if (docSnap.exists()) {
-        return docSnap.data() as PropertyDetails;
-      } else {
-        console.warn(`Document with ID ${id} does not exist.`);
-        return null;
-      }
-    } catch (err) {
-      console.error("Error fetching document:", err);
+    if (!id || !db) {
+      console.warn(`[PropertyPage] Missing ID or DB connection for slug: ${slug}`);
       return null;
     }
-  });
 
+    const docRef = doc(db, 'landingPages', id);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return { ...docSnap.data(), id: docSnap.id } as PropertyDetails;
+    }
+    return null;
+  } catch (err) {
+    console.error("[PropertyPage] Fetch error:", err);
+    return null;
+  }
+});
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const details = await getPropertyDetails(params.slug);
   
   if (!details) {
-    return { title: 'דף לא נמצא' };
+    return { title: 'הנכס לא נמצא | מחולל דפי נחיתה' };
   }
 
-  const description = (details.enhancedDescription.property || details.generatedTitle).substring(0, 160);
-
+  const seoDescription = details.enhancedDescription?.property 
+    ? details.enhancedDescription.property.substring(0, 160) 
+    : details.generatedTitle;
 
   return {
     title: details.generatedTitle,
-    description: description,
+    description: seoDescription,
     openGraph: {
       title: details.generatedTitle,
-      description: description,
+      description: seoDescription,
       url: `/${params.slug}`,
       siteName: 'מחולל דפי נחיתה לנדל"ן',
-      images: [
-        {
-          url: details.images[0], 
-          width: 1200,
-          height: 630,
-          alt: details.generatedTitle,
-        },
-      ],
+      images: details.images?.[0] ? [{ url: details.images[0] }] : [],
       locale: 'he_IL',
       type: 'website',
-    },
-     twitter: {
-      card: 'summary_large_image',
-      title: details.generatedTitle,
-      description: description,
-      images: [details.images[0]],
     },
   };
 }
 
-
-const PropertyPage = async ({ params }: PageProps) => {
+export default async function PropertyPage({ params }: PageProps) {
   const details = await getPropertyDetails(params.slug);
 
   if (!details) {
@@ -93,6 +74,4 @@ const PropertyPage = async ({ params }: PageProps) => {
   }
 
   return <LandingPage details={details} isPreview={false} />;
-};
-
-export default PropertyPage;
+}
