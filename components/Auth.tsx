@@ -14,9 +14,9 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
   
   const handleLogin = async () => {
     if (!auth) {
-      const errorMsg = initializationError || "שירות האימות אינו זמין כרגע. וודא שמפתחות ה-Firebase הוגדרו כראוי.";
+      const errorMsg = initializationError || "שירות האימות אינו זמין. וודא שמשתני ה-Firebase הוגדרו כראוי ב-Vercel.";
       alert(errorMsg);
-      console.error("Firebase Auth object is null. Check NEXT_PUBLIC_FIREBASE_API_KEY.");
+      console.error("Auth object is null. Check environment variables.");
       return;
     }
 
@@ -30,7 +30,7 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
       
       if (error.code === 'auth/unauthorized-domain') {
         const currentDomain = window.location.hostname;
-        alert(`הדומיין ${currentDomain} לא מורשה ב-Firebase Auth.\nיש להוסיף אותו ברשימת Authorized Domains.`);
+        alert(`הדומיין ${currentDomain} לא מורשה ב-Firebase Auth. יש להוסיפו בקונסול של Firebase.`);
       } else if (error.code !== 'auth/popup-closed-by-user') {
         alert(`שגיאת התחברות: ${error.message}`);
       }
@@ -55,7 +55,7 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
         <div className="flex items-center gap-3 bg-slate-800/90 backdrop-blur-md p-2 pr-4 pl-2 rounded-full border border-slate-700 shadow-lg animate-fade-in pointer-events-auto">
            <div className="flex flex-col text-right hidden sm:flex">
               <span className="text-sm font-bold text-white leading-none">{user.displayName}</span>
-              <span className="text-xs text-slate-400 mt-1">{isAdmin ? 'מנהל מערכת' : 'משתמש'}</span>
+              <span className="text-xs text-slate-400 mt-1">{isAdmin ? 'מנהל מערכת' : 'סוכן רשום'}</span>
            </div>
            
            {user.photoURL ? (
@@ -83,7 +83,7 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
                 +
              </button>
 
-             <button onClick={handleLogout} className="p-1.5 text-red-400 hover:text-white hover:bg-red-600/20 rounded-lg">
+             <button onClick={handleLogout} className="p-1.5 text-red-400 hover:text-white hover:bg-red-600/20 rounded-lg" title="התנתק">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
              </button>
            </div>

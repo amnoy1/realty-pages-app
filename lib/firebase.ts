@@ -37,7 +37,7 @@ if (firebaseConfig.apiKey) {
         initializationError = error.message;
     }
 } else {
-    initializationError = "Firebase configuration is missing. Ensure NEXT_PUBLIC_FIREBASE_API_KEY is set in Vercel environment variables.";
+    initializationError = "Firebase configuration is missing (NEXT_PUBLIC_FIREBASE_API_KEY). Ensure it is set in Vercel.";
 }
 
 export const debugEnv = {
