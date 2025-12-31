@@ -38,6 +38,16 @@ export interface PropertyDetails extends PropertyFormData {
   features: PropertyFeatures;
 }
 
+export interface Lead {
+  id?: string;
+  propertyId: string;
+  propertyTitle: string;
+  ownerId: string; // UID of the agent
+  fullName: string;
+  phone: string;
+  createdAt: number;
+}
+
 export interface UserProfile {
   uid: string;
   email: string | null;

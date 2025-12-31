@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useRef, useState } from 'react';
@@ -31,7 +30,6 @@ const formatPhoneNumber = (phone: string) => {
   };
 
 // --- Feature Icons with Explicit Sizes & Fallbacks ---
-// Added explicit width/height attributes to SVG to ensure they render even if CSS fails
 const iconClasses = "w-6 h-6 text-brand-accent";
 const AreaIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/><path d="M3 16v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/></svg>;
 const BedIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M2 4v16h20V4H2z"/><path d="M2 10h20"/><path d="M12 4v6"/></svg>;
@@ -152,10 +150,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         {/* Text Container - Minimal, No Background, Heavy Shadow */}
         <div className="absolute bottom-0 right-0 w-full p-6 md:p-16 pb-20 z-20 pointer-events-none">
             <div className="container mx-auto max-w-7xl">
-                {/* 
-                   Removed: bg-slate-900/40 backdrop-blur-xl border border-white/10 shadow-2xl 
-                   Added: heavy drop-shadows to individual elements
-                */}
                 <div className="max-w-5xl animate-slide-up pointer-events-auto">
                     <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold leading-[1.1] mb-6 text-white tracking-tight drop-shadow-[0_5px_5px_rgba(0,0,0,0.9)]">
                         {details.generatedTitle}
@@ -288,7 +282,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                     <p className="text-slate-400 mb-3 text-sm uppercase tracking-widest font-bold">מחיר מבוקש</p>
                     <div className="flex items-start justify-center gap-1 text-white direction-ltr">
                         <span className="text-5xl md:text-6xl font-extrabold tracking-tight">{formattedPrice}</span>
-                        {/* Always show the Shekel sign */}
                         <span className="text-3xl font-light mt-2 text-brand-accent">₪</span>
                     </div>
                 </div>
@@ -328,7 +321,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         <section ref={leadFormRef} className="mt-24 max-w-4xl mx-auto relative">
              <div className="absolute -inset-4 bg-gradient-to-r from-brand-accent to-orange-600 rounded-[2.5rem] opacity-20 blur-xl"></div>
              <div className="relative">
-                <LeadForm agentWhatsApp={details.agentWhatsApp} agentEmail={details.agentEmail} propertyTitle={details.generatedTitle} agentName={details.agentName} />
+                <LeadForm 
+                    agentWhatsApp={details.agentWhatsApp} 
+                    agentEmail={details.agentEmail} 
+                    propertyTitle={details.generatedTitle} 
+                    agentName={details.agentName} 
+                    propertyId={details.id}
+                    ownerId={details.userId}
+                />
              </div>
         </section>
       </main>
