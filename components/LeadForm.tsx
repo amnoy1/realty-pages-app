@@ -34,7 +34,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
     setIsSubmitting(true);
 
     try {
-      // 1. שמירה לדאטה-בייס (טבלת leads)
+      // 1. Mandatory Save to Database
       if (db && propertyId && ownerId) {
         await addDoc(collection(db, 'leads'), {
           propertyId,
@@ -44,13 +44,16 @@ export const LeadForm: React.FC<LeadFormProps> = ({
           phone,
           createdAt: Date.now(),
         });
+      } else {
+        console.warn("DB or IDs missing, lead might not be visible in dashboard.");
       }
 
-      // 2. פתיחת חלון מייל לסוכן כנוטיפיקציה
+      // 2. Automated Email to Agent
       const emailSubject = `ליד חדש עבור הנכס: ${propertyTitle}`;
       const emailBody = `שלום ${agentName},\n\nהתקבלה פנייה חדשה עבור הנכס: ${propertyTitle}\n\nפרטי המתעניין:\nשם: ${fullName}\nטלפון: ${phone}\n\nהליד נשמר כעת גם בדשבורד שלך במערכת.`;
       const mailtoUrl = `mailto:${agentEmail}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
 
+      // Open mail client
       window.location.href = mailtoUrl;
 
       setSubmitted(true);

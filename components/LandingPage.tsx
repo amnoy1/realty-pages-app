@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import type { PropertyDetails, PropertyFeatures } from '../types';
+import type { PropertyDetails } from '../types';
 import { ImageGallery } from './ImageGallery';
 import { LeadForm } from './LeadForm';
 
@@ -14,12 +14,39 @@ interface LandingPageProps {
 }
 
 const iconClasses = "w-6 h-6 text-brand-accent";
-const AreaIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/><path d="M3 16v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/></svg>;
-const BedIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M2 4v16h20V4H2z"/><path d="M2 10h20"/><path d="M12 4v6"/></svg>;
-const FloorIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M12 3v18"/><path d="M16 17l-4-4-4 4"/><path d="M16 7l-4 4-4-4"/></svg>;
-const ParkingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M14 16.94V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h1.3L8 5.86A2 2 0 0 1 9.62 5h4.76A2 2 0 0 1 16 6.86L18.7 12H20a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-2.06Z"/><circle cx="6.5" cy="16.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg>;
-const BalconyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M2 12h20"/><path d="M4 12v8h16v-8"/><path d="M4 4h16v8H4z"/></svg>;
-const CopyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>;
+const AreaIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}>
+    <path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3" />
+    <path d="M3 16v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3" />
+  </svg>
+);
+const BedIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}>
+    <path d="M2 4v16h20V4H2z" />
+    <path d="M2 10h20" />
+    <path d="M12 4v6" />
+  </svg>
+);
+const FloorIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}>
+    <path d="M12 3v18" />
+    <path d="M16 17l-4-4-4 4" />
+    <path d="M16 7l-4 4-4-4" />
+  </svg>
+);
+const BalconyIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}>
+    <path d="M2 12h20" />
+    <path d="M4 12v8h16v-8" />
+    <path d="M4 4h16v8H4z" />
+  </svg>
+);
+const CopyIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+  </svg>
+);
 
 const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: string }> = ({ icon, label, value }) => {
   if (!value) return null;
@@ -41,13 +68,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
   };
   
   const copyLink = () => {
+    if (typeof window === 'undefined') return;
     navigator.clipboard.writeText(window.location.href).then(() => {
         setCopyStatus('copied');
         setTimeout(() => setCopyStatus('idle'), 2000);
     });
   };
 
-  const formattedPrice = details.price.replace(/₪/g, '').trim();
+  // Safely handle price formatting
+  const formattedPrice = details.price ? details.price.replace(/[^\d,]/g, '') : '';
 
   return (
     <div className="bg-slate-50 min-h-screen text-slate-800 font-sans" dir="rtl">
@@ -109,7 +138,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                     <h3 className="text-lg font-bold mb-4 text-center">מאפיינים</h3>
                     <div className="grid grid-cols-2 gap-3">
                         <FeatureItem icon={<BedIcon />} label="חדרים" value={details.features.rooms} />
-                        <FeatureItem icon={<AreaIcon />} label="מ\"ר" value={details.features.apartmentArea} />
+                        <FeatureItem icon={<AreaIcon />} label="מ&quot;ר" value={details.features.apartmentArea} />
                         <FeatureItem icon={<FloorIcon />} label="קומה" value={details.features.floor} />
                         <FeatureItem icon={<BalconyIcon />} label="מרפסת" value={details.features.balconyArea} />
                     </div>
@@ -121,7 +150,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                     </div>
                     <p className="text-slate-500 text-sm">הסוכן המטפל</p>
                     <h3 className="text-xl font-bold text-slate-900 mb-4">{details.agentName}</h3>
-                    <a href={`tel:${details.agentEmail}`} className="block w-full bg-slate-800 text-white py-3 rounded-xl font-bold">התקשר לסוכן</a>
+                    <a href={`mailto:${details.agentEmail}`} className="block w-full bg-slate-800 text-white py-3 rounded-xl font-bold">שלח מייל לסוכן</a>
                 </div>
             </aside>
         </div>
@@ -133,7 +162,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                 agentName={details.agentName} 
                 propertyId={details.id}
                 ownerId={details.userId}
-                agentWhatsApp="" // Ignore
             />
         </section>
       </main>

@@ -10,22 +10,13 @@ import {
   Auth
 } from 'firebase/auth';
 
-// Helper to safely get environment variables
-const getEnv = (key: string): string | undefined => {
-  // Try process.env (Next.js standard)
-  if (typeof process !== 'undefined' && process.env && process.env[key]) {
-    return process.env[key];
-  }
-  return undefined;
-};
-
 const firebaseConfig = {
-  apiKey: getEnv('NEXT_PUBLIC_FIREBASE_API_KEY'),
-  authDomain: getEnv('NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN'),
-  projectId: getEnv('NEXT_PUBLIC_FIREBASE_PROJECT_ID'),
-  storageBucket: getEnv('NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET'),
-  messagingSenderId: getEnv('NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID'),
-  appId: getEnv('NEXT_PUBLIC_FIREBASE_APP_ID'),
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
 let app: FirebaseApp | null = null;
@@ -34,7 +25,6 @@ let storage: FirebaseStorage | null = null;
 let auth: Auth | null = null;
 let initializationError: string | null = null;
 
-// Only initialize if we have at least the API Key
 if (firebaseConfig.apiKey) {
     try {
         app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
@@ -47,7 +37,7 @@ if (firebaseConfig.apiKey) {
         initializationError = error.message;
     }
 } else {
-    initializationError = "Firebase configuration is missing. Ensure NEXT_PUBLIC_FIREBASE_API_KEY is set in Vercel.";
+    initializationError = "Firebase configuration is missing. Ensure NEXT_PUBLIC_FIREBASE_API_KEY is set in Vercel environment variables.";
 }
 
 export const debugEnv = {
