@@ -4,7 +4,7 @@ import type { PropertyFormData } from '../types';
 export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => void; isLoading: boolean; defaultAgentName?: string; defaultAgentEmail?: string; }> = ({ onSubmit, isLoading, defaultAgentName = '', defaultAgentEmail = '' }) => {
   const [formData, setFormData] = useState<Omit<PropertyFormData, 'images' | 'logo'>>({
     address: '', 
-    description: '', // Acting as the Property Title
+    description: '', // Title of the property
     price: '', 
     agentName: defaultAgentName, 
     agentEmail: defaultAgentEmail, 
@@ -47,15 +47,19 @@ export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => v
       <div className="w-full max-w-2xl animate-fade-in">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-black text-white mb-4">מחולל דפי <span className="text-brand-accent">נחיתה</span></h1>
-          <p className="text-slate-400 text-lg">הזינו את פרטי הנכס וה-AI ייצור את השאר</p>
+          <p className="text-slate-400 text-lg">פשוט, מהיר וחכם</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 bg-slate-800/30 p-8 rounded-[2.5rem] border border-white/5 backdrop-blur-xl shadow-2xl">
+          <div className="p-4 bg-brand-accent/10 rounded-2xl border border-brand-accent/20 mb-6 text-center">
+             <p className="text-brand-accent font-bold">הזינו כותרת וכתובת - ה-AI יבנה את השאר</p>
+          </div>
+
           <div>
             <label className={labelClasses}>כותרת הנכס</label>
             <input 
               name="description" 
-              placeholder="לדוגמה: דירת 4 חדרים מעוצבת עם נוף פתוח" 
+              placeholder="לדוגמה: פנטהאוז חלומי עם נוף לים" 
               className={inputClasses} 
               onChange={handleChange} 
               value={formData.description} 
@@ -87,12 +91,12 @@ export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => v
           </div>
 
           <div>
-            <label className={labelClasses}>אימייל לקבלת לידים</label>
+            <label className={labelClasses}>אימייל למשלוח לידים</label>
             <input type="email" name="agentEmail" placeholder="your@email.com" className={inputClasses} onChange={handleChange} value={formData.agentEmail} required />
           </div>
 
           <div>
-            <label className={labelClasses}>תמונות הנכס (מומלץ)</label>
+            <label className={labelClasses}>תמונות הנכס</label>
             <div className="relative border-2 border-dashed border-slate-700 rounded-2xl p-6 text-center hover:border-brand-accent transition-colors">
                 <input type="file" multiple accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                 <p className="text-slate-400 text-sm">{images.length > 0 ? `${images.length} תמונות נבחרו` : 'לחץ או גרור תמונות כאן'}</p>
@@ -100,7 +104,7 @@ export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => v
           </div>
 
           <button type="submit" disabled={isLoading} className="w-full bg-brand-accent hover:bg-brand-accentHover text-white font-black text-xl py-5 rounded-2xl shadow-xl transition-all disabled:opacity-50">
-            {isLoading ? 'ה-AI בונה את הדף...' : 'צור דף נחיתה'}
+            {isLoading ? 'ה-AI בונה את הדף...' : 'צור דף נחיתה עכשיו'}
           </button>
         </form>
       </div>

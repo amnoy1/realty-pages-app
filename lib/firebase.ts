@@ -31,13 +31,12 @@ if (firebaseConfig.apiKey) {
         db = getFirestore(app);
         storage = getStorage(app);
         auth = getAuth(app);
-        console.log("[Firebase] Initialized successfully");
     } catch (error: any) {
-        console.error("[Firebase] Initialization error:", error);
+        console.error("Firebase Initialization Error:", error);
         initializationError = error.message;
     }
 } else {
-    initializationError = "Firebase configuration is missing (NEXT_PUBLIC_FIREBASE_API_KEY). Ensure it is set in Vercel.";
+    initializationError = "Firebase configuration is missing (NEXT_PUBLIC_FIREBASE_API_KEY).";
 }
 
 export const debugEnv = {

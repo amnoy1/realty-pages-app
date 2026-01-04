@@ -157,6 +157,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
 
         <section ref={leadFormRef} className="mt-16">
             <LeadForm 
+                agentWhatsApp={details.agentWhatsApp}
                 agentEmail={details.agentEmail} 
                 propertyTitle={details.generatedTitle} 
                 agentName={details.agentName} 
