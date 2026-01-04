@@ -24,8 +24,11 @@ let db: Firestore | undefined;
 let storage: FirebaseStorage | undefined;
 let auth: Auth | undefined;
 
-// בדיקה האם כל המפתחות ההכרחיים קיימים לפני ניסיון אתחול
-const isConfigValid = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== "undefined";
+// בדיקה האם כל המפתחות ההכרחיים קיימים ואינם "undefined" כמחרוזת (נפוץ ב-Vercel כששוכחים להגדיר)
+const isConfigValid = 
+  !!firebaseConfig.apiKey && 
+  firebaseConfig.apiKey !== "undefined" && 
+  firebaseConfig.apiKey.length > 10;
 
 if (isConfigValid) {
     try {
@@ -34,15 +37,16 @@ if (isConfigValid) {
         storage = getStorage(app);
         auth = getAuth(app);
     } catch (error: any) {
-        console.error("Firebase initialization error:", error);
+        console.error("Firebase initialization failed:", error);
     }
 } else {
-    console.warn("Firebase configuration is missing or invalid. Please set NEXT_PUBLIC_FIREBASE_API_KEY and other variables.");
+    console.warn("Firebase config is missing or invalid. Check your environment variables.");
 }
 
-const initializationError = !isConfigValid ? "Missing or invalid Firebase API Key" : null;
+const initializationError = !isConfigValid ? "Missing or invalid Firebase API Key. Please check Vercel environment variables." : null;
+
 const debugEnv = {
-    source: isConfigValid ? "Config Valid" : "Config Missing/Invalid"
+    source: isConfigValid ? "Valid Configuration" : "Invalid/Missing Keys"
 };
 
 export { 

@@ -14,9 +14,7 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
   
   const handleLogin = async () => {
     if (!auth) {
-      const errorMsg = initializationError || "שירות האימות (Firebase) לא הוגדר כראוי. וודא שהזנת את מפתחות ה-API בהגדרות המערכת.";
-      alert(errorMsg);
-      console.error("Auth object is undefined. Check your Firebase environment variables.");
+      alert(initializationError || "שגיאת אתחול: מפתחות ה-API של Firebase חסרים או לא תקינים בהגדרות ה-Environment Variables.");
       return;
     }
 
@@ -28,11 +26,11 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
     } catch (error: any) {
       console.error("Login failed:", error);
       
-      if (error.code === 'auth/unauthorized-domain') {
+      if (error.code === 'auth/invalid-api-key') {
+        alert("שגיאה: מפתח ה-API של Firebase (apiKey) אינו תקין. וודא שהעתקת אותו במדויק מהקונסול של Firebase ל-Vercel.");
+      } else if (error.code === 'auth/unauthorized-domain') {
         const currentDomain = window.location.hostname;
-        alert(`הדומיין ${currentDomain} לא מורשה ב-Firebase Auth. יש להוסיפו לרשימת ה-Authorized Domains בקונסול של Firebase.`);
-      } else if (error.code === 'auth/invalid-api-key') {
-        alert("מפתח ה-API של Firebase אינו תקין. בדוק את הגדרות הסביבה.");
+        alert(`הדומיין ${currentDomain} לא מורשה ב-Firebase Auth. יש להוסיפו לרשימת ה-Authorized Domains בקונסול.`);
       } else if (error.code !== 'auth/popup-closed-by-user') {
         alert(`שגיאת התחברות: ${error.message}`);
       }
@@ -91,14 +89,21 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
            </div>
         </div>
       ) : (
-        <button 
-          onClick={handleLogin}
-          disabled={isLoggingIn}
-          className="bg-white text-slate-900 px-6 py-2.5 rounded-full font-bold shadow-lg hover:shadow-brand-accent/20 transition-all pointer-events-auto flex items-center gap-2"
-        >
-          {isLoggingIn ? <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" /> : null}
-          {isLoggingIn ? 'מתחבר...' : 'התחבר עם Google'}
-        </button>
+        <div className="flex flex-col items-end gap-2">
+            <button 
+              onClick={handleLogin}
+              disabled={isLoggingIn}
+              className={`bg-white text-slate-900 px-6 py-2.5 rounded-full font-bold shadow-lg hover:shadow-brand-accent/20 transition-all pointer-events-auto flex items-center gap-2 ${initializationError ? 'opacity-50 grayscale' : ''}`}
+            >
+              {isLoggingIn ? <div className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" /> : null}
+              {isLoggingIn ? 'מתחבר...' : 'התחבר עם Google'}
+            </button>
+            {initializationError && (
+                <span className="text-[10px] text-red-400 font-bold bg-red-950/30 px-2 py-0.5 rounded-md animate-pulse">
+                    שגיאת מפתחות API
+                </span>
+            )}
+        </div>
       )}
     </div>
   );
