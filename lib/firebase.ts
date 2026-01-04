@@ -19,31 +19,41 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-let app: FirebaseApp | null = null;
-let db: Firestore | null = null;
-let storage: FirebaseStorage | null = null;
-let auth: Auth | null = null;
-let initializationError: string | null = null;
+let app: FirebaseApp | undefined;
+let db: Firestore | undefined;
+let storage: FirebaseStorage | undefined;
+let auth: Auth | undefined;
 
-if (firebaseConfig.apiKey) {
+// בדיקה האם כל המפתחות ההכרחיים קיימים לפני ניסיון אתחול
+const isConfigValid = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== "undefined";
+
+if (isConfigValid) {
     try {
         app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
         db = getFirestore(app);
         storage = getStorage(app);
         auth = getAuth(app);
     } catch (error: any) {
-        console.error("Firebase Initialization Error:", error);
-        initializationError = error.message;
+        console.error("Firebase initialization error:", error);
     }
 } else {
-    initializationError = "Firebase configuration is missing (NEXT_PUBLIC_FIREBASE_API_KEY).";
+    console.warn("Firebase configuration is missing or invalid. Please set NEXT_PUBLIC_FIREBASE_API_KEY and other variables.");
 }
 
-export const debugEnv = {
-    source: firebaseConfig.apiKey ? 'Config Found' : 'Config Missing',
-    projectId: firebaseConfig.projectId || 'Unknown',
-    isAuthReady: !!auth,
+const initializationError = !isConfigValid ? "Missing or invalid Firebase API Key" : null;
+const debugEnv = {
+    source: isConfigValid ? "Config Valid" : "Config Missing/Invalid"
 };
 
-export { db, storage, auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, initializationError };
+export { 
+  db, 
+  storage, 
+  auth, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signOut, 
+  onAuthStateChanged,
+  initializationError,
+  debugEnv
+};
 export type { User } from 'firebase/auth';

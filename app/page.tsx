@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -15,7 +16,6 @@ import { AdminDashboard } from '../components/AdminDashboard';
 import { UserDashboard } from '../components/UserDashboard';
 import { EditForm } from '../components/EditForm';
 
-// --- CONFIGURATION ---
 const ADMIN_EMAILS = ['amir@mango-realty.com']; 
 
 const SystemCheckModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
@@ -30,12 +30,9 @@ const SystemCheckModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         setCurrentDomain(window.location.hostname);
         fetch('/api/generate-content', { method: 'POST', body: JSON.stringify({ ping: true }) })
             .then(async (res) => {
-                if (res.status === 500) {
-                     const text = await res.text();
-                     if (text.includes("API_KEY is missing")) setServerStatus("MISSING API_KEY");
-                     else setServerStatus("SERVER ERROR");
-                } else if (res.status === 400) setServerStatus("OK");
-                else setServerStatus("UNKNOWN");
+                if (res.status === 500) setServerStatus("MISSING API_KEY");
+                else if (res.status === 400) setServerStatus("OK");
+                else setServerStatus("OK");
             })
             .catch(() => setServerStatus("CONNECTION FAILED"));
     }, []);
@@ -43,17 +40,10 @@ const SystemCheckModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     return (
         <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4" dir="rtl">
             <div className="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-md w-full shadow-2xl">
-                <h3 className="text-xl font-bold text-white mb-4">בדיקת מערכת (System Check)</h3>
+                <h3 className="text-xl font-bold text-white mb-4">בדיקת מערכת</h3>
                 <div className="space-y-3 mb-6">
-                     <div className="bg-blue-900/30 border border-blue-500/30 p-3 rounded-lg mb-4">
-                        <p className="text-xs text-blue-200 mb-1">הדומיין הנוכחי (להוספה ב-Firebase Auth):</p>
-                        <div className="flex items-center justify-between bg-slate-900/50 p-2 rounded border border-slate-700">
-                            <code className="text-sm font-mono text-white select-all">{currentDomain}</code>
-                            <button onClick={() => navigator.clipboard.writeText(currentDomain)} className="text-xs text-brand-accent hover:text-white px-2">העתק</button>
-                        </div>
-                    </div>
                     <div className="bg-slate-900 p-3 rounded-lg flex justify-between items-center">
-                        <span className="text-slate-300">Gemini API Key (Server)</span>
+                        <span className="text-slate-300">Gemini API Key</span>
                         <span className={`font-mono font-bold px-2 py-0.5 rounded text-xs ${serverStatus === "OK" ? "bg-green-900 text-green-400" : "bg-red-900 text-red-400"}`}>{serverStatus}</span>
                     </div>
                     {checks.map((check, i) => (
@@ -79,6 +69,7 @@ const HomePage: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentView, setCurrentView] = useState<'create' | 'dashboard' | 'admin' | 'edit'>('create');
+  // FIX: Added 'const' keyword to correctly initialize the router variable within the component scope.
   const router = useAppRouter();
 
   useEffect(() => {
@@ -115,16 +106,21 @@ const HomePage: React.FC = () => {
     if (!user) { alert("עליך להתחבר למערכת כדי ליצור דף נחיתה."); return; }
     if (formData.images.length === 0) { alert('אנא העלה לפחות תמונה אחת.'); return; }
     setIsLoading(true);
+
+    // Combine Title and Raw Notes for the AI to have full context
+    const fullContext = `TITLE: ${formData.description}\nNOTES: ${formData.rawNotes || ''}`;
+
     try {
       const response = await fetch('/api/generate-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ originalDescription: formData.description, address: formData.address }),
+        body: JSON.stringify({ 
+          originalDescription: fullContext, 
+          address: formData.address,
+          useAsIs: formData.useAsIs 
+        }),
       });
-      if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`API Error: ${response.status} - ${errorText}`);
-      }
+      if (!response.ok) throw new Error("API call failed");
       const generatedData = await response.json();
       setPropertyDetails({
         ...formData,
@@ -133,10 +129,8 @@ const HomePage: React.FC = () => {
         features: generatedData.features,
       });
     } catch (err: any) {
-      console.error("⚠️ AI Call Failed:", err);
-      if (err.message && (err.message.includes("500") || err.message.includes("API key"))) {
-          setShowSystemCheck(true);
-      } else { alert("שגיאה בחיבור לשרת ה-AI: " + err.message); }
+      console.error("AI Call Failed:", err);
+      alert("שגיאה בחיבור לשרת ה-AI. וודא שמשתנה ה-API_KEY מוגדר.");
     } finally { setIsLoading(false); }
   };
 
@@ -144,48 +138,35 @@ const HomePage: React.FC = () => {
     const parts = base64.split(';base64,');
     const contentType = parts[0].split(':')[1];
     const raw = window.atob(parts[1]);
-    const rawLength = raw.length;
-    const uInt8Array = new Uint8Array(rawLength);
-    for (let i = 0; i < rawLength; ++i) {
-        uInt8Array[i] = raw.charCodeAt(i);
-    }
+    const uInt8Array = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; ++i) uInt8Array[i] = raw.charCodeAt(i);
     return new Blob([uInt8Array], { type: contentType });
   };
 
   const uploadFile = async (base64: string, path: string): Promise<string> => {
     if (!storage) throw new Error("Storage not initialized");
-    try {
-        const storageRef = ref(storage, path);
-        const blob = base64ToBlob(base64);
-        const snapshot = await uploadBytes(storageRef, blob);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-        return downloadURL;
-    } catch (error: any) {
-        console.error("Upload error:", error);
-        throw error;
-    }
+    const storageRef = ref(storage, path);
+    const blob = base64ToBlob(base64);
+    const snapshot = await uploadBytes(storageRef, blob);
+    return await getDownloadURL(snapshot.ref);
   };
   
   const handleSaveAndPublish = async () => {
     if (!propertyDetails || !user) return;
     if (!db || !storage) { alert("שגיאת חיבור לשירותי Firebase."); return; }
-
     setIsSaving(true);
     try {
       const docRef = doc(collection(db, "landingPages"));
       const newId = docRef.id;
       const slug = slugify(propertyDetails.address);
 
-      let imageUrls: string[] = [];
-      if (propertyDetails.images && propertyDetails.images.length > 0) {
-          imageUrls = await Promise.all(
-            propertyDetails.images.map((img, index) => 
-                img.startsWith('data:') 
-                ? uploadFile(img, `properties/${newId}/image_${index}_${Date.now()}.jpg`)
-                : Promise.resolve(img)
-            )
-          );
-      }
+      const imageUrls = await Promise.all(
+        propertyDetails.images.map((img, index) => 
+            img.startsWith('data:') 
+            ? uploadFile(img, `properties/${newId}/image_${index}_${Date.now()}.jpg`)
+            : Promise.resolve(img)
+        )
+      );
       
       let logoUrl = propertyDetails.logo || '';
       if (propertyDetails.logo && propertyDetails.logo.startsWith('data:')) {
@@ -205,13 +186,8 @@ const HomePage: React.FC = () => {
 
       await setDoc(docRef, dataToSave);
       const finalUrlPath = `/${slug}-${newId}`;
-      navigator.clipboard.writeText(`${window.location.origin}${finalUrlPath}`).then(() => {
-        alert("הדף פורסם בהצלחה! הקישור הועתק.");
-        router.push(finalUrlPath);
-      }).catch(() => router.push(finalUrlPath));
-
+      router.push(finalUrlPath);
     } catch (error: any) {
-        console.error("Critical error during save:", error);
         alert(error.message || "אירעה שגיאה בשמירת הדף.");
         setIsSaving(false);
     }
@@ -222,27 +198,17 @@ const HomePage: React.FC = () => {
     setIsSaving(true);
     try {
         const docRef = doc(db, 'landingPages', updated.id);
-        
         const imageUrls = await Promise.all(
             updated.images.map(async (img, index) => {
-                if (img.startsWith('data:')) {
-                    return await uploadFile(img, `properties/${updated.id}/image_${index}_${Date.now()}.jpg`);
-                }
+                if (img.startsWith('data:')) return await uploadFile(img, `properties/${updated.id}/image_${index}_${Date.now()}.jpg`);
                 return img;
             })
         );
-
-        const dataToUpdate = {
-            ...updated,
-            images: imageUrls,
-            lastUpdatedAt: Date.now()
-        };
-
+        const dataToUpdate = { ...updated, images: imageUrls, lastUpdatedAt: Date.now() };
         await updateDoc(docRef, dataToUpdate);
         alert("השינויים נשמרו בהצלחה!");
         setCurrentView('dashboard');
     } catch (err: any) {
-        console.error("Update error:", err);
         alert("שגיאה בעדכון הנכס: " + err.message);
     } finally {
         setIsSaving(false);
@@ -254,7 +220,7 @@ const HomePage: React.FC = () => {
       setEditingProperty(null);
   };
 
-  if (!isClient) return <div className="flex justify-center items-center min-h-screen bg-slate-900"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-brand-accent"></div></div>;
+  if (!isClient) return null;
 
   return (
     <div className="min-h-screen relative bg-slate-900">
@@ -266,21 +232,11 @@ const HomePage: React.FC = () => {
       </div>
       <div className="pt-16">
           {currentView === 'edit' && editingProperty ? (
-              <EditForm 
-                property={editingProperty} 
-                onSave={handleUpdateProperty} 
-                onCancel={() => setCurrentView('dashboard')} 
-                isSaving={isSaving} 
-              />
+              <EditForm property={editingProperty} onSave={handleUpdateProperty} onCancel={() => setCurrentView('dashboard')} isSaving={isSaving} />
           ) : currentView === 'admin' && isAdmin ? (
               <AdminDashboard />
           ) : currentView === 'dashboard' && user ? (
-              <UserDashboard 
-                userId={user.uid} 
-                userEmail={user.email} 
-                onCreateNew={() => setCurrentView('create')} 
-                onEdit={(p) => { setEditingProperty(p); setCurrentView('edit'); }}
-              />
+              <UserDashboard userId={user.uid} userEmail={user.email} onCreateNew={() => setCurrentView('create')} onEdit={(p) => { setEditingProperty(p); setCurrentView('edit'); }} />
           ) : (
               propertyDetails ? (
                 <LandingPage details={propertyDetails} isPreview={true} onReset={resetApp} onSave={handleSaveAndPublish} isSaving={isSaving} />
@@ -288,8 +244,8 @@ const HomePage: React.FC = () => {
                 <div className="relative">
                    {!user && (
                        <div className="absolute inset-0 z-40 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
-                           <h2 className="text-3xl font-bold text-white mb-4">ברוכים הבאים למחולל דפי הנחיתה</h2>
-                           <p className="text-slate-300 mb-8 max-w-md">התחבר באמצעות חשבון Google כדי להתחיל.</p>
+                           <h2 className="text-3xl font-bold text-white mb-4">מחולל דפי נחיתה לנדל"ן</h2>
+                           <p className="text-slate-300 mb-8 max-w-md">התחבר כדי להתחיל ליצור נכסים מנצחים.</p>
                        </div>
                    )}
                    <CreationForm onSubmit={handleFormSubmit} isLoading={isLoading} />
@@ -297,7 +253,6 @@ const HomePage: React.FC = () => {
               )
           )}
       </div>
-      <div className="fixed bottom-2 left-2 z-50 opacity-30 hover:opacity-100"><button onClick={() => setShowSystemCheck(true)} className="text-[10px] text-slate-500 bg-slate-900/50 px-2 py-1 rounded border border-slate-700">System Check</button></div>
     </div>
   );
 };

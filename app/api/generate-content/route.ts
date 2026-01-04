@@ -1,94 +1,77 @@
 import { GoogleGenAI } from "@google/genai";
 
-// We strictly read the API key inside the handler to avoid build-time caching issues
 export async function POST(request: Request) {
-  // Try multiple naming conventions to be helpful to the user
   const apiKey = process.env.API_KEY || 
                  process.env.GEMINI_API_KEY || 
                  process.env.NEXT_PUBLIC_API_KEY || 
                  process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
   if (!apiKey) {
-    console.error("CRITICAL ERROR: API_KEY is missing from server environment variables.");
-    // Log available keys (security safe: only keys, not values) to help debug in Vercel Logs
-    console.log("Available Env Var Keys:", Object.keys(process.env).filter(k => k.includes('KEY') || k.includes('API')));
-
-    return new Response(JSON.stringify({ 
-        error: "Server configuration error: API_KEY is missing. Did you perform a Redeploy after adding the key in Vercel Settings?" 
-    }), {
+    return new Response(JSON.stringify({ error: "Missing API_KEY" }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
-  // Initialize client per request to ensure it uses the current key
   const ai = new GoogleGenAI({ apiKey });
 
   try {
-    const { originalDescription, address } = await request.json();
+    const { originalDescription, address, useAsIs } = await request.json();
     
     if (!originalDescription || !address) {
-        return new Response(JSON.stringify({ error: "Missing originalDescription or address in request body" }), {
+        return new Response(JSON.stringify({ error: "Missing data" }), {
             status: 400,
             headers: { 'Content-Type': 'application/json' },
         });
     }
 
-    // System instruction: Hybrid role - Creative Copywriter + Strict Data Analyst
+    // הנחיות מערכת קפדניות ומקצועיות
     const systemInstruction = `
-    You are an Expert Real Estate Copywriter and a Strict Data Analyst, writing in Hebrew.
+    אתה מומחה קופירייטינג לנדל"ן ומשווק דיגיטלי מוביל, כותב בעברית שיווקית, חדה ומניעה לפעולה.
     
-    TASK 1: CREATIVE COPYWRITING (For 'title' and 'description' fields)
-    Transform the user's input into high-converting Hebrew marketing copy.
+    המשימה שלך: לקחת את המידע הגולמי שהמשתמש מזין (כותרת והערות) ולהפוך אותו לדף נחיתה יוקרתי.
     
-    COPYWRITING RULES:
-    1.  **Headline (Title):** Do NOT write generic titles like "Apartment for sale". Start with a specific BENEFIT or emotional hook (e.g., "Open view to the sea," "Kibbutz atmosphere in the city center").
-    2.  **Specifics over Generics:** Avoid fluffy phrases like "One of the most impressive properties." Instead, describe exactly *why* it's impressive based on the data.
-    3.  **Action Verbs:** Use words like "Discover," "Wake up to," "Host," "Fall in love" (גלו, הרגישו, תתאהבו).
-    4.  **Location:** Don't just list the street. Explain the *lifestyle benefit* of the location (e.g., "Coffee shops just steps away," "Quiet street that feels like a village").
-    5.  **Structure & Length:** 
-        *   **Area Description:** Write a RICH paragraph (4-5 sentences) about the neighborhood, community, and nearby amenities. Focus on the lifestyle.
-        *   **Property Description:** Write a RICH paragraph (4-5 sentences) about the apartment itself, the flow of the house, the light, and the feeling.
-    6.  **Urgency (CTA):** The call to action must create urgency (e.g., "Rare opportunity – viewings this week only").
-    7.  **CLEAN TEXT ONLY:** Do NOT use Markdown formatting. Do NOT use asterisks (*, **, ***) for bolding. Do NOT use bullet points or hash signs (#). Return clean, plain text.
+    חוקי עבודה בהתאם לבחירת המשתמש (${useAsIs ? 'שימוש בטקסט מקור כפי שהוא' : 'שדרוג AI משמעותי'}):
     
-    TASK 2: STRICT DATA EXTRACTION (For 'features' object)
-    1.  **NO HALLUCINATIONS:** If a feature (parking, balcony, elevator) is not explicitly written in the text, return an empty string "".
-    2.  **Exact Numbers:** If text says "3 rooms", return "3". If text says "parking" without a number, return "1".
-    
-    OUTPUT FORMAT: JSON ONLY.
+    1. ${useAsIs ? 'שמור על הניסוח המדויק של המשתמש. אל תשנה מילים, אל תשפר סגנון. פשוט חלק את הטקסט שלו לסקציות הנדרשות ב-JSON.' : 'כתוב מחדש באופן שיווקי ומרגש. השתמש בתועלות רגשיות ובשפה עשירה.'}
+    2. כותרת הדף (title): ${useAsIs ? 'השתמש בדיוק בכותרת שהזין המשתמש.' : 'חייבת להיות מבוססת תועלת רגשית. אל תכתוב "דירה למכירה".'}
+    3. סקציית האזור (description.area): ${useAsIs ? 'חלץ את החלק מהטקסט של המשתמש שמתייחס לסביבה. אל תשנה את המילים.' : 'כתוב פסקה עשירה (4-5 משפטים) על הסביבה והלייף-סטייל.'}
+    4. סקציית הנכס (description.property): ${useAsIs ? 'חלץ את החלק מהטקסט שמתייחס לנכס עצמו. אל תשנה את המילים.' : 'כתוב פסקה עשירה ומרגשת על הדירה וחוויית המגורים בה.'}
+    5. קריאה לפעולה (cta): ${useAsIs ? 'השתמש במשפט הנעה לפעולה סטנדרטי או מה שצוין בטקסט.' : 'צור תחושת דחיפות חזקה.'}
+    6. שפה: עברית תקנית. ללא סימני Markdown.
+    7. חילוץ מאפיינים: תמיד חלץ את הנתונים הטכניים (חניה, קומה וכו\') לאובייקט ה-features, גם אם בחרנו "כפי שהוא" בטקסט התיאור.
     `;
 
     const prompt = `
-    Analyze the following property description and address. 
+    נתח את פרטי הנכס הבאים:
     
-    Address: ${address}
-    Description: "${originalDescription}"
+    כתובת: ${address}
+    מידע גולמי (כותרת והערות): "${originalDescription}"
 
-    Required Output JSON Format:
+    החזר את התוצאה במבנה JSON הבא בלבד:
     {
-      "title": "A Benefit-Driven Title in Hebrew (e.g., 'הפנינה של גבעת טל - שקט פסטורלי דקות מהמרכז')",
+      "title": "כותרת",
       "description": {
-        "area": "Marketing text about the location benefits in Hebrew. MUST BE DETAILED (approx 50-60 words). Use emotion.",
-        "property": "Main marketing copy about the apartment. MUST BE DETAILED (approx 50-60 words). Use action verbs.",
-        "cta": "Urgent Call to Action in Hebrew (e.g., 'הזדמנות נדירה - תיאומים השבוע בלבד')"
+        "area": "תיאור אזור",
+        "property": "תיאור נכס",
+        "cta": "קריאה לפעולה"
       },
       "features": {
-        "rooms": "Number only. Empty if not found.",
-        "apartmentArea": "Number only. Empty if not found.",
-        "balconyArea": "Number only. Empty if not found.",
-        "floor": "Number only. Empty if not found.",
-        "parking": "Number only. Return '1' if mentioned without number. Empty if not found.",
-        "elevator": "Return 'יש' if mentioned, otherwise empty string.",
-        "safeRoom": "Return 'ממ\"ד' if mentioned, otherwise empty string.",
-        "storage": "Return 'יש' if mentioned, otherwise empty string.",
-        "airDirections": "List directions if mentioned, otherwise empty string."
+        "rooms": "מספר בלבד או ריק",
+        "apartmentArea": "מספר בלבד או ריק",
+        "balconyArea": "מספר בלבד או ריק",
+        "floor": "מספר בלבד או ריק",
+        "parking": "מספר או 'יש' או ריק",
+        "elevator": "'יש' או ריק",
+        "safeRoom": "'ממ\"ד' או ריק",
+        "storage": "'יש' או ריק",
+        "airDirections": "כיווני אוויר אם צוינו"
       }
     }
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         systemInstruction: systemInstruction,
@@ -96,21 +79,13 @@ export async function POST(request: Request) {
       },
     });
 
-    const responseText = response.text;
-    
-    if (!responseText) {
-      throw new Error("Gemini API returned an empty text response.");
-    }
-    
-    return new Response(responseText, {
+    return new Response(response.text, {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error("Error in API route:", error);
-    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ error: "AI processing failed" }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
     });

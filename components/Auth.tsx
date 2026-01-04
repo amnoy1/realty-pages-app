@@ -14,9 +14,9 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
   
   const handleLogin = async () => {
     if (!auth) {
-      const errorMsg = initializationError || "שירות האימות אינו זמין. וודא שמשתני ה-Firebase הוגדרו כראוי ב-Vercel.";
+      const errorMsg = initializationError || "שירות האימות (Firebase) לא הוגדר כראוי. וודא שהזנת את מפתחות ה-API בהגדרות המערכת.";
       alert(errorMsg);
-      console.error("Auth object is null. Check environment variables.");
+      console.error("Auth object is undefined. Check your Firebase environment variables.");
       return;
     }
 
@@ -30,7 +30,9 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
       
       if (error.code === 'auth/unauthorized-domain') {
         const currentDomain = window.location.hostname;
-        alert(`הדומיין ${currentDomain} לא מורשה ב-Firebase Auth. יש להוסיפו בקונסול של Firebase.`);
+        alert(`הדומיין ${currentDomain} לא מורשה ב-Firebase Auth. יש להוסיפו לרשימת ה-Authorized Domains בקונסול של Firebase.`);
+      } else if (error.code === 'auth/invalid-api-key') {
+        alert("מפתח ה-API של Firebase אינו תקין. בדוק את הגדרות הסביבה.");
       } else if (error.code !== 'auth/popup-closed-by-user') {
         alert(`שגיאת התחברות: ${error.message}`);
       }

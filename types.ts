@@ -1,12 +1,14 @@
 export interface PropertyFormData {
   address: string;
-  description: string;
+  description: string; // This will act as the Main Title
+  rawNotes?: string;   // New field for additional property details
+  useAsIs?: boolean;   // Whether to skip AI rewriting
   price: string;
   agentName: string;
   agentEmail: string;
   agentWhatsApp: string;
-  images: string[]; // array of base64 strings
-  logo?: string; // base64 string
+  images: string[]; 
+  logo?: string; 
 }
 
 export interface PropertyFeatures {
@@ -28,11 +30,11 @@ export interface EnhancedDescription {
 }
 
 export interface PropertyDetails extends PropertyFormData {
-  id?: string; // Optional because it's added on save
-  slug?: string; // Optional because it's added on save
-  userId?: string; // The Google UID of the creator
-  userEmail?: string; // The email of the creator (for admin view)
-  createdAt?: number; // Timestamp
+  id?: string;
+  slug?: string;
+  userId?: string;
+  userEmail?: string;
+  createdAt?: number;
   generatedTitle: string;
   enhancedDescription: EnhancedDescription;
   features: PropertyFeatures;
@@ -42,7 +44,7 @@ export interface Lead {
   id?: string;
   propertyId: string;
   propertyTitle: string;
-  ownerId: string; // UID of the agent
+  ownerId: string;
   fullName: string;
   phone: string;
   createdAt: number;
