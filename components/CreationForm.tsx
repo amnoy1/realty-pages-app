@@ -60,7 +60,7 @@ export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => v
         <form onSubmit={handleSubmit} className="space-y-10">
           <div className="space-y-8">
             <div className="group">
-              <label className={labelClasses}>כותרת שיווקית לנכס</label>
+              <label className={labelClasses}>כותרת של הנכס</label>
               <input 
                 name="description" 
                 placeholder="למשל: פנטהאוז חלומי מול הים" 
@@ -72,7 +72,7 @@ export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => v
             </div>
 
             <div className="group">
-              <label className={labelClasses}>כתובת מדויקת</label>
+              <label className={labelClasses}>כתובת של הנכס</label>
               <input 
                 name="address" 
                 placeholder="רחוב, מספר ועיר" 

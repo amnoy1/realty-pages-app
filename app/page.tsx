@@ -69,7 +69,6 @@ const HomePage: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentView, setCurrentView] = useState<'create' | 'dashboard' | 'admin' | 'edit'>('create');
-  // FIX: Added 'const' keyword to correctly initialize the router variable within the component scope.
   const router = useAppRouter();
 
   useEffect(() => {
@@ -107,7 +106,6 @@ const HomePage: React.FC = () => {
     if (formData.images.length === 0) { alert('אנא העלה לפחות תמונה אחת.'); return; }
     setIsLoading(true);
 
-    // Combine Title and Raw Notes for the AI to have full context
     const fullContext = `TITLE: ${formData.description}\nNOTES: ${formData.rawNotes || ''}`;
 
     try {
@@ -244,7 +242,7 @@ const HomePage: React.FC = () => {
                 <div className="relative">
                    {!user && (
                        <div className="absolute inset-0 z-40 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
-                           <h2 className="text-3xl font-bold text-white mb-4">מחולל דפי נחיתה לנדל"ן</h2>
+                           <h2 className="text-3xl font-bold text-white mb-4">محולל דפי נחיתה לנדל"ן</h2>
                            <p className="text-slate-300 mb-8 max-w-md">התחבר כדי להתחיל ליצור נכסים מנצחים.</p>
                        </div>
                    )}
@@ -253,6 +251,7 @@ const HomePage: React.FC = () => {
               )
           )}
       </div>
+      <div className="fixed bottom-2 left-2 z-50 opacity-30 hover:opacity-100"><button onClick={() => setShowSystemCheck(true)} className="text-[10px] text-slate-500 bg-slate-900/50 px-2 py-1 rounded border border-slate-700">System Check</button></div>
     </div>
   );
 };
