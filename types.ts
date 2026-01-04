@@ -1,8 +1,10 @@
+
 export interface PropertyFormData {
   address: string;
   description: string; // This will act as the Main Title
-  rawNotes?: string;   // New field for additional property details
-  useAsIs?: boolean;   // Whether to skip AI rewriting
+  gitRequirement?: string; // New field for Git/Development context
+  rawNotes?: string;   
+  useAsIs?: boolean;   
   price: string;
   agentName: string;
   agentEmail: string;
