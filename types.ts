@@ -1,16 +1,12 @@
-
 export interface PropertyFormData {
   address: string;
-  description: string; // This will act as the Main Title
-  gitRequirement?: string; // New field for Git/Development context
-  rawNotes?: string;   
-  useAsIs?: boolean;   
+  description: string;
   price: string;
   agentName: string;
   agentEmail: string;
   agentWhatsApp: string;
-  images: string[]; 
-  logo?: string; 
+  images: string[]; // array of base64 strings
+  logo?: string; // base64 string
 }
 
 export interface PropertyFeatures {
@@ -32,24 +28,14 @@ export interface EnhancedDescription {
 }
 
 export interface PropertyDetails extends PropertyFormData {
-  id?: string;
-  slug?: string;
-  userId?: string;
-  userEmail?: string;
-  createdAt?: number;
+  id?: string; // Optional because it's added on save
+  slug?: string; // Optional because it's added on save
+  userId?: string; // The Google UID of the creator
+  userEmail?: string; // The email of the creator (for admin view)
+  createdAt?: number; // Timestamp
   generatedTitle: string;
   enhancedDescription: EnhancedDescription;
   features: PropertyFeatures;
-}
-
-export interface Lead {
-  id?: string;
-  propertyId: string;
-  propertyTitle: string;
-  ownerId: string;
-  fullName: string;
-  phone: string;
-  createdAt: number;
 }
 
 export interface UserProfile {
