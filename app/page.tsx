@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { db, storage, auth, onAuthStateChanged, User, initializationError, debugEnv } from '../lib/firebase';
-import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { slugify } from '../lib/slugify';
 import { useAppRouter } from '../components/RouterContext';
@@ -94,13 +94,17 @@ const HomePage: React.FC = () => {
         try {
             if (db) {
                 const userRef = doc(db, 'users', currentUser.uid);
+                const userSnap = await getDoc(userRef);
+                const existingData = userSnap.data();
+                
                 await setDoc(userRef, {
                     uid: currentUser.uid,
                     email: currentUser.email,
                     displayName: currentUser.displayName,
                     photoURL: currentUser.photoURL,
                     lastLogin: Date.now(),
-                    role: isUserAdmin ? 'admin' : 'user'
+                    role: isUserAdmin ? 'admin' : 'user',
+                    createdAt: existingData?.createdAt || Date.now()
                 } as UserProfile, { merge: true });
             }
         } catch (e) { console.error("Error syncing user profile:", e); }

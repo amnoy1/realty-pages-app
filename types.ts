@@ -46,6 +46,7 @@ export interface UserProfile {
   photoURL: string | null;
   role: 'user' | 'admin';
   lastLogin: number;
+  createdAt?: number; // מועד הצטרפות למערכת
 }
 
 // ממשק חדש עבור לידים (מתעניינים)
