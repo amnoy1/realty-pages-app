@@ -1,131 +1,156 @@
+
 import React, { useEffect, useState } from 'react';
 import { db } from '../lib/firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import type { PropertyDetails, UserProfile } from '../types';
+import type { PropertyDetails, UserProfile, Lead } from '../types';
 
 export const AdminDashboard: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'properties' | 'users' | 'leads'>('properties');
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [properties, setProperties] = useState<PropertyDetails[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!db) {
-          console.error("Database not initialized");
-          setLoading(false);
-          return;
-      }
+      if (!db) return;
       try {
-        // Fetch Users
         const usersSnap = await getDocs(query(collection(db, 'users'), orderBy('lastLogin', 'desc')));
-        const usersData = usersSnap.docs.map(doc => ({ ...doc.data() as any, uid: doc.id } as UserProfile));
-        setUsers(usersData);
+        setUsers(usersSnap.docs.map(doc => ({ ...doc.data() as any, uid: doc.id })));
 
-        // Fetch Properties
         const propsSnap = await getDocs(query(collection(db, 'landingPages'), orderBy('createdAt', 'desc')));
-        const propsData = propsSnap.docs.map(doc => ({ ...doc.data() as any, id: doc.id } as PropertyDetails));
-        setProperties(propsData);
+        setProperties(propsSnap.docs.map(doc => ({ ...doc.data() as any, id: doc.id })));
 
-      } catch (error) {
-        console.error("Error fetching admin data:", error);
-      } finally {
-        setLoading(false);
-      }
+        const leadsSnap = await getDocs(query(collection(db, 'leads'), orderBy('createdAt', 'desc')));
+        setLeads(leadsSnap.docs.map(doc => ({ ...doc.data() as any, id: doc.id })));
+
+      } catch (error) { console.error(error); }
+      finally { setLoading(false); }
     };
-
     fetchData();
   }, []);
 
-  if (loading) return <div className="text-white text-center py-10">טוען נתונים...</div>;
+  if (loading) return <div className="text-white text-center py-10">טוען לוח בקרה...</div>;
 
   return (
-    <div className="container mx-auto px-4 py-8 animate-fade-in">
-      <h1 className="text-3xl font-bold text-white mb-8 border-b border-slate-700 pb-4">לוח בקרה - מנהל מערכת</h1>
+    <div className="container mx-auto px-4 py-8 animate-fade-in" dir="rtl">
+      <h1 className="text-3xl font-bold text-white mb-8 border-b border-slate-700 pb-4">ניהול מערכת (Admin)</h1>
       
-      {/* Users Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-            <h3 className="text-slate-400 text-sm mb-2">משתמשים רשומים</h3>
-            <p className="text-4xl font-bold text-white">{users.length}</p>
-        </div>
-        <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-            <h3 className="text-slate-400 text-sm mb-2">סה"כ נכסים שנוצרו</h3>
-            <p className="text-4xl font-bold text-brand-accent">{properties.length}</p>
-        </div>
-        <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-            <h3 className="text-slate-400 text-sm mb-2">נכס אחרון שנוצר</h3>
-            <p className="text-lg font-medium text-white truncate">{properties[0]?.generatedTitle || '-'}</p>
-        </div>
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
+        <StatCard title="משתמשים" value={users.length} color="blue" />
+        <StatCard title="נכסים" value={properties.length} color="amber" />
+        <StatCard title="לידים (סה״כ)" value={leads.length} color="green" />
+        <StatCard title="לידים היום" value={leads.filter(l => new Date(l.createdAt).toDateString() === new Date().toDateString()).length} color="purple" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Properties Table */}
-          <div className="bg-slate-800/50 rounded-2xl border border-slate-700 overflow-hidden">
-             <div className="p-4 bg-slate-800 border-b border-slate-700">
-                <h2 className="text-xl font-bold text-white">כל הנכסים במערכת</h2>
-             </div>
-             <div className="overflow-x-auto">
-                 <table className="w-full text-sm text-right">
-                     <thead className="text-slate-400 bg-slate-700/50">
-                         <tr>
-                             <th className="p-3">כותרת</th>
-                             <th className="p-3">נוצר ע"י</th>
-                             <th className="p-3">תאריך</th>
-                             <th className="p-3">פעולות</th>
-                         </tr>
-                     </thead>
-                     <tbody className="divide-y divide-slate-700">
-                         {properties.map(prop => (
-                             <tr key={prop.id} className="hover:bg-slate-700/30 transition-colors">
-                                 <td className="p-3 font-medium text-white max-w-[200px] truncate">{prop.generatedTitle}</td>
-                                 <td className="p-3 text-slate-300">{prop.userEmail || 'אנונימי'}</td>
-                                 <td className="p-3 text-slate-400">{prop.createdAt ? new Date(prop.createdAt).toLocaleDateString('he-IL') : '-'}</td>
-                                 <td className="p-3">
-                                     <a href={`/${prop.slug}-${prop.id}`} target="_blank" className="text-brand-accent hover:text-white transition-colors">צפה</a>
-                                 </td>
-                             </tr>
-                         ))}
-                     </tbody>
-                 </table>
-             </div>
-          </div>
-
-          {/* Users Table */}
-          <div className="bg-slate-800/50 rounded-2xl border border-slate-700 overflow-hidden">
-             <div className="p-4 bg-slate-800 border-b border-slate-700">
-                <h2 className="text-xl font-bold text-white">משתמשים</h2>
-             </div>
-             <div className="overflow-x-auto">
-                 <table className="w-full text-sm text-right">
-                     <thead className="text-slate-400 bg-slate-700/50">
-                         <tr>
-                             <th className="p-3">משתמש</th>
-                             <th className="p-3">אימייל</th>
-                             <th className="p-3">תפקיד</th>
-                             <th className="p-3">התחברות אחרונה</th>
-                         </tr>
-                     </thead>
-                     <tbody className="divide-y divide-slate-700">
-                         {users.map(user => (
-                             <tr key={user.uid} className="hover:bg-slate-700/30 transition-colors">
-                                 <td className="p-3 flex items-center gap-2">
-                                     {user.photoURL && <img src={user.photoURL} className="w-6 h-6 rounded-full" />}
-                                     <span className="text-white">{user.displayName}</span>
-                                 </td>
-                                 <td className="p-3 text-slate-300">{user.email}</td>
-                                 <td className="p-3">
-                                     <span className={`px-2 py-0.5 rounded text-xs ${user.role === 'admin' ? 'bg-purple-900 text-purple-200' : 'bg-slate-700 text-slate-300'}`}>
-                                         {user.role}
-                                     </span>
-                                 </td>
-                                 <td className="p-3 text-slate-400">{new Date(user.lastLogin).toLocaleDateString('he-IL')}</td>
-                             </tr>
-                         ))}
-                     </tbody>
-                 </table>
-             </div>
-          </div>
+      {/* Tabs */}
+      <div className="flex border-b border-slate-700 mb-6 overflow-x-auto">
+          <TabButton active={activeTab === 'properties'} onClick={() => setActiveTab('properties')} label="נכסים" />
+          <TabButton active={activeTab === 'leads'} onClick={() => setActiveTab('leads')} label="לידים (גלובלי)" />
+          <TabButton active={activeTab === 'users'} onClick={() => setActiveTab('users')} label="משתמשים" />
       </div>
+
+      {activeTab === 'properties' && (
+          <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+              <table className="w-full text-right text-sm">
+                  <thead className="bg-slate-900 text-slate-400">
+                      <tr>
+                          <th className="p-4">נכס</th>
+                          <th className="p-4">סוכן</th>
+                          <th className="p-4">לידים</th>
+                          <th className="p-4">תאריך יצירה</th>
+                          <th className="p-4">פעולות</th>
+                      </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-700">
+                      {properties.map(p => (
+                          <tr key={p.id} className="hover:bg-slate-700/30">
+                              <td className="p-4 font-bold text-white">{p.generatedTitle}</td>
+                              <td className="p-4 text-slate-300">{p.userEmail}</td>
+                              <td className="p-4"><span className="bg-slate-700 px-2 py-1 rounded text-xs">{leads.filter(l => l.propertyId === p.id).length}</span></td>
+                              <td className="p-4 text-slate-400">{new Date(p.createdAt || 0).toLocaleDateString('he-IL')}</td>
+                              <td className="p-4"><a href={`/${p.slug}-${p.id}`} target="_blank" className="text-brand-accent">צפה</a></td>
+                          </tr>
+                      ))}
+                  </tbody>
+              </table>
+          </div>
+      )}
+
+      {activeTab === 'leads' && (
+          <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+              <table className="w-full text-right text-sm">
+                  <thead className="bg-slate-900 text-slate-400">
+                      <tr>
+                          <th className="p-4">תאריך</th>
+                          <th className="p-4">שם מתעניין</th>
+                          <th className="p-4">טלפון</th>
+                          <th className="p-4">עבור נכס</th>
+                          <th className="p-4">סוכן מטפל</th>
+                      </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-700">
+                      {leads.map(l => {
+                          const agent = users.find(u => u.uid === l.ownerId);
+                          return (
+                              <tr key={l.id} className="hover:bg-slate-700/30">
+                                  <td className="p-4 text-slate-400 text-xs">{new Date(l.createdAt).toLocaleString('he-IL')}</td>
+                                  <td className="p-4 font-bold text-white">{l.fullName}</td>
+                                  <td className="p-4 text-brand-accent font-mono">{l.phone}</td>
+                                  <td className="p-4 text-slate-300 max-w-[150px] truncate">{l.propertyTitle}</td>
+                                  <td className="p-4 text-slate-400">{agent?.displayName || agent?.email || 'אנונימי'}</td>
+                              </tr>
+                          );
+                      })}
+                  </tbody>
+              </table>
+          </div>
+      )}
+
+      {activeTab === 'users' && (
+          <div className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+              <table className="w-full text-right text-sm">
+                  <thead className="bg-slate-900 text-slate-400">
+                      <tr>
+                          <th className="p-4">משתמש</th>
+                          <th className="p-4">אימייל</th>
+                          <th className="p-4">נכסים</th>
+                          <th className="p-4">התחברות אחרונה</th>
+                      </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-700">
+                      {users.map(u => (
+                          <tr key={u.uid} className="hover:bg-slate-700/30">
+                              <td className="p-4 flex items-center gap-2">
+                                  {u.photoURL && <img src={u.photoURL} className="w-6 h-6 rounded-full" />}
+                                  <span className="text-white font-bold">{u.displayName}</span>
+                              </td>
+                              <td className="p-4 text-slate-300">{u.email}</td>
+                              <td className="p-4 text-slate-300">{properties.filter(p => p.userId === u.uid).length}</td>
+                              <td className="p-4 text-slate-400 text-xs">{new Date(u.lastLogin).toLocaleDateString('he-IL')}</td>
+                          </tr>
+                      ))}
+                  </tbody>
+              </table>
+          </div>
+      )}
     </div>
   );
 };
+
+const StatCard = ({ title, value, color }: any) => (
+    <div className={`bg-slate-800 p-6 rounded-2xl border-l-4 border-slate-700 shadow-xl border-${color}-500`}>
+        <p className="text-slate-400 text-xs mb-1 uppercase font-bold tracking-wider">{title}</p>
+        <p className="text-3xl font-black text-white">{value}</p>
+    </div>
+);
+
+const TabButton = ({ active, onClick, label }: any) => (
+    <button 
+        onClick={onClick}
+        className={`px-8 py-4 font-bold text-sm transition-all border-b-2 ${active ? 'border-brand-accent text-white bg-white/5' : 'border-transparent text-slate-400 hover:text-white hover:bg-white/5'}`}
+    >
+        {label}
+    </button>
+);

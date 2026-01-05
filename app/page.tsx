@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -128,6 +129,7 @@ const HomePage: React.FC = () => {
       const generatedData = await response.json();
       setPropertyDetails({
         ...formData,
+        userId: user.uid, // מוודאים שה-userId נשמר כבר כאן
         generatedTitle: generatedData.title,
         enhancedDescription: generatedData.description,
         features: generatedData.features,
@@ -142,6 +144,7 @@ const HomePage: React.FC = () => {
 
   const base64ToBlob = (base64: string): Blob => {
     const parts = base64.split(';base64,');
+    if (parts.length < 2) return new Blob();
     const contentType = parts[0].split(':')[1];
     const raw = window.atob(parts[1]);
     const rawLength = raw.length;
@@ -213,6 +216,7 @@ const HomePage: React.FC = () => {
     } catch (error: any) {
         console.error("Critical error during save:", error);
         alert(error.message || "אירעה שגיאה בשמירת הדף.");
+    } finally {
         setIsSaving(false);
     }
   };
