@@ -1,3 +1,4 @@
+
 export interface PropertyFormData {
   address: string;
   description: string;
@@ -28,11 +29,11 @@ export interface EnhancedDescription {
 }
 
 export interface PropertyDetails extends PropertyFormData {
-  id?: string; // Optional because it's added on save
-  slug?: string; // Optional because it's added on save
-  userId?: string; // The Google UID of the creator
-  userEmail?: string; // The email of the creator (for admin view)
-  createdAt?: number; // Timestamp
+  id?: string;
+  slug?: string;
+  userId?: string; // ה-UID של הסוכן שיצר את הדף
+  userEmail?: string;
+  createdAt?: number;
   generatedTitle: string;
   enhancedDescription: EnhancedDescription;
   features: PropertyFeatures;
@@ -45,4 +46,15 @@ export interface UserProfile {
   photoURL: string | null;
   role: 'user' | 'admin';
   lastLogin: number;
+}
+
+// ממשק חדש עבור לידים (מתעניינים)
+export interface Lead {
+  id?: string;
+  propertyId: string;    // מזהה הנכס שעליו פנו
+  propertyTitle: string; // כותרת הנכס (לנוחות תצוגה)
+  ownerId: string;       // ה-UID של הסוכן (למי הליד שייך)
+  fullName: string;
+  phone: string;
+  createdAt: number;
 }
