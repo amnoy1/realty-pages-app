@@ -18,44 +18,12 @@ import { EditForm } from '../components/EditForm';
 
 const ADMIN_EMAILS = ['amir@mango-realty.com']; 
 
-const SystemCheckModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-    const [serverStatus, setServerStatus] = useState("Checking...");
-    const [currentDomain, setCurrentDomain] = useState("");
-
-    useEffect(() => {
-        setCurrentDomain(window.location.hostname);
-        fetch('/api/generate-content', { method: 'POST', body: JSON.stringify({ ping: true }) })
-            .then(async (res) => {
-                if (res.status === 500) setServerStatus("SERVER ERROR");
-                else if (res.status === 400) setServerStatus("OK");
-                else setServerStatus("UNKNOWN");
-            })
-            .catch(() => setServerStatus("CONNECTION FAILED"));
-    }, []);
-
-    return (
-        <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4" dir="rtl">
-            <div className="bg-slate-800 border border-slate-600 rounded-2xl p-6 max-w-md w-full shadow-2xl">
-                <h3 className="text-xl font-bold text-white mb-4">בדיקת מערכת</h3>
-                <div className="space-y-3 mb-6">
-                    <div className="bg-slate-900 p-3 rounded-lg flex justify-between items-center">
-                        <span className="text-slate-300">סטטוס שרת AI</span>
-                        <span className={`font-mono font-bold px-2 py-0.5 rounded text-xs ${serverStatus === "OK" ? "bg-green-900 text-green-400" : "bg-red-900 text-red-400"}`}>{serverStatus}</span>
-                    </div>
-                </div>
-                <button onClick={onClose} className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-colors">סגור</button>
-            </div>
-        </div>
-    );
-};
-
 const HomePage: React.FC = () => {
   const [propertyDetails, setPropertyDetails] = useState<PropertyDetails | null>(null);
   const [editingProperty, setEditingProperty] = useState<PropertyDetails | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isClient, setIsClient] = useState(false);
-  const [showSystemCheck, setShowSystemCheck] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentView, setCurrentView] = useState<'create' | 'dashboard' | 'admin' | 'edit'>('create');
@@ -77,11 +45,15 @@ const HomePage: React.FC = () => {
             const now = Date.now();
             
             if (userSnap.exists()) {
+                const existingData = userSnap.data() as UserProfile;
                 await updateDoc(userRef, {
                     lastLogin: now,
                     displayName: currentUser.displayName,
                     photoURL: currentUser.photoURL,
-                    email: currentUser.email
+                    email: currentUser.email,
+                    role: isUserAdmin ? 'admin' : 'user',
+                    // Preserve createdAt if it exists
+                    createdAt: existingData.createdAt || now
                 });
             } else {
                 await setDoc(userRef, {
