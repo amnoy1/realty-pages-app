@@ -49,7 +49,6 @@ export interface UserProfile {
   createdAt?: number; // מועד הצטרפות למערכת
 }
 
-// ממשק חדש עבור לידים (מתעניינים)
 export interface Lead {
   id?: string;
   propertyId: string;    // מזהה הנכס שעליו פנו
