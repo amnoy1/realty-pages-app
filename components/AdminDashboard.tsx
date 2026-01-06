@@ -41,14 +41,15 @@ export const AdminDashboard: React.FC = () => {
 
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const fetchCollection = async (collectionName: string, idField: 'id' | 'uid') => {
+  // שימוש ב-Generics כדי להבטיח טיפוסים תקינים
+  const fetchCollection = async <T,>(collectionName: string, idField: string): Promise<T[] | null> => {
       if (!db) return null;
       try {
           const snap = await getDocs(collection(db, collectionName));
           const data = snap.docs.map(doc => ({
               ...doc.data(),
               [idField]: doc.id
-          }));
+          })) as T[];
           console.log(`[Admin] Fetched ${data.length} items from ${collectionName}`);
           return data;
       } catch (err: any) {
@@ -61,35 +62,38 @@ export const AdminDashboard: React.FC = () => {
     setErrorMsg(null);
     setStatus({ users: 'loading', properties: 'loading', leads: 'loading' });
 
-    const [uData, pData, lData] = await Promise.all([
-        fetchCollection('users', 'uid'),
-        fetchCollection('landingPages', 'id'),
-        fetchCollection('leads', 'id')
-    ]);
+    try {
+        const uData = await fetchCollection<UserProfile>('users', 'uid');
+        const pData = await fetchCollection<PropertyDetails>('landingPages', 'id');
+        const lData = await fetchCollection<Lead>('leads', 'id');
 
-    if (uData) {
-        setUsers(uData.sort((a, b) => (b.lastLogin || 0) - (a.lastLogin || 0)));
-        setStatus(s => ({ ...s, users: 'success' }));
-    } else {
-        setStatus(s => ({ ...s, users: 'error' }));
-    }
+        if (uData) {
+            setUsers([...uData].sort((a, b) => (b.lastLogin || 0) - (a.lastLogin || 0)));
+            setStatus(s => ({ ...s, users: 'success' }));
+        } else {
+            setStatus(s => ({ ...s, users: 'error' }));
+        }
 
-    if (pData) {
-        setProperties(pData.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
-        setStatus(s => ({ ...s, properties: 'success' }));
-    } else {
-        setStatus(s => ({ ...s, properties: 'error' }));
-    }
+        if (pData) {
+            setProperties([...pData].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
+            setStatus(s => ({ ...s, properties: 'success' }));
+        } else {
+            setStatus(s => ({ ...s, properties: 'error' }));
+        }
 
-    if (lData) {
-        setLeads(lData.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
-        setStatus(s => ({ ...s, leads: 'success' }));
-    } else {
-        setStatus(s => ({ ...s, leads: 'error' }));
-    }
+        if (lData) {
+            setLeads([...lData].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
+            setStatus(s => ({ ...s, leads: 'success' }));
+        } else {
+            setStatus(s => ({ ...s, leads: 'error' }));
+        }
 
-    if (!uData && !pData && !lData) {
-        setErrorMsg("לא ניתן היה לשלוף אף קולקשן. וודא שחוקי האבטחה (Rules) מאפשרים 'list' לכל הקולקשנים.");
+        if (!uData && !pData && !lData) {
+            setErrorMsg("לא ניתן היה לשלוף אף קולקשן. וודא שחוקי האבטחה (Rules) מאפשרים 'list' לכל הקולקשנים.");
+        }
+    } catch (globalErr) {
+        console.error("Global fetch error in Admin:", globalErr);
+        setErrorMsg("אירעה שגיאה בלתי צפויה בטעינת הנתונים.");
     }
   };
 
