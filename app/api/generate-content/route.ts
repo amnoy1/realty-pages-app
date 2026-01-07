@@ -1,3 +1,4 @@
+
 import { GoogleGenAI } from "@google/genai";
 
 // We strictly read the API key inside the handler to avoid build-time caching issues
@@ -10,11 +11,8 @@ export async function POST(request: Request) {
 
   if (!apiKey) {
     console.error("CRITICAL ERROR: API_KEY is missing from server environment variables.");
-    // Log available keys (security safe: only keys, not values) to help debug in Vercel Logs
-    console.log("Available Env Var Keys:", Object.keys(process.env).filter(k => k.includes('KEY') || k.includes('API')));
-
     return new Response(JSON.stringify({ 
-        error: "Server configuration error: API_KEY is missing. Did you perform a Redeploy after adding the key in Vercel Settings?" 
+        error: "Server configuration error: API_KEY is missing." 
     }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
@@ -34,7 +32,7 @@ export async function POST(request: Request) {
         });
     }
 
-    // System instruction: Hybrid role - Creative Copywriter + Strict Data Analyst
+    // System instruction
     const systemInstruction = `
     You are an Expert Real Estate Copywriter and a Strict Data Analyst, writing in Hebrew.
     
@@ -42,19 +40,15 @@ export async function POST(request: Request) {
     Transform the user's input into high-converting Hebrew marketing copy.
     
     COPYWRITING RULES:
-    1.  **Headline (Title):** Do NOT write generic titles like "Apartment for sale". Start with a specific BENEFIT or emotional hook (e.g., "Open view to the sea," "Kibbutz atmosphere in the city center").
-    2.  **Specifics over Generics:** Avoid fluffy phrases like "One of the most impressive properties." Instead, describe exactly *why* it's impressive based on the data.
-    3.  **Action Verbs:** Use words like "Discover," "Wake up to," "Host," "Fall in love" (גלו, הרגישו, תתאהבו).
-    4.  **Location:** Don't just list the street. Explain the *lifestyle benefit* of the location (e.g., "Coffee shops just steps away," "Quiet street that feels like a village").
-    5.  **Structure & Length:** 
-        *   **Area Description:** Write a RICH paragraph (4-5 sentences) about the neighborhood, community, and nearby amenities. Focus on the lifestyle.
-        *   **Property Description:** Write a RICH paragraph (4-5 sentences) about the apartment itself, the flow of the house, the light, and the feeling.
-    6.  **Urgency (CTA):** The call to action must create urgency (e.g., "Rare opportunity – viewings this week only").
-    7.  **CLEAN TEXT ONLY:** Do NOT use Markdown formatting. Do NOT use asterisks (*, **, ***) for bolding. Do NOT use bullet points or hash signs (#). Return clean, plain text.
+    1.  **Headline (Title):** Start with a specific BENEFIT or emotional hook.
+    2.  **Specifics over Generics:** Avoid fluffy phrases.
+    3.  **Action Verbs:** Use words like "Discover," "Wake up to," "Host," "Fall in love".
+    4.  **CLEAN TEXT ONLY:** Do NOT use Markdown formatting. Return clean, plain text.
     
     TASK 2: STRICT DATA EXTRACTION (For 'features' object)
-    1.  **NO HALLUCINATIONS:** If a feature (parking, balcony, elevator) is not explicitly written in the text, return an empty string "".
-    2.  **Exact Numbers:** If text says "3 rooms", return "3". If text says "parking" without a number, return "1".
+    1.  **NO HALLUCINATIONS:** If a feature is not explicitly written in the text, return an empty string "".
+    2.  **Exact Numbers:** Extract numbers accurately.
+    3.  **Lot Area:** Specifically look for mentions of "שטח מגרש" or land area.
     
     OUTPUT FORMAT: JSON ONLY.
     `;
@@ -67,28 +61,29 @@ export async function POST(request: Request) {
 
     Required Output JSON Format:
     {
-      "title": "A Benefit-Driven Title in Hebrew (e.g., 'הפנינה של גבעת טל - שקט פסטורלי דקות מהמרכז')",
+      "title": "A Benefit-Driven Title in Hebrew",
       "description": {
-        "area": "Marketing text about the location benefits in Hebrew. MUST BE DETAILED (approx 50-60 words). Use emotion.",
-        "property": "Main marketing copy about the apartment. MUST BE DETAILED (approx 50-60 words). Use action verbs.",
-        "cta": "Urgent Call to Action in Hebrew (e.g., 'הזדמנות נדירה - תיאומים השבוע בלבד')"
+        "area": "Detailed marketing text about the location benefits (approx 50-60 words).",
+        "property": "Detailed marketing copy about the apartment/house (approx 50-60 words).",
+        "cta": "Urgent Call to Action in Hebrew"
       },
       "features": {
-        "rooms": "Number only. Empty if not found.",
-        "apartmentArea": "Number only. Empty if not found.",
-        "balconyArea": "Number only. Empty if not found.",
-        "floor": "Number only. Empty if not found.",
-        "parking": "Number only. Return '1' if mentioned without number. Empty if not found.",
-        "elevator": "Return 'יש' if mentioned, otherwise empty string.",
-        "safeRoom": "Return 'ממ\"ד' if mentioned, otherwise empty string.",
-        "storage": "Return 'יש' if mentioned, otherwise empty string.",
-        "airDirections": "List directions if mentioned, otherwise empty string."
+        "rooms": "Number only.",
+        "apartmentArea": "Number only (built area).",
+        "lotArea": "Number only (land/lot area).",
+        "balconyArea": "Number only.",
+        "floor": "Number only.",
+        "parking": "Number only.",
+        "elevator": "Return 'יש' or empty.",
+        "safeRoom": "Return 'ממ\"ד' or empty.",
+        "storage": "Return 'יש' or empty.",
+        "airDirections": "Directions if mentioned."
       }
     }
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         systemInstruction: systemInstruction,

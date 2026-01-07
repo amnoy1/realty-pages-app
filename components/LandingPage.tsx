@@ -38,6 +38,7 @@ const formatPhoneNumber = (phone: string) => {
 
 const iconClasses = "w-6 h-6 text-brand-accent";
 const AreaIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/><path d="M3 16v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/></svg>;
+const LandIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M3 21h18"/><path d="M6 21V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v14"/><path d="M12 21V11"/><path d="M9 11h6"/></svg>;
 const BedIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M2 4v16h20V4H2z"/><path d="M2 10h20"/><path d="M12 4v6"/></svg>;
 const FloorIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M12 3v18"/><path d="M16 17l-4-4-4 4"/><path d="M16 7l-4 4-4-4"/></svg>;
 const ParkingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M14 16.94V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h1.3L8 5.86A2 2 0 0 1 9.62 5h4.76A2 2 0 0 1 16 6.86L18.7 12H20a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-2.06Z"/><circle cx="6.5" cy="16.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg>;
@@ -57,8 +58,8 @@ const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: stri
       <div className="mb-4 p-3 bg-slate-50 rounded-full text-brand-accent group-hover:bg-brand-accent group-hover:text-white transition-colors">
         {icon}
       </div>
-      <p className="font-bold text-xl text-slate-800">{value}</p>
-      {label && <p className="text-sm text-slate-500 font-medium">{label}</p>}
+      <p className="font-bold text-xl text-slate-800 font-sans">{value}</p>
+      {label && <p className="text-sm text-slate-500 font-medium font-sans">{label}</p>}
     </div>
   );
 };
@@ -68,7 +69,7 @@ const KeyFeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: s
     return (
         <div className="flex items-center gap-3 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] transition-all">
             <div className="text-brand-accent">{icon}</div>
-            <div>
+            <div className="font-sans">
                 <p className="font-bold text-lg leading-none mb-1">{value}</p>
                 <p className="text-xs text-slate-100 font-medium opacity-90">{label}</p>
             </div>
@@ -83,9 +84,10 @@ const FeaturesSection: React.FC<{ features: PropertyFeatures }> = ({ features })
   return (
     <div className="bg-white border border-slate-200 p-8 rounded-3xl shadow-lg relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-accent to-transparent opacity-50"></div>
-        <h3 className="text-2xl font-bold text-slate-800 mb-8 text-center relative z-10">מאפייני הנכס</h3>
+        <h3 className="text-2xl font-bold text-slate-800 mb-8 text-center relative z-10 font-sans">מאפייני הנכס</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 relative z-10">
             <FeatureItem icon={<AreaIcon />} label={'מ"ר בנוי'} value={features.apartmentArea} />
+            <FeatureItem icon={<LandIcon />} label={'מ"ר מגרש'} value={(features as any).lotArea} />
             <FeatureItem icon={<BalconyIcon />} label={'מ"ר מרפסת'} value={features.balconyArea} />
             <FeatureItem icon={<BedIcon />} label="חדרים" value={features.rooms} />
             <FeatureItem icon={<FloorIcon />} label="קומה" value={features.floor} />
@@ -261,13 +263,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                     
                     <div className="space-y-8 text-lg md:text-xl text-slate-600 leading-loose font-sans">
                         <div className="p-6 bg-slate-50 rounded-2xl border-r-4 border-brand-accent/30">
-                           <p className="font-medium text-slate-700">{details.enhancedDescription.area}</p>
+                           <p className="font-medium text-slate-700 font-sans">{details.enhancedDescription.area}</p>
                         </div>
                         <div>
-                           <p>{details.enhancedDescription.property}</p>
+                           <p className="font-sans">{details.enhancedDescription.property}</p>
                         </div>
                         <div className="bg-brand-accent/5 p-6 rounded-2xl border border-brand-accent/10">
-                            <p className="font-bold text-slate-900 text-xl">{details.enhancedDescription.cta}</p>
+                            <p className="font-bold text-slate-900 text-xl font-sans">{details.enhancedDescription.cta}</p>
                         </div>
                     </div>
                 </div>
