@@ -147,12 +147,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         <div className="absolute bottom-0 right-0 w-full p-6 md:p-16 pb-20 z-20 pointer-events-none">
             <div className="container mx-auto max-w-7xl">
                 <div className="max-w-5xl animate-slide-up pointer-events-auto">
-                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold leading-[1.1] mb-6 text-white tracking-tight drop-shadow-[0_5px_5px_rgba(0,0,0,0.9)]">
-                        {details.generatedTitle}
-                    </h1>
-                    <p className="text-2xl md:text-3xl font-light text-slate-100 mb-10 flex items-center gap-3 w-fit drop-shadow-[0_3px_3px_rgba(0,0,0,0.9)]">
-                        <span className="inline-block w-1.5 h-8 bg-brand-accent rounded-full shadow-[0_0_15px_rgba(217,119,6,0.8)]"></span>
-                        <span className="font-medium">{details.address}</span>
+                    
+                    <p className="text-3xl md:text-5xl font-extrabold text-white mb-10 flex items-center gap-4 w-fit drop-shadow-[0_5px_8px_rgba(0,0,0,0.9)]">
+                        <span className="inline-block w-2 h-12 bg-brand-accent rounded-full shadow-[0_0_20px_rgba(217,119,6,0.9)]"></span>
+                        <span className="tracking-tight">{details.address}</span>
                     </p>
 
                     <div className="flex flex-wrap gap-6 mb-12">
@@ -245,14 +243,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
             
             <div className="lg:col-span-7 space-y-10">
                 <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
-                    <h2 className="text-3xl md:text-4xl font-bold text-slate-800 mb-10 relative inline-block">
-                        סיפור הנכס
-                        <span className="absolute bottom-[-8px] right-0 w-1/2 h-1.5 bg-brand-accent rounded-full"></span>
-                    </h2>
+                    {/* New Header: Marketing Title as Introduction */}
+                    <div className="mb-10">
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">
+                            {details.generatedTitle}
+                        </h2>
+                        <div className="w-20 h-1.5 bg-brand-accent mt-4 rounded-full"></div>
+                    </div>
                     
                     <div className="space-y-8 text-lg md:text-xl text-slate-600 leading-loose">
                         <div className="p-6 bg-slate-50 rounded-2xl border-r-4 border-brand-accent/30">
-                           <p>{details.enhancedDescription.area}</p>
+                           <p className="font-medium text-slate-700">{details.enhancedDescription.area}</p>
                         </div>
                         <div>
                            <p>{details.enhancedDescription.property}</p>
@@ -310,7 +311,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         <section ref={leadFormRef} className="mt-24 max-w-4xl mx-auto relative">
              <div className="absolute -inset-4 bg-gradient-to-r from-brand-accent to-orange-600 rounded-[2.5rem] opacity-20 blur-xl"></div>
              <div className="relative">
-                {/* מעבירים את ה-IDs הנחוצים לשמירת הליד */}
                 <LeadForm 
                   agentWhatsApp={details.agentWhatsApp} 
                   agentEmail={details.agentEmail} 
