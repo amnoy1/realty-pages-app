@@ -14,6 +14,13 @@ interface LandingPageProps {
   isSaving?: boolean;
 }
 
+// פונקציה להוספת פסיקים (הפרדת אלפים) למחיר
+const formatPriceWithCommas = (priceStr: string) => {
+  const cleaned = priceStr.replace(/[^\d]/g, '');
+  if (!cleaned) return priceStr;
+  return new Intl.NumberFormat('he-IL').format(parseInt(cleaned));
+};
+
 const formatPhoneNumber = (phone: string) => {
     if (!phone) return '';
     const cleaned = phone.replace(/\D/g, '');
@@ -111,7 +118,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
       .catch(err => console.error('Failed to copy: ', err));
   };
 
-  const formattedPrice = details.price.replace(/₪/g, '').trim();
+  const formattedPrice = formatPriceWithCommas(details.price);
+  
   const keyFeatures = [
       {icon: <BedIcon />, label: "חדרים", value: details.features.rooms },
       {icon: <AreaIcon />, label: 'מ"ר בנוי', value: details.features.apartmentArea },
@@ -148,7 +156,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
             <div className="container mx-auto max-w-7xl">
                 <div className="max-w-5xl animate-slide-up pointer-events-auto">
                     
-                    <p className="text-3xl md:text-5xl font-extrabold text-white mb-10 flex items-center gap-4 w-fit drop-shadow-[0_5px_8px_rgba(0,0,0,0.9)]">
+                    <p className="text-3xl md:text-5xl font-extrabold text-white mb-10 flex items-center gap-4 w-fit drop-shadow-[0_5px_8px_rgba(0,0,0,0.9)] font-sans">
                         <span className="inline-block w-2 h-12 bg-brand-accent rounded-full shadow-[0_0_20px_rgba(217,119,6,0.9)]"></span>
                         <span className="tracking-tight">{details.address}</span>
                     </p>
@@ -161,7 +169,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
 
                     <button
                         onClick={handleCtaClick}
-                        className="py-4 px-10 rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.5)] text-xl font-bold text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 border border-white/20 pointer-events-auto"
+                        className="py-4 px-10 rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.5)] text-xl font-bold text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 border border-white/20 pointer-events-auto font-sans"
                     >
                         תיאום סיור בנכס
                     </button>
@@ -173,7 +181,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
            {isPreview && onReset && (
                 <button 
                     onClick={onReset} 
-                    className="bg-black/60 text-white py-2.5 px-6 rounded-full hover:bg-black/80 transition-all text-sm backdrop-blur-md border border-white/20 font-medium flex items-center gap-2"
+                    className="bg-black/60 text-white py-2.5 px-6 rounded-full hover:bg-black/80 transition-all text-sm backdrop-blur-md border border-white/20 font-medium flex items-center gap-2 font-sans"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/></svg>
                     חזרה לעריכה
@@ -183,7 +191,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                 <button 
                     onClick={onSave}
                     disabled={isSaving}
-                    className="bg-brand-accent text-white py-2.5 px-8 rounded-full hover:bg-brand-accentHover transition-all disabled:opacity-70 shadow-lg font-bold border border-transparent flex items-center gap-2"
+                    className="bg-brand-accent text-white py-2.5 px-8 rounded-full hover:bg-brand-accentHover transition-all disabled:opacity-70 shadow-lg font-bold border border-transparent flex items-center gap-2 font-sans"
                 >
                      {isSaving ? (
                         <>
@@ -200,14 +208,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
             )}
              {!isPreview && (
                 <div className="flex flex-col gap-3 p-4 rounded-2xl bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-2xl animate-fade-in w-64">
-                    <div className="text-white text-xs font-bold text-center border-b border-white/10 pb-2 mb-1 flex items-center justify-center gap-2">
+                    <div className="text-white text-xs font-bold text-center border-b border-white/10 pb-2 mb-1 flex items-center justify-center gap-2 font-sans">
                         <ShareIcon />
                         ניהול והפצה
                     </div>
                     
                     <button 
                       onClick={copyLink} 
-                      className={`w-full py-2.5 px-4 rounded-xl transition-all text-sm font-bold flex items-center justify-center gap-2 ${copyStatus === 'copied' ? 'bg-green-600 text-white' : 'bg-brand-accent text-white hover:bg-brand-accentHover'}`}
+                      className={`w-full py-2.5 px-4 rounded-xl transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans ${copyStatus === 'copied' ? 'bg-green-600 text-white' : 'bg-brand-accent text-white hover:bg-brand-accentHover'}`}
                     >
                       {copyStatus === 'copied' ? (
                           <>
@@ -228,7 +236,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                             const text = `היי, אני רוצה לשתף איתך פרטים על הנכס: ${details.generatedTitle}\n${url}`;
                             window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                         }}
-                        className="w-full bg-[#25D366] text-white py-2.5 px-4 rounded-xl hover:bg-[#1ebc57] transition-colors text-sm font-bold flex items-center justify-center gap-2"
+                        className="w-full bg-[#25D366] text-white py-2.5 px-4 rounded-xl hover:bg-[#1ebc57] transition-colors text-sm font-bold flex items-center justify-center gap-2 font-sans"
                     >
                         <WhatsAppIcon />
                         שלח בוואטסאפ
@@ -243,15 +251,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
             
             <div className="lg:col-span-7 space-y-10">
                 <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
-                    {/* New Header: Marketing Title as Introduction */}
+                    {/* Header: Marketing Title as Introduction */}
                     <div className="mb-10">
-                        <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 leading-tight">
+                        <h2 className="text-[2.25rem] md:text-[2.75rem] font-extrabold text-slate-900 leading-tight font-sans">
                             {details.generatedTitle}
                         </h2>
                         <div className="w-20 h-1.5 bg-brand-accent mt-4 rounded-full"></div>
                     </div>
                     
-                    <div className="space-y-8 text-lg md:text-xl text-slate-600 leading-loose">
+                    <div className="space-y-8 text-lg md:text-xl text-slate-600 leading-loose font-sans">
                         <div className="p-6 bg-slate-50 rounded-2xl border-r-4 border-brand-accent/30">
                            <p className="font-medium text-slate-700">{details.enhancedDescription.area}</p>
                         </div>
@@ -270,8 +278,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                      <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-brand-accent via-orange-400 to-brand-accent"></div>
                      <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
                      
-                    <p className="text-slate-400 mb-3 text-sm uppercase tracking-widest font-bold">מחיר מבוקש</p>
-                    <div className="flex items-start justify-center gap-1 text-white direction-ltr">
+                    <p className="text-slate-400 mb-3 text-sm uppercase tracking-widest font-bold font-sans">מחיר מבוקש</p>
+                    <div className="flex items-start justify-center gap-1 text-white direction-ltr font-sans">
                         <span className="text-5xl md:text-6xl font-extrabold tracking-tight">{formattedPrice}</span>
                         <span className="text-3xl font-light mt-2 text-brand-accent">₪</span>
                     </div>
@@ -284,22 +292,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                     <div className="w-24 h-24 bg-slate-100 rounded-full mx-auto mb-6 flex items-center justify-center text-slate-300 border-4 border-white shadow-md">
                         <UserIcon />
                     </div>
-                    <p className="text-slate-500 mb-2 font-medium">הנכס מיוצג ע"י</p>
-                    <h3 className="text-2xl font-bold text-slate-900 mb-4">{details.agentName}</h3>
+                    <p className="text-slate-500 mb-2 font-medium font-sans">הנכס מיוצג ע"י</p>
+                    <h3 className="text-2xl font-bold text-slate-900 mb-4 font-sans">{details.agentName}</h3>
                     
                     <div className="flex justify-center gap-3">
                          <a 
                             href={`https://wa.me/${details.agentWhatsApp}`} 
                             target="_blank" 
                             rel="noopener noreferrer" 
-                            className="flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebc57] text-white py-3 px-6 rounded-xl transition-colors font-bold"
+                            className="flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebc57] text-white py-3 px-6 rounded-xl transition-colors font-bold font-sans"
                         >
                             <WhatsAppIcon/>
                             <span>וואטסאפ</span>
                         </a>
                         <a 
                              href={`tel:${details.agentWhatsApp.replace(/\D/g, '')}`}
-                             className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white py-3 px-6 rounded-xl transition-colors font-bold"
+                             className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white py-3 px-6 rounded-xl transition-colors font-bold font-sans"
                         >
                              <span>חייג</span>
                         </a>
@@ -325,7 +333,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
       
       <footer className="bg-slate-900 text-slate-400 text-center py-10 mt-20 border-t border-slate-800">
         <div className="container mx-auto">
-            <p className="text-sm opacity-70">© כל הזכויות שמורות - נוצר באמצעות מחולל דפי נחיתה לנדל"ן</p>
+            <p className="text-sm opacity-70 font-sans">© כל הזכויות שמורות - נוצר באמצעות מחולל דפי נחיתה לנדל"ן</p>
         </div>
       </footer>
     </div>
