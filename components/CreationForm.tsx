@@ -1,204 +1,303 @@
+import React, { useState, useRef } from 'react';
+import type { PropertyFormData } from '../types';
 
-'use client';
-
-import React, { useRef, useState } from 'react';
-import type { PropertyDetails, PropertyFeatures } from '../types';
-import { ImageGallery } from './ImageGallery';
-import { LeadForm } from './LeadForm';
-
-interface LandingPageProps {
-  details: PropertyDetails;
-  isPreview?: boolean;
-  onReset?: () => void;
-  onSave?: () => void;
-  isSaving?: boolean;
-}
-
-const formatPriceWithCommas = (priceStr: string) => {
-  const cleaned = priceStr.replace(/[^\d]/g, '');
-  if (!cleaned) return priceStr;
-  return new Intl.NumberFormat('he-IL').format(parseInt(cleaned));
-};
-
-const iconClasses = "w-6 h-6 text-brand-accent";
-const AreaIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/><path d="M3 16v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/></svg>;
-const LandIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M3 21h18"/><path d="M6 21V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v14"/><path d="M12 21V11"/><path d="M9 11h6"/></svg>;
-const BedIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M2 4v16h20V4H2z"/><path d="M2 10h20"/><path d="M12 4v6"/></svg>;
-const FloorIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M12 3v18"/><path d="M16 17l-4-4-4 4"/><path d="M16 7l-4 4-4-4"/></svg>;
-const ParkingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M14 16.94V19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h1.3L8 5.86A2 2 0 0 1 9.62 5h4.76A2 2 0 0 1 16 6.86L18.7 12H20a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-2.06Z"/><circle cx="6.5" cy="16.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg>;
-const BalconyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M2 12h20"/><path d="M4 12v8h16v-8"/><path d="M4 4h16v8H4z"/></svg>;
-const SafeRoomIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
-const StorageIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>;
-const WindIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>;
-const ElevatorIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M10 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4V3zm10 0h-4v18h4a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM15 9l-3-3-3 3M15 15l-3 3-3-3"/></svg>;
-const WhatsAppIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.269.655 4.536 1.907 6.344l-1.495 5.454 5.57-1.451zm.5-7.527c.08-.135.143-.225.246-.354.103-.13.21-.211.353-.267.143-.057.3-.086.48-.086.195 0 .358.03.49.09.13.06.23.145.302.26.07.115.105.245.105.39.0.15-.03.28-.09.4-.06.12-.135.225-.225.315-.09.09-.195.17-.315.235-.12.065-.255.115-.405.15-.15.035-.315.06-.495.06-.205 0-.39-.03-.56-.09-.17-.06-.315-.145-.445-.255-.13-.11-.235-.24-.315-.375s-.13-.285-.15-.45c-.02-.165-.03-.32-.03-.465.0-.15.015-.285.045-.405zm1.996 2.95c.12-.06.225-.135.315-.225.09-.09.165-.195.225-.315s.105-.255.135-.405.045-.315.045.495c0-.21-.03-.4-.09-.56-.06-.16-.14-.295-.24-.41-.1-.115-.21-.2-.33-.255s-.25-.085-.39-.085c-.15 0-.285.03-.405.085s-.225.13-.315.225c-.09.09-.165.195-.225.315s-.105.255-.135-.405-.045.315-.045.495c0 .21.03.4.09.56s.14.295.24.41c.1.115.21.2.33.255s.25.085.39.085c.15 0 .285-.03.405-.085zm2.12-1.935c.15-.045.285-.105.405-.18s.225-.165.315-.27c.09-.105.165-.225.225-.36.06-.135.09-.285.09-.45 0-.18-.03-.345-.09-.5-.06-.155-.14-.29-.24-.405-.1-.115-.21-.2-.33-.255s-.25-.085-.39-.085c-.165 0-.315.03-.45.085s-.255.135-.36.255c-.105.12-.195.27-.27.45s-.12.375-.15.585c-.03.21-.045.42-.045.615.0.21.015.405.045.615.0.21.015.405.045.585s.075.345.135.495.135.285.225.405.195.225.315.315c.12.09.255.165.405.225.15.06.315.09.495.09.195 0 .375-.03.54-.09s.31-.14.435-.25c.125-.11.225-.24.3-.39s.125-.315.15-.495c.025-.18.038-.36.038-.525.0-.195-.03-.375-.09-.54s-.135-.315-.225-.45c-.09-.135-.195-.255-.315-.36-.12-.105-.255-.18-.405-.225s-.315-.06-.495-.06c-.195 0-.375.03-.54.09s-.31.14-.435.25c-.125-.11-.225-.24-.3.39s-.125-.315-.15-.495c-.025-.18-.038-.36-.038-.525z"/></svg>;
-
-const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: string }> = ({ icon, label, value }) => {
-  if (!value) return null;
-  return (
-    <div className="flex flex-col items-center justify-center text-center p-6 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 group hover:-translate-y-1">
-      <div className="mb-4 p-3 bg-slate-50 rounded-full text-brand-accent group-hover:bg-brand-accent group-hover:text-white transition-colors">
-        {icon}
-      </div>
-      <p className="font-bold text-xl text-slate-800 font-sans">{value}</p>
-      {label && <p className="text-sm text-slate-500 font-medium font-sans">{label}</p>}
-    </div>
-  );
-};
-
-const KeyFeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: string }> = ({ icon, label, value }) => {
-    if (!value) return null;
-    return (
-        <div className="flex items-center gap-3 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] transition-all">
-            <div className="text-brand-accent">{icon}</div>
-            <div className="font-sans">
-                <p className="font-bold text-lg leading-none mb-1">{value}</p>
-                <p className="text-xs text-slate-100 font-medium opacity-90">{label}</p>
-            </div>
-        </div>
-    );
-};
-
-const FeaturesSection: React.FC<{ features: PropertyFeatures }> = ({ features }) => {
-  const hasFeatures = Object.values(features).some(val => val);
-  if (!hasFeatures) return null;
-
-  return (
-    <div className="bg-white border border-slate-200 p-8 rounded-3xl shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-accent to-transparent opacity-50"></div>
-        <h3 className="text-2xl font-bold text-slate-800 mb-8 text-center relative z-10 font-sans">מאפייני הנכס</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 relative z-10">
-            <FeatureItem icon={<AreaIcon />} label={'מ"ר בנוי'} value={features.apartmentArea} />
-            <FeatureItem icon={<LandIcon />} label={'מ"ר מגרש'} value={(features as any).lotArea} />
-            <FeatureItem icon={<BalconyIcon />} label={'מ"ר מרפסת'} value={features.balconyArea} />
-            <FeatureItem icon={<BedIcon />} label="חדרים" value={features.rooms} />
-            <FeatureItem icon={<FloorIcon />} label="קומה" value={features.floor} />
-            <FeatureItem icon={<SafeRoomIcon />} label={'ממ"ד'} value={features.safeRoom} />
-            <FeatureItem icon={<ParkingIcon />} label="חניות" value={features.parking} />
-            <FeatureItem icon={<StorageIcon />} label="מחסן" value={features.storage} />
-            <FeatureItem icon={<WindIcon />} label="כיווני אוויר" value={features.airDirections} />
-            <FeatureItem icon={<ElevatorIcon />} label="מעלית" value={features.elevator} />
-        </div>
-    </div>
-  );
-};
+// --- Icons (Fixed Sizes & Styling) ---
+const BuildingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>;
+const PriceIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>;
+const EmailIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>;
+const WhatsAppIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-10 10c0 1.88.52 3.64 1.45 5.15L2 22l5.26-1.38A9.95 9.95 0 0 0 12 22a10 10 0 1 0 0-20zm0 18.27c-1.48 0-2.92-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.25 8.25 0 0 1-1.26-4.38c0-4.54 3.68-8.22 8.22-8.22s8.22 3.68 8.22 8.22-3.68 8.22-8.22 8.22zm4.52-6.14c-.25-.12-1.47-.72-1.7-.82s-.39-.12-.56.12c-.17.25-.64.82-.79.98s-.29.17-.54.06c-.25-.12-1.06-.39-2.02-1.24s-1.45-1.95-1.61-2.29c-.17-.34-.02-.52.11-.64s.25-.29.37-.43c.12-.14.17-.25.25-.41s.12-.3-.06-.54c-.18-.25-.56-1.35-.77-1.84s-.41-.41-.56-.41h-.48c-.17 0-.43.06-.64.3s-.82.79-.82 1.95c0 1.15.84 2.27.96 2.43s1.64 2.51 4 3.5c.59.25 1.05.4 1.41.51.62.2 1.17.17 1.62.1.48-.06 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18s-.21-.17-.46-.29z"></path></svg>;
+const UploadIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>;
+const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>;
+const ImageIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>;
 
 
-export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = false, onReset, onSave, isSaving }) => {
-  const leadFormRef = useRef<HTMLDivElement>(null);
+export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => void; isLoading: boolean; }> = ({ onSubmit, isLoading }) => {
+  const [formData, setFormData] = useState<Omit<PropertyFormData, 'images' | 'logo'>>({
+    address: '', description: '', price: '', agentName: '', agentEmail: '', agentWhatsApp: '',
+  });
+  const [images, setImages] = useState<string[]>([]);
+  const [logo, setLogo] = useState<string | undefined>();
   
-  const handleCtaClick = () => {
-    leadFormRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const dragItem = useRef<number | null>(null);
+  const dragOverItem = useRef<number | null>(null);
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      const filePromises = files.map((file: File) => new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      }));
+      Promise.all(filePromises)
+        .then(base64Images => setImages(prev => [...prev, ...base64Images].slice(0, 10)))
+        .catch(error => console.error("Error converting files to base64", error));
+    }
   };
   
-  const formattedPrice = formatPriceWithCommas(details.price);
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onloadend = () => setLogo(reader.result as string);
+      reader.readAsDataURL(e.target.files[0]);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (images.length === 0) {
+      alert('נא להעלות לפחות תמונה אחת של הנכס.');
+      return;
+    }
+    onSubmit({ ...formData, images, logo });
+  };
   
-  const keyFeatures = [
-      {icon: <BedIcon />, label: "חדרים", value: details.features.rooms },
-      {icon: <AreaIcon />, label: 'מ"ר בנוי', value: details.features.apartmentArea },
-      {icon: <BalconyIcon />, label: 'מ"ר מרפסת', value: details.features.balconyArea },
-      {icon: <FloorIcon />, label: "קומה", value: details.features.floor },
-  ].filter(f => f.value);
+  const handleDeleteImage = (indexToDelete: number) => setImages(current => current.filter((_, i) => i !== indexToDelete));
+  
+  const handleDragStart = (position: number) => dragItem.current = position;
+  const handleDragEnter = (position: number) => dragOverItem.current = position;
+  const handleDrop = () => {
+    if (dragItem.current === null || dragOverItem.current === null || dragItem.current === dragOverItem.current) return;
+    const newImages = [...images];
+    const dragItemContent = newImages.splice(dragItem.current, 1)[0];
+    newImages.splice(dragOverItem.current, 0, dragItemContent);
+    setImages(newImages);
+    dragItem.current = null;
+    dragOverItem.current = null;
+  };
+
+  // Inline styling classes to guarantee rendering
+  const cardClasses = "bg-slate-800/40 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl";
+  const inputClasses = "w-full px-5 py-4 bg-slate-800/50 border border-slate-600 rounded-xl text-white placeholder-slate-400 focus:ring-2 focus:ring-brand-accent focus:border-transparent outline-none transition-all duration-200 backdrop-blur-sm hover:bg-slate-800/70";
+  const btnClasses = "py-4 px-8 bg-gradient-to-r from-brand-accent to-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-900/30 transform transition-all duration-200 hover:-translate-y-1 hover:shadow-orange-500/40 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none";
 
   return (
-    <div className="bg-slate-50 min-h-screen text-slate-800 font-sans">
-      <header className="relative h-[90vh] min-h-[650px] text-white overflow-hidden">
-        <div className="absolute inset-0 bg-slate-900">
-          <ImageGallery images={details.images} />
+    <div className="min-h-screen bg-slate-900 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center relative overflow-hidden">
+        {/* Decorative Background Elements - Enhanced */}
+        <div className="absolute inset-0 overflow-hidden z-0 pointer-events-none">
+            <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-brand-accent/10 rounded-full blur-[100px] animate-pulse-slow"></div>
+            <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px]"></div>
+        </div>
+
+      <div className="w-full max-w-6xl z-10 animate-fade-in">
+        <div className="text-center mb-12">
+            <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-6 tracking-tight drop-shadow-lg">
+                מחולל <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-yellow-400">דפי נחיתה</span> לנדל"ן
+            </h1>
+            <p className="text-xl text-slate-300 max-w-3xl mx-auto font-light leading-relaxed">
+                הפכו נתונים יבשים לדפי נחיתה יוקרתיים שמוכרים נכסים.
+                <br/>
+                <span className="text-brand-accent font-medium">מופעל על ידי Gemini 2.0 AI</span>
+            </p>
         </div>
         
-        <div className="absolute bottom-0 right-0 w-full p-6 md:p-16 pb-20 z-20 pointer-events-none">
-            <div className="container mx-auto max-w-7xl">
-                <div className="max-w-5xl animate-slide-up pointer-events-auto">
-                    
-                    <p className="text-3xl md:text-5xl font-extrabold text-white mb-10 flex items-center gap-4 w-fit drop-shadow-[0_5px_8px_rgba(0,0,0,0.9)] font-sans">
-                        <span className="inline-block w-2 h-12 bg-brand-accent rounded-full"></span>
-                        <span className="tracking-tight">{details.address}</span>
-                    </p>
-
-                    <div className="flex flex-wrap gap-6 mb-12">
-                        {keyFeatures.slice(0, 4).map((feature, i) => (
-                            <KeyFeatureItem key={i} {...feature} />
-                        ))}
-                    </div>
-
-                    <button
-                        onClick={handleCtaClick}
-                        className="py-4 px-10 rounded-full shadow-lg text-xl font-bold text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 transition-all pointer-events-auto font-sans"
-                    >
-                        תיאום סיור בנכס
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <div className="absolute top-6 left-6 flex flex-col items-start gap-3 z-50">
-           {isPreview && onReset && (
-                <button 
-                    onClick={onReset} 
-                    className="bg-black/60 text-white py-2.5 px-6 rounded-full hover:bg-black/80 transition-all text-sm backdrop-blur-md font-sans"
-                >
-                    חזרה לעריכה
-                </button>
-            )}
-             {isPreview && onSave && (
-                <button 
-                    onClick={onSave}
-                    disabled={isSaving}
-                    className="bg-brand-accent text-white py-2.5 px-8 rounded-full hover:bg-brand-accentHover transition-all shadow-lg font-bold font-sans"
-                >
-                     {isSaving ? "מפרסם..." : "שמור ופרסם דף"}
-                </button>
-            )}
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-16 md:py-24 max-w-7xl -mt-10 relative z-10">
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            <div className="lg:col-span-7 space-y-10">
-                <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
-                    <div className="mb-10">
-                        <h2 className="text-[2.25rem] md:text-[2.75rem] font-extrabold text-slate-900 leading-tight font-sans">
-                            {details.generatedTitle}
+        <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                {/* Main Details - 8 Columns */}
+                <div className="lg:col-span-7 space-y-8">
+                    <div className={`${cardClasses} p-8 border-t-4 border-brand-accent`}>
+                        <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3 pb-4 border-b border-slate-700/50">
+                            <span className="bg-brand-accent p-2 rounded-lg text-white shadow-lg shadow-orange-500/20"><BuildingIcon /></span>
+                            פרטי הנכס
                         </h2>
-                        <div className="w-20 h-1.5 bg-brand-accent mt-4 rounded-full"></div>
-                    </div>
-                    
-                    <div className="space-y-8 text-lg md:text-xl text-slate-600 leading-loose font-sans">
-                        <div className="p-6 bg-slate-50 rounded-2xl border-r-4 border-brand-accent/30">
-                           <p className="font-sans">{details.enhancedDescription.area}</p>
+                        <div className="space-y-6">
+                            <InputField 
+                                icon={<BuildingIcon/>} 
+                                name="address" 
+                                label="כתובת הנכס" 
+                                placeholder="לדוגמה: שדרות רוטשילד 10, תל אביב" 
+                                value={formData.address} 
+                                onChange={handleChange} 
+                                required 
+                                className={inputClasses}
+                            />
+                            <InputField 
+                                icon={<PriceIcon/>} 
+                                name="price" 
+                                label="מחיר שיווק" 
+                                placeholder="לדוגמה: 4,500,000 ₪" 
+                                value={formData.price} 
+                                onChange={handleChange} 
+                                required 
+                                className={inputClasses}
+                            />
+                            <div>
+                                <label className="block text-sm font-medium text-brand-accent mb-2">תיאור הנכס (טקסט חופשי)</label>
+                                <textarea 
+                                    name="description" 
+                                    rows={8} 
+                                    className={`${inputClasses} resize-none leading-relaxed h-auto`} 
+                                    placeholder={`פרטו כאן את כל המידע על הנכס. ה-AI יחלץ מתוכו את הנתונים המדויקים.
+דוגמה:
+"דירת 4 חדרים מהממת בקומה 3 מתוך 8. כ-110 מ"ר בנוי + 12 מ"ר מרפסת שמש מפנקת.
+יש 2 חניות תת קרקעיות ומחסן צמוד. כיווני אוויר דרום ומערב עם בריזה מהים.
+בבניין יש מעלית וממ"ד תקני. הדירה משופצת מהיסוד..."`} 
+                                    value={formData.description} 
+                                    onChange={handleChange} 
+                                    required 
+                                />
+                            </div>
                         </div>
-                        <div>
-                           <p className="font-sans">{details.enhancedDescription.property}</p>
+                    </div>
+
+                    <div className={`${cardClasses} p-8`}>
+                        <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3 pb-4 border-b border-slate-700/50">
+                            <span className="bg-blue-600 p-2 rounded-lg text-white shadow-lg shadow-blue-500/20"><UserIcon /></span>
+                            פרטי קשר להצגה באתר
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <InputField icon={<UserIcon/>} name="agentName" label="שם הסוכן" placeholder="ישראל ישראלי" value={formData.agentName} onChange={handleChange} required className={inputClasses} />
+                            <InputField icon={<WhatsAppIcon/>} name="agentWhatsApp" label="וואטסאפ (מספר מלא)" placeholder="972501234567" value={formData.agentWhatsApp} onChange={handleChange} required className={inputClasses} />
+                            <div className="md:col-span-2">
+                                <InputField icon={<EmailIcon/>} name="agentEmail" label="אימייל לקבלת לידים" placeholder="agent@agency.com" value={formData.agentEmail} onChange={handleChange} required type="email" className={inputClasses} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Media Sidebar - 4 Columns */}
+                <div className="lg:col-span-5 space-y-8">
+                    <div className={`${cardClasses} p-8 h-full flex flex-col`}>
+                        <h2 className="text-2xl font-bold text-white mb-8 flex items-center gap-3 pb-4 border-b border-slate-700/50">
+                             <span className="bg-purple-600 p-2 rounded-lg text-white shadow-lg shadow-purple-500/20"><ImageIcon /></span>
+                            מדיה ולוגו
+                        </h2>
+                        
+                        <div className="flex-1 flex flex-col gap-8">
+                            {/* Image Upload Area */}
+                            <div className="relative group flex-1 min-h-[250px]">
+                                <input 
+                                    type="file" 
+                                    id="file-upload" 
+                                    multiple 
+                                    accept="image/*" 
+                                    onChange={handleFileChange} 
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" 
+                                />
+                                <div className="absolute inset-0 border-2 border-dashed border-slate-600 rounded-2xl p-8 text-center bg-slate-800/30 group-hover:border-brand-accent group-hover:bg-slate-800/50 transition-all duration-300 flex flex-col items-center justify-center">
+                                    <div className="w-20 h-20 rounded-full bg-slate-700/50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform group-hover:bg-brand-accent/20 group-hover:text-brand-accent text-slate-400">
+                                        <UploadIcon />
+                                    </div>
+                                    <p className="text-lg font-medium text-white">לחץ כאן או גרור תמונות</p>
+                                    <p className="text-sm text-slate-400 mt-2">JPG, PNG עד 10 תמונות</p>
+                                </div>
+                            </div>
+
+                            {/* Image Grid */}
+                            {images.length > 0 && (
+                                <div className="bg-slate-900/50 rounded-xl p-4">
+                                    <p className="text-sm text-slate-400 mb-3 flex justify-between">
+                                        <span>תמונות שנבחרו ({images.length})</span>
+                                        <span className="text-brand-accent text-xs">ניתן לגרור לשינוי סדר</span>
+                                    </p>
+                                    <div className="grid grid-cols-3 gap-3 overflow-y-auto max-h-[240px] pr-2 custom-scrollbar">
+                                        {images.map((img, index) => (
+                                            <div 
+                                                key={index} 
+                                                className="relative aspect-w-1 aspect-h-1 group rounded-lg overflow-hidden cursor-move ring-1 ring-white/10 hover:ring-brand-accent"
+                                                draggable 
+                                                onDragStart={() => handleDragStart(index)} 
+                                                onDragEnter={() => handleDragEnter(index)} 
+                                                onDragEnd={handleDrop} 
+                                                onDragOver={(e) => e.preventDefault()}
+                                            >
+                                                <img src={img} alt="" className="w-full h-full object-cover" />
+                                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200">
+                                                    <button 
+                                                        type="button"
+                                                        onClick={() => handleDeleteImage(index)} 
+                                                        className="text-white hover:text-red-400 p-2"
+                                                    >
+                                                        <TrashIcon />
+                                                    </button>
+                                                </div>
+                                                {index === 0 && <div className="absolute top-0 right-0 bg-brand-accent text-white text-[10px] px-1.5 py-0.5 font-bold rounded-bl">ראשי</div>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Logo Upload */}
+                            <div className="pt-6 border-t border-slate-700/50">
+                                <label className="block text-sm font-medium text-brand-accent mb-3">לוגו המשרד (אופציונלי)</label>
+                                <div className="flex items-center gap-4 bg-slate-800/50 p-3 rounded-xl border border-slate-700/50">
+                                    <div className="h-16 w-16 bg-white rounded-lg flex items-center justify-center overflow-hidden shadow-sm shrink-0">
+                                        {logo ? (
+                                            <img src={logo} alt="Logo" className="h-full w-full object-contain" />
+                                        ) : (
+                                            <span className="text-slate-300 text-xs text-center px-1">אין לוגו</span>
+                                        )}
+                                    </div>
+                                    <label className="flex-1 cursor-pointer group">
+                                        <div className="bg-slate-700 group-hover:bg-slate-600 text-white py-2.5 px-4 rounded-lg text-sm text-center transition-colors font-medium border border-white/5">
+                                            בחר קובץ לוגו
+                                        </div>
+                                        <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <aside className="lg:col-span-5 space-y-8">
-                <div className="bg-slate-900 text-white p-10 rounded-3xl shadow-2xl text-center relative overflow-hidden">
-                    <p className="text-slate-400 mb-3 text-sm uppercase tracking-widest font-bold font-sans">מחיר מבוקש</p>
-                    <div className="flex items-start justify-center gap-1 text-white direction-ltr font-sans">
-                        <span className="text-5xl md:text-6xl font-extrabold tracking-tight">{formattedPrice}</span>
-                        <span className="text-3xl font-light mt-2 text-brand-accent">₪</span>
-                    </div>
-                </div>
-
-                <FeaturesSection features={details.features} />
-            </aside>
-        </section>
-
-        <section ref={leadFormRef} className="mt-24 max-w-4xl mx-auto">
-            <LeadForm 
-                agentWhatsApp={details.agentWhatsApp} 
-                agentEmail={details.agentEmail} 
-                propertyTitle={details.generatedTitle} 
-                agentName={details.agentName} 
-            />
-        </section>
-      </main>
+            <div className="pt-6 pb-12">
+                <button 
+                    type="submit" 
+                    disabled={isLoading} 
+                    className={`${btnClasses} w-full text-xl py-5 flex items-center justify-center gap-4 group`}
+                >
+                    {isLoading ? (
+                        <>
+                            <Spinner />
+                            <span className="animate-pulse">ה-AI מנתח את הנכס ובונה את הדף...</span>
+                        </>
+                    ) : (
+                        <>
+                            <span>צור דף נחיתה עכשיו</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
+                        </>
+                    )}
+                </button>
+                <p className="text-center text-slate-500 mt-4 text-sm">לחיצה על הכפתור תיצור דף נחיתה ציבורי שניתן לשיתוף</p>
+            </div>
+        </form>
+      </div>
     </div>
   );
 };
 
-const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>;
+const InputField: React.FC<{ icon: React.ReactNode; name: string; label: string; placeholder: string; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; required?: boolean; type?: string; className: string }> = ({ icon, name, label, className, ...props }) => (
+    <div>
+        <label htmlFor={name} className="block text-sm font-medium text-slate-300 mb-2">{label}</label>
+        <div className="relative group">
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 group-focus-within:text-brand-accent transition-colors">
+                {icon}
+            </div>
+            <input 
+                id={name} 
+                name={name} 
+                {...props} 
+                className={`${className} pr-12`} 
+            />
+        </div>
+    </div>
+);
+
+const Spinner: React.FC = () => (
+    <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+);
