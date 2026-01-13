@@ -8,12 +8,10 @@ export interface PropertyFormData {
   agentWhatsApp: string;
   images: string[]; // array of base64 strings
   logo?: string; // base64 string
-  targetAudience?: string[]; // קהלי יעד נבחרים
 }
 
 export interface PropertyFeatures {
   apartmentArea?: string;
-  lotArea?: string;
   balconyArea?: string;
   rooms?: string;
   floor?: string;
