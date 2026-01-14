@@ -1,89 +1,88 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-// We strictly read the API key inside the handler to avoid build-time caching issues
 export async function POST(request: Request) {
-  // Try multiple naming conventions to be helpful to the user
   const apiKey = process.env.API_KEY || 
                  process.env.GEMINI_API_KEY || 
                  process.env.NEXT_PUBLIC_API_KEY || 
                  process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
   if (!apiKey) {
-    console.error("CRITICAL ERROR: API_KEY is missing from server environment variables.");
-    return new Response(JSON.stringify({ 
-        error: "Server configuration error: API_KEY is missing." 
-    }), {
+    return new Response(JSON.stringify({ error: "Server configuration error: API_KEY is missing." }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
-  // Initialize client per request to ensure it uses the current key
   const ai = new GoogleGenAI({ apiKey });
 
   try {
-    const { originalDescription, address } = await request.json();
+    const { originalDescription, address, targetAudience } = await request.json();
     
     if (!originalDescription || !address) {
-        return new Response(JSON.stringify({ error: "Missing originalDescription or address in request body" }), {
+        return new Response(JSON.stringify({ error: "Missing originalDescription or address" }), {
             status: 400,
             headers: { 'Content-Type': 'application/json' },
         });
     }
 
-    // System instruction
+    const audienceString = targetAudience && targetAudience.length > 0 && !targetAudience.includes("לא רלבנטי") 
+        ? targetAudience.join(", ") 
+        : "קהל כללי";
+
+    // System instruction updated for target audience focus
     const systemInstruction = `
-    You are an Expert Real Estate Copywriter and a Strict Data Analyst, writing in Hebrew.
+    You are an Expert Real Estate Marketing Strategist and Copywriter, writing in Hebrew.
     
-    TASK 1: CREATIVE COPYWRITING (For 'title' and 'description' fields)
-    Transform the user's input into high-converting Hebrew marketing copy.
+    CRITICAL TASK: Customize the marketing copy for the following Target Audience: [${audienceString}].
+    
+    COPYWRITING STRATEGY PER AUDIENCE:
+    - Families: Focus on safety, community, schools, parks, rooms, and space.
+    - Investors: Focus on ROI, yield, demand, location potential, and ease of management.
+    - Upgraders (משפרי דיור): Focus on luxury, size, premium features, balcony, and status.
+    - Adults/Downsizers: Focus on accessibility, elevator, convenience, quietness, and maintenance.
     
     COPYWRITING RULES:
-    1.  **Headline (Title):** Start with a specific BENEFIT or emotional hook.
-    2.  **Specifics over Generics:** Avoid fluffy phrases.
-    3.  **Action Verbs:** Use words like "Discover," "Wake up to," "Host," "Fall in love".
-    4.  **CLEAN TEXT ONLY:** Do NOT use Markdown formatting. Return clean, plain text.
+    1. **Headline (Title):** Create a powerful hook specifically for [${audienceString}].
+    2. **Language:** Professional, emotional, and persuasive.
+    3. **Tone:** High-end boutique agency style.
+    4. **CLEAN TEXT ONLY:** Do NOT use Markdown formatting.
     
-    TASK 2: STRICT DATA EXTRACTION (For 'features' object)
-    1.  **NO HALLUCINATIONS:** If a feature is not explicitly written in the text, return an empty string "".
-    2.  **Exact Numbers:** Extract numbers accurately.
-    3.  **Lot Area:** Specifically look for mentions of "שטח מגרש" or land area.
-    
-    OUTPUT FORMAT: JSON ONLY.
+    DATA EXTRACTION:
+    Extract all features accurately. If a value is missing, return empty string "".
     `;
 
     const prompt = `
-    Analyze the following property description and address. 
-    
+    Analyze this property.
+    Target Audience: ${audienceString}
     Address: ${address}
-    Description: "${originalDescription}"
+    User Description: "${originalDescription}"
 
-    Required Output JSON Format:
+    Output JSON structure:
     {
-      "title": "A Benefit-Driven Title in Hebrew",
+      "title": "Marketing Headline for ${audienceString}",
       "description": {
-        "area": "Detailed marketing text about the location benefits (approx 50-60 words).",
-        "property": "Detailed marketing copy about the apartment/house (approx 50-60 words).",
-        "cta": "Urgent Call to Action in Hebrew"
+        "area": "Area marketing copy focused on benefits for ${audienceString} (60 words).",
+        "property": "Property marketing copy highlighting features attractive to ${audienceString} (60 words).",
+        "cta": "Compelling call to action"
       },
       "features": {
-        "rooms": "Number only.",
-        "apartmentArea": "Number only (built area).",
-        "lotArea": "Number only (land/lot area).",
-        "balconyArea": "Number only.",
-        "floor": "Number only.",
-        "parking": "Number only.",
-        "elevator": "Return 'יש' or empty.",
-        "safeRoom": "Return 'ממ\"ד' or empty.",
-        "storage": "Return 'יש' or empty.",
-        "airDirections": "Directions if mentioned."
+        "rooms": "Number",
+        "apartmentArea": "Number",
+        "lotArea": "Number",
+        "balconyArea": "Number",
+        "floor": "Number",
+        "parking": "Number",
+        "elevator": "יש/אין",
+        "safeRoom": "ממ\"ד/אין",
+        "storage": "יש/אין",
+        "airDirections": "Directions"
       }
     }
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3-pro-preview', // Pro for better reasoning on audience customization
       contents: prompt,
       config: {
         systemInstruction: systemInstruction,
@@ -91,21 +90,14 @@ export async function POST(request: Request) {
       },
     });
 
-    const responseText = response.text;
-    
-    if (!responseText) {
-      throw new Error("Gemini API returned an empty text response.");
-    }
-    
-    return new Response(responseText, {
+    return new Response(response.text, {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error("Error in API route:", error);
-    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ error: "Failed to generate content" }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
     });

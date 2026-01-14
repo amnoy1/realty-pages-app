@@ -52,7 +52,6 @@ const HomePage: React.FC = () => {
                     photoURL: currentUser.photoURL,
                     email: currentUser.email,
                     role: isUserAdmin ? 'admin' : 'user',
-                    // Preserve createdAt if it exists
                     createdAt: existingData.createdAt || now
                 });
             } else {
@@ -82,7 +81,11 @@ const HomePage: React.FC = () => {
       const response = await fetch('/api/generate-content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ originalDescription: formData.description, address: formData.address }),
+        body: JSON.stringify({ 
+          originalDescription: formData.description, 
+          address: formData.address,
+          targetAudience: formData.targetAudience 
+        }),
       });
       const generatedData = await response.json();
       setPropertyDetails({
