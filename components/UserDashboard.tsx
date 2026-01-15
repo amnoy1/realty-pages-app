@@ -27,77 +27,129 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
     try {
       const qP = query(collection(db, 'landingPages'), where('userId', '==', userId));
       const pSnap = await getDocs(qP);
-      setProperties(pSnap.docs.map(d => ({ ...d.data(), id: d.id } as any)));
+      const fetchedProps = pSnap.docs.map(d => ({ ...(d.data() as object), id: d.id } as PropertyDetails));
+      setProperties(fetchedProps);
 
       const qL = query(collection(db, 'leads'), where('ownerId', '==', userId));
       const lSnap = await getDocs(qL);
-      setLeads(lSnap.docs.map(d => ({ ...d.data(), id: d.id } as any)));
+      setLeads(lSnap.docs.map(d => ({ ...(d.data() as object), id: d.id } as Lead)));
     } finally { setLoading(false); }
   };
 
   useEffect(() => { fetchData(); }, [userId]);
 
-  const viewLeads = (id: string) => {
+  const viewLeadsForProperty = (id: string) => {
     setFilterId(id);
     setActiveTab('leads');
   };
 
   const filteredLeads = filterId ? leads.filter(l => l.propertyId === filterId) : leads;
-  const getAddress = (id: string) => properties.find(p => p.id === id)?.address || 'כתובת לא ידועה';
+  
+  const getPropertyAddress = (id: string) => {
+    const prop = properties.find(p => p.id === id);
+    return prop ? prop.address : 'נכס לא נמצא';
+  };
 
-  if (loading) return <div className="text-center py-20">טוען נתונים...</div>;
+  if (loading) return (
+    <div className="text-center py-20 flex flex-col items-center">
+        <div className="w-10 h-10 border-4 border-brand-accent border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-slate-400">טוען את הנתונים שלך...</p>
+    </div>
+  );
 
   return (
-    <div className="container mx-auto px-4 py-8" dir="rtl">
+    <div className="container mx-auto px-4 py-8 animate-fade-in" dir="rtl">
       <div className="flex gap-4 mb-8">
-        <button onClick={() => { setActiveTab('properties'); setFilterId(null); }} className={`px-6 py-2 rounded-full font-bold ${activeTab === 'properties' ? 'bg-white text-slate-900' : 'text-slate-400'}`}>נכסים</button>
-        <button onClick={() => setActiveTab('leads')} className={`px-6 py-2 rounded-full font-bold ${activeTab === 'leads' ? 'bg-white text-slate-900' : 'text-slate-400'}`}>לידים ({leads.length})</button>
+        <button 
+          onClick={() => { setActiveTab('properties'); setFilterId(null); }} 
+          className={`px-8 py-3 rounded-xl font-bold transition-all ${activeTab === 'properties' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+        >
+          הנכסים שלי
+        </button>
+        <button 
+          onClick={() => setActiveTab('leads')} 
+          className={`px-8 py-3 rounded-xl font-bold transition-all relative ${activeTab === 'leads' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}
+        >
+          לידים נכנסים ({leads.length})
+          {leads.length > 0 && activeTab !== 'leads' && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full animate-pulse">
+                  {leads.length}
+              </span>
+          )}
+        </button>
       </div>
 
       {activeTab === 'properties' ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {properties.map(p => (
-            <div key={p.id} className="bg-slate-800 rounded-xl overflow-hidden border border-slate-700">
-              <img src={p.images[0]} className="h-40 w-full object-cover" />
-              <div className="p-4">
-                <h3 className="font-bold text-white line-clamp-1">{p.title}</h3>
-                <p className="text-slate-400 text-sm mb-4">{p.address}</p>
-                <div className="flex gap-2">
-                   <button onClick={() => viewLeads(p.id!)} className="flex-1 bg-brand-accent text-white py-2 rounded-lg flex items-center justify-center gap-2"><UsersIcon/> לידים</button>
-                   <button onClick={() => onEdit(p)} className="p-2 bg-slate-700 text-white rounded-lg">ערוך</button>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {properties.length === 0 ? (
+              <div className="col-span-full py-20 text-center border-2 border-dashed border-slate-700 rounded-3xl">
+                  <p className="text-slate-500 text-xl">עדיין לא יצרת נכסים.</p>
+                  <button onClick={onCreateNew} className="mt-4 text-brand-accent font-bold hover:underline">צור את הנכס הראשון שלך עכשיו</button>
+              </div>
+          ) : properties.map(p => (
+            <div key={p.id} className="bg-slate-800/50 rounded-2xl overflow-hidden border border-slate-700 hover:border-brand-accent/50 transition-all shadow-lg group">
+              <div className="relative h-48">
+                <img src={p.images[0]} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                <div className="absolute bottom-4 right-4 left-4">
+                    <h3 className="font-bold text-white text-lg line-clamp-1">{p.generatedTitle}</h3>
+                    <p className="text-slate-300 text-sm line-clamp-1">{p.address}</p>
                 </div>
               </div>
+              <div className="p-4 flex gap-2">
+                   <button 
+                    onClick={() => viewLeadsForProperty(p.id!)} 
+                    className="flex-1 bg-brand-accent hover:bg-brand-accentHover text-white py-2.5 rounded-xl flex items-center justify-center gap-2 font-bold transition-colors"
+                   >
+                     <UsersIcon/> לידים
+                   </button>
+                   <button onClick={() => onEdit(p)} className="px-4 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-colors font-bold">ערוך</button>
+                </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="bg-slate-800 rounded-xl overflow-hidden">
+        <div className="bg-slate-800/50 rounded-3xl border border-slate-700 overflow-hidden shadow-2xl">
           {filterId && (
-            <div className="p-4 bg-brand-accent/20 flex justify-between items-center border-b border-white/10">
-              <span className="font-bold text-brand-accent">מציג לידים עבור: {getAddress(filterId)}</span>
-              <button onClick={() => setFilterId(null)} className="text-sm underline text-slate-400">הצג הכל</button>
+            <div className="p-5 bg-brand-accent/10 flex justify-between items-center border-b border-white/10">
+              <span className="font-bold text-brand-accent flex items-center gap-2">
+                  <UsersIcon />
+                  מציג לידים עבור: {getPropertyAddress(filterId)}
+              </span>
+              <button onClick={() => setFilterId(null)} className="text-sm font-bold text-slate-400 hover:text-white underline">הצג את כל הלידים</button>
             </div>
           )}
-          <table className="w-full text-right">
-            <thead className="bg-slate-900/50 text-slate-400 text-sm uppercase">
-              <tr>
-                <th className="p-4">תאריך</th>
-                <th className="p-4">שם</th>
-                <th className="p-4">טלפון</th>
-                <th className="p-4">כתובת הנכס</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredLeads.map(l => (
-                <tr key={l.id} className="border-b border-slate-700 hover:bg-slate-700/50">
-                  <td className="p-4 text-xs text-slate-500">{new Date(l.createdAt).toLocaleDateString()}</td>
-                  <td className="p-4 text-white font-bold">{l.fullName}</td>
-                  <td className="p-4 text-brand-accent">{l.phone}</td>
-                  <td className="p-4 text-slate-300 text-sm">{getAddress(l.propertyId)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          
+          <div className="overflow-x-auto">
+              <table className="w-full text-right border-collapse">
+                <thead className="bg-slate-900/50 text-slate-400 text-xs uppercase tracking-widest font-black">
+                  <tr>
+                    <th className="p-5">תאריך</th>
+                    <th className="p-5">שם המתעניין</th>
+                    <th className="p-5">טלפון</th>
+                    <th className="p-5">כתובת הנכס</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-700">
+                  {filteredLeads.length === 0 ? (
+                      <tr>
+                          <td colSpan={4} className="p-20 text-center text-slate-500 italic">לא נמצאו לידים להצגה.</td>
+                      </tr>
+                  ) : filteredLeads.map(l => (
+                    <tr key={l.id} className="hover:bg-slate-700/30 transition-colors">
+                      <td className="p-5 text-xs text-slate-500">{new Date(l.createdAt).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
+                      <td className="p-5 text-white font-bold">{l.fullName}</td>
+                      <td className="p-5">
+                          <a href={`tel:${l.phone}`} className="text-brand-accent hover:underline font-mono">{l.phone}</a>
+                      </td>
+                      <td className="p-5 text-slate-300 text-sm max-w-[300px] truncate" title={getPropertyAddress(l.propertyId)}>
+                        {getPropertyAddress(l.propertyId)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+          </div>
         </div>
       )}
     </div>
