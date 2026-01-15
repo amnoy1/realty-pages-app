@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { db } from '../lib/firebase';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import type { PropertyDetails, UserProfile, Lead } from '../types';
 
 export const AdminDashboard: React.FC = () => {
@@ -16,7 +16,7 @@ export const AdminDashboard: React.FC = () => {
 
   const loadData = async () => {
     if (!db) {
-      setError("חיבור למסד הנתונים לא זמין");
+      setError("חיבור ל-Firebase לא הוגדר כראוי ב-Environment Variables.");
       setLoading(false);
       return;
     }
@@ -25,21 +25,39 @@ export const AdminDashboard: React.FC = () => {
     setError(null);
     
     try {
-      // שליפת כל האוספים במקביל לשיפור ביצועים
-      const [uSnap, pSnap, lSnap] = await Promise.all([
-        getDocs(collection(db, 'users')),
-        getDocs(collection(db, 'landingPages')),
-        getDocs(collection(db, 'leads'))
+      console.log("[Admin] Starting to fetch system data...");
+      
+      // שליפת נתונים עם טיפול בשגיאות פרטני לכל אוסף
+      const fetchCollection = async (name: string) => {
+        try {
+          const snap = await getDocs(collection(db!, name));
+          return snap.docs.map(d => ({ ...(d.data() as any), id: d.id, uid: d.id }));
+        } catch (e: any) {
+          console.error(`[Admin] Error fetching ${name}:`, e);
+          throw new Error(`אין גישה לאוסף ${name}. וודא שהגדרת Rules ב-Firebase.`);
+        }
+      };
+
+      const [users, props, leads] = await Promise.all([
+        fetchCollection('users'),
+        fetchCollection('landingPages'),
+        fetchCollection('leads')
       ]);
       
-      const users = uSnap.docs.map(d => ({ ...(d.data() as any), uid: d.id } as UserProfile));
-      const props = pSnap.docs.map(d => ({ ...(d.data() as any), id: d.id } as PropertyDetails));
-      const leads = lSnap.docs.map(d => ({ ...(d.data() as any), id: d.id } as Lead));
+      setData({ 
+        users: users as UserProfile[], 
+        props: props as PropertyDetails[], 
+        leads: leads as Lead[] 
+      });
       
-      setData({ users, props, leads });
+      console.log("[Admin] Data loaded successfully:", { 
+        users: users.length, 
+        props: props.length, 
+        leads: leads.length 
+      });
+
     } catch (err: any) {
-      console.error("Admin load error:", err);
-      setError("שגיאה בטעינת נתוני המערכת. וודא שיש לך הרשאות מנהל.");
+      setError(err.message || "שגיאה לא ידועה בטעינת הנתונים.");
     } finally {
       setLoading(false);
     }
@@ -52,16 +70,29 @@ export const AdminDashboard: React.FC = () => {
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-32" dir="rtl">
       <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand-accent border-t-transparent mb-4"></div>
-      <p className="text-slate-400 font-bold animate-pulse">מרכז נתונים בטעינה...</p>
+      <p className="text-slate-400 font-bold animate-pulse">מתחבר לבסיס הנתונים...</p>
     </div>
   );
 
   if (error) return (
     <div className="text-center py-20 px-4" dir="rtl">
-      <div className="bg-red-500/10 text-red-500 p-6 rounded-2xl border border-red-500/20 max-w-lg mx-auto">
-        <h2 className="text-xl font-bold mb-2">אופס! תקלה</h2>
-        <p>{error}</p>
-        <button onClick={loadData} className="mt-4 bg-red-500 text-white px-6 py-2 rounded-lg font-bold">נסה שוב</button>
+      <div className="bg-red-500/10 text-red-500 p-8 rounded-3xl border border-red-500/20 max-w-2xl mx-auto shadow-2xl">
+        <div className="w-16 h-16 bg-red-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">!</div>
+        <h2 className="text-2xl font-bold mb-4">שגיאת הרשאות או נתונים</h2>
+        <p className="text-lg mb-6 opacity-90">{error}</p>
+        <div className="bg-black/20 p-4 rounded-xl text-right text-xs font-mono mb-6 overflow-x-auto">
+          <p className="text-amber-400 mb-2 font-bold">// פתרון אפשרי: העתק את החוקים הבאים ל-Firestore Rules</p>
+          <pre className="text-slate-300">
+{`service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}`}
+          </pre>
+        </div>
+        <button onClick={loadData} className="bg-white text-red-600 px-8 py-3 rounded-xl font-bold hover:bg-slate-100 transition-all">נסה שוב</button>
       </div>
     </div>
   );
@@ -70,100 +101,62 @@ export const AdminDashboard: React.FC = () => {
     <div className="container mx-auto px-4 py-8 animate-fade-in" dir="rtl">
       <div className="flex justify-between items-center mb-10 border-b border-slate-700 pb-6">
         <div>
-            <h1 className="text-3xl font-black text-white">ניהול מערכת</h1>
-            <p className="text-slate-400 mt-1">מבט על של הפעילות ב-Mango Realty</p>
+            <h1 className="text-3xl font-black text-white">דשבורד ניהול מערכת</h1>
+            <p className="text-slate-400 mt-1">ריכוז נתונים מכלל הסוכנים והנכסים</p>
         </div>
-        <button onClick={loadData} className="bg-slate-800 hover:bg-slate-700 text-white p-3 rounded-xl transition-all border border-slate-700">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        <button onClick={loadData} className="bg-brand-accent hover:bg-brand-accentHover text-white px-6 py-2 rounded-xl font-bold transition-all shadow-lg flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            רענן נתונים
         </button>
       </div>
       
-      {/* לוח סטטיסטיקות ראשי */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="bg-slate-800/50 p-8 rounded-3xl border border-blue-500/30 shadow-xl backdrop-blur-sm relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
-          <p className="text-blue-400 text-xs uppercase font-black tracking-widest mb-2">סוכנים רשומים</p>
-          <p className="text-6xl font-black text-white">{data.users.length}</p>
-        </div>
-        
-        <div className="bg-slate-800/50 p-8 rounded-3xl border border-amber-500/30 shadow-xl backdrop-blur-sm relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all"></div>
-          <p className="text-amber-500 text-xs uppercase font-black tracking-widest mb-2">דפי נחיתה פעילים</p>
-          <p className="text-6xl font-black text-white">{data.props.length}</p>
-        </div>
-        
-        <div className="bg-slate-800/50 p-8 rounded-3xl border border-green-500/30 shadow-xl backdrop-blur-sm relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-green-500/10 rounded-full blur-2xl group-hover:bg-green-500/20 transition-all"></div>
-          <p className="text-green-400 text-xs uppercase font-black tracking-widest mb-2">סה"כ לידים במערכת</p>
-          <p className="text-6xl font-black text-white">{data.leads.length}</p>
-        </div>
+        <StatCard title="סוכנים במערכת" value={data.users.length} color="blue" />
+        <StatCard title="דפי נחיתה" value={data.props.length} color="amber" />
+        <StatCard title="לידים שנאספו" value={data.leads.length} color="green" />
       </div>
 
-      {/* טבלת סוכנים מפורטת */}
       <div className="bg-slate-800/80 rounded-3xl border border-slate-700 overflow-hidden shadow-2xl backdrop-blur-md">
         <div className="p-6 bg-slate-900/50 border-b border-slate-700 flex justify-between items-center">
-            <h3 className="font-bold text-lg text-white">פירוט פעילות סוכנים</h3>
-            <span className="text-xs text-slate-500">מעודכן לזמן אמת</span>
+            <h3 className="font-bold text-lg text-white">פעילות סוכנים</h3>
+            <div className="flex gap-4 text-xs">
+                <span className="flex items-center gap-1 text-blue-400"><div className="w-2 h-2 rounded-full bg-blue-400"></div> סוכנים</span>
+                <span className="flex items-center gap-1 text-amber-400"><div className="w-2 h-2 rounded-full bg-amber-400"></div> נכסים</span>
+                <span className="flex items-center gap-1 text-green-400"><div className="w-2 h-2 rounded-full bg-green-400"></div> לידים</span>
+            </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-right">
-            <thead className="text-slate-500 text-xs bg-slate-900/30 uppercase tracking-tighter">
+            <thead className="text-slate-500 text-[10px] bg-slate-900/30 uppercase font-black">
               <tr>
-                <th className="p-5">פרטי סוכן</th>
-                <th className="p-5 text-center">נכסים שנוצרו</th>
-                <th className="p-5 text-center">לידים שנאספו</th>
-                <th className="p-5">תאריך הצטרפות</th>
-                <th className="p-5">סטטוס</th>
+                <th className="p-5">סוכן</th>
+                <th className="p-5 text-center">נכסים</th>
+                <th className="p-5 text-center">לידים</th>
+                <th className="p-5">מייל</th>
+                <th className="p-5">הצטרפות</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-700/50">
-              {data.users.length === 0 ? (
-                <tr>
-                    <td colSpan={5} className="p-20 text-center text-slate-500">אין סוכנים רשומים במערכת עדיין</td>
-                </tr>
-              ) : (
-                data.users.map(u => {
-                  const uProps = data.props.filter(p => p.userId === u.uid);
-                  const uLeads = data.leads.filter(l => l.ownerId === u.uid);
-                  return (
-                    <tr key={u.uid} className="hover:bg-white/5 transition-colors group">
-                      <td className="p-5">
-                        <div className="flex items-center gap-4">
-                            {u.photoURL ? (
-                                <img src={u.photoURL} alt="" className="w-10 h-10 rounded-xl border border-slate-600 object-cover" />
-                            ) : (
-                                <div className="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center font-bold text-white border border-slate-600">
-                                    {u.displayName?.charAt(0) || 'U'}
-                                </div>
-                            )}
-                            <div>
-                                <div className="text-white font-black group-hover:text-brand-accent transition-colors">{u.displayName || 'סוכן ללא שם'}</div>
-                                <div className="text-[11px] text-slate-500 font-medium">{u.email}</div>
-                            </div>
+              {data.users.map(u => {
+                const uProps = data.props.filter(p => p.userId === u.uid);
+                const uLeads = data.leads.filter(l => l.ownerId === u.uid);
+                return (
+                  <tr key={u.uid} className="hover:bg-white/5 transition-colors group">
+                    <td className="p-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold text-white border border-slate-600 group-hover:border-brand-accent transition-colors">
+                            {u.photoURL ? <img src={u.photoURL} className="w-full h-full rounded-full object-cover" /> : (u.displayName?.charAt(0) || 'U')}
                         </div>
-                      </td>
-                      <td className="p-5 text-center">
-                        <span className="bg-slate-700/50 text-white px-3 py-1 rounded-full text-xs font-bold border border-slate-600">
-                            {uProps.length}
-                        </span>
-                      </td>
-                      <td className="p-5 text-center">
-                        <span className="bg-green-500/10 text-green-400 px-3 py-1 rounded-full text-xs font-bold border border-green-500/20">
-                            {uLeads.length}
-                        </span>
-                      </td>
-                      <td className="p-5 text-slate-400 text-xs font-medium">
-                        {u.createdAt ? new Date(u.createdAt).toLocaleDateString('he-IL') : '-'}
-                      </td>
-                      <td className="p-5">
-                        <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase ${u.role === 'admin' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'}`}>
-                            {u.role === 'admin' ? 'מנהל' : 'סוכן'}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
+                        <div className="font-bold text-white">{u.displayName || 'סוכן ללא שם'}</div>
+                      </div>
+                    </td>
+                    <td className="p-5 text-center"><span className="bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full text-xs font-black">{uProps.length}</span></td>
+                    <td className="p-5 text-center"><span className="bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-xs font-black">{uLeads.length}</span></td>
+                    <td className="p-5 text-slate-400 text-sm">{u.email}</td>
+                    <td className="p-5 text-slate-500 text-xs">{u.createdAt ? new Date(u.createdAt).toLocaleDateString('he-IL') : '-'}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -171,3 +164,17 @@ export const AdminDashboard: React.FC = () => {
     </div>
   );
 };
+
+const StatCard = ({ title, value, color }: { title: string, value: number, color: 'blue' | 'amber' | 'green' }) => {
+    const colors = {
+        blue: "border-blue-500/30 text-blue-400 bg-blue-500/5",
+        amber: "border-amber-500/30 text-amber-500 bg-amber-500/5",
+        green: "border-green-500/30 text-green-400 bg-green-500/5"
+    };
+    return (
+        <div className={`p-8 rounded-3xl border shadow-xl relative overflow-hidden ${colors[color]}`}>
+            <p className="text-xs uppercase font-black tracking-widest mb-2 opacity-80">{title}</p>
+            <p className="text-6xl font-black text-white">{value}</p>
+        </div>
+    );
+}
