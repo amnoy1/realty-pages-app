@@ -1,6 +1,5 @@
 
 export interface PropertyFormData {
-  title: string;
   address: string;
   description: string;
   price: string;
@@ -9,7 +8,7 @@ export interface PropertyFormData {
   agentWhatsApp: string;
   images: string[]; // array of base64 strings
   logo?: string; // base64 string
-  targetAudience?: string[];
+  targetAudience?: string[]; // קהלי יעד נבחרים
 }
 
 export interface PropertyFeatures {
@@ -34,7 +33,7 @@ export interface EnhancedDescription {
 export interface PropertyDetails extends PropertyFormData {
   id?: string;
   slug?: string;
-  userId?: string; 
+  userId?: string; // ה-UID של הסוכן שיצר את הדף
   userEmail?: string;
   createdAt?: number;
   generatedTitle: string;
@@ -49,14 +48,14 @@ export interface UserProfile {
   photoURL: string | null;
   role: 'user' | 'admin';
   lastLogin: number;
-  createdAt?: number;
+  createdAt?: number; // מועד הצטרפות למערכת
 }
 
 export interface Lead {
   id?: string;
-  propertyId: string;
-  propertyTitle: string;
-  ownerId: string;
+  propertyId: string;    // מזהה הנכס שעליו פנו
+  propertyTitle: string; // כותרת הנכס (לנוחות תצוגה)
+  ownerId: string;       // ה-UID של הסוכן (למי הליד שייך)
   fullName: string;
   phone: string;
   createdAt: number;
