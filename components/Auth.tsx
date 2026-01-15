@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { User } from 'firebase/auth';
 import { signInWithPopup, signOut, auth, GoogleAuthProvider, initializationError } from '../lib/firebase';
@@ -13,16 +14,14 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   
   const handleLogin = async () => {
-    // If auth is null, explain why based on our initialization logic
     if (!auth) {
       let errorMsg = "מערכת האימות (Auth) לא אותחלה.";
       if (initializationError) {
           errorMsg += `\nשגיאת Firebase: ${initializationError}`;
       } else {
-          errorMsg += "\nסיבה: מפתחות Firebase חסרים ב-Environment Variables או בקובץ lib/firebase.ts.";
+          errorMsg += "\nסיבה: מפתחות Firebase חסרים.";
       }
       alert(errorMsg);
-      console.error("Firebase Auth object is null. Check your configuration.");
       return;
     }
 
@@ -30,18 +29,21 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
     
     try {
       const provider = new GoogleAuthProvider();
-      // Ensure we are calling this correctly
+      
+      // הוספת הגדרה המאלצת את גוגל להציג את בחירת החשבונות בכל פעם
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+
       await signInWithPopup(auth, provider);
     } catch (error: any) {
       console.error("Login attempt failed:", error);
       
       if (error.code === 'auth/unauthorized-domain') {
         const currentDomain = window.location.hostname;
-        alert(`הדומיין ${currentDomain} לא מורשה ב-Firebase.\nיש להוסיף אותו ב-Firebase Console -> Auth -> Settings -> Authorized Domains`);
+        alert(`הדומיין ${currentDomain} לא מורשה ב-Firebase.`);
       } else if (error.code === 'auth/popup-closed-by-user') {
         // No action needed
-      } else if (error.code === 'auth/configuration-not-found') {
-        alert("שגיאת תצורה: האימות לא הוגדר כראוי ב-Firebase Console. וודא שאישרת כניסה באמצעות Google.");
       } else {
         alert(`התחברות נכשלה: ${error.message || 'שגיאה לא ידועה'}`);
       }
@@ -66,11 +68,11 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
         <div className="flex items-center gap-3 bg-slate-800/90 backdrop-blur-md p-2 pr-4 pl-2 rounded-full border border-slate-700 shadow-lg animate-fade-in">
            <div className="flex flex-col text-right hidden sm:flex">
               <span className="text-sm font-bold text-white leading-none">{user.displayName}</span>
-              <span className="text-sm text-slate-400 mt-0.5">{isAdmin ? 'מנהל מערכת' : 'משתמש רשום'}</span>
+              <span className="text-[10px] text-slate-400 mt-1 uppercase tracking-wider">{isAdmin ? 'מנהל מערכת' : 'סוכן רשום'}</span>
            </div>
            
            {user.photoURL ? (
-             <img src={user.photoURL} alt={user.displayName || 'User'} className="w-9 h-9 rounded-full border-2 border-slate-600" />
+             <img src={user.photoURL} alt={user.displayName || 'User'} className="w-9 h-9 rounded-full border-2 border-slate-600 object-cover" />
            ) : (
              <div className="w-9 h-9 rounded-full bg-brand-accent flex items-center justify-center text-white font-bold shadow-inner">
                {user.displayName?.charAt(0) || 'U'}
@@ -79,26 +81,26 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
            
            <div className="h-6 w-px bg-slate-600 mx-1"></div>
 
-           <div className="flex items-center gap-1.5">
+           <div className="flex items-center gap-1">
              {isAdmin && (
                 <button 
                   onClick={() => onViewChange('admin')}
-                  className={`text-xs px-3 py-1.5 rounded-lg transition-all font-medium ${currentView === 'admin' ? 'bg-purple-600 text-white shadow-md' : 'text-slate-300 hover:text-white hover:bg-slate-700'}`}
+                  className={`text-xs px-3 py-1.5 rounded-lg transition-all font-bold ${currentView === 'admin' ? 'bg-purple-600 text-white shadow-md' : 'text-slate-300 hover:text-white hover:bg-slate-700'}`}
                 >
-                  ניהול
+                  אדמין
                 </button>
              )}
              
              <button 
                 onClick={() => onViewChange('dashboard')}
-                className={`text-xs px-3 py-1.5 rounded-lg transition-all font-medium ${currentView === 'dashboard' ? 'bg-brand-accent text-white shadow-md' : 'text-slate-300 hover:text-white hover:bg-slate-700'}`}
+                className={`text-xs px-3 py-1.5 rounded-lg transition-all font-bold ${currentView === 'dashboard' ? 'bg-brand-accent text-white shadow-md' : 'text-slate-300 hover:text-white hover:bg-slate-700'}`}
              >
                 הנכסים שלי
              </button>
 
              <button 
                 onClick={() => onViewChange('create')}
-                className={`text-xs px-3 py-1.5 rounded-lg transition-all font-medium ${currentView === 'create' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-300 hover:text-white hover:bg-slate-700'}`}
+                className={`text-xs px-3 py-1.5 rounded-lg transition-all font-bold ${currentView === 'create' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-300 hover:text-white hover:bg-slate-700'}`}
              >
                 חדש
              </button>
@@ -106,7 +108,7 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
              <button 
                onClick={handleLogout}
                className="text-xs text-red-400 hover:text-red-300 hover:bg-red-500/20 px-2 py-1.5 rounded-lg transition-colors ml-1"
-               title="התנתק"
+               title="התנתק והחלף משתמש"
              >
                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
              </button>

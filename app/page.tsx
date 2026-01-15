@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { db, storage, auth, onAuthStateChanged, User, initializationError, debugEnv } from '../lib/firebase';
+import { db, storage, auth, onAuthStateChanged, User, initializationError, debugEnv, signOut } from '../lib/firebase';
 import { collection, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { slugify } from '../lib/slugify';
@@ -32,38 +32,48 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     setIsClient(true);
     if (!auth) return;
+    
     const unsubscribe = onAuthStateChanged(auth, async (currentUser: User | null) => {
+      console.log("[Auth State Change] User:", currentUser?.email);
       setUser(currentUser);
+      
       if (currentUser) {
         const userEmail = currentUser.email?.toLowerCase() || '';
         const isUserAdmin = ADMIN_EMAILS.some(email => email.toLowerCase() === userEmail);
         setIsAdmin(isUserAdmin);
         
         if (db) {
-            const userRef = doc(db, 'users', currentUser.uid);
-            const userSnap = await getDoc(userRef);
-            const now = Date.now();
-            
-            if (userSnap.exists()) {
-                const existingData = userSnap.data() as UserProfile;
-                await updateDoc(userRef, {
-                    lastLogin: now,
-                    displayName: currentUser.displayName,
-                    photoURL: currentUser.photoURL,
-                    email: currentUser.email,
-                    role: isUserAdmin ? 'admin' : 'user',
-                    createdAt: existingData.createdAt || now
-                });
-            } else {
-                await setDoc(userRef, {
-                    uid: currentUser.uid,
-                    email: currentUser.email,
-                    displayName: currentUser.displayName,
-                    photoURL: currentUser.photoURL,
-                    role: isUserAdmin ? 'admin' : 'user',
-                    lastLogin: now,
-                    createdAt: now
-                } as UserProfile);
+            try {
+              const userRef = doc(db, 'users', currentUser.uid);
+              const userSnap = await getDoc(userRef);
+              const now = Date.now();
+              
+              if (userSnap.exists()) {
+                  // עדכון פרטי התחברות אחרונה
+                  await updateDoc(userRef, {
+                      lastLogin: now,
+                      displayName: currentUser.displayName,
+                      photoURL: currentUser.photoURL,
+                      email: currentUser.email,
+                      // רק אם זה האדמין המוגדר, נעדכן לו את ה-Role ל-admin
+                      role: isUserAdmin ? 'admin' : (userSnap.data() as UserProfile).role || 'user'
+                  });
+              } else {
+                  // יצירת משתמש חדש במערכת (יוזר רגיל)
+                  console.log("[Auth] Creating new user profile in DB...");
+                  await setDoc(userRef, {
+                      uid: currentUser.uid,
+                      email: currentUser.email,
+                      displayName: currentUser.displayName,
+                      photoURL: currentUser.photoURL,
+                      role: isUserAdmin ? 'admin' : 'user',
+                      lastLogin: now,
+                      createdAt: now
+                  } as UserProfile);
+              }
+            } catch (error) {
+              console.error("[Auth] Error syncing user to DB:", error);
+              // אם יש שגיאת הרשאות כאן, זה אומר שהחוקים ב-Firebase חוסמים יצירת משתמש חדש
             }
         }
       } else {
@@ -191,7 +201,18 @@ const HomePage: React.FC = () => {
                    {!user && (
                        <div className="absolute inset-0 z-40 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
                            <h2 className="text-3xl font-bold text-white mb-4">ניהול נכסי נדל"ן</h2>
-                           <p className="text-slate-300">התחבר כדי להתחיל ליצור דפי נחיתה</p>
+                           <p className="text-slate-300 mb-6">התחבר כדי להתחיל ליצור דפי נחיתה מקצועיים</p>
+                           <button 
+                             onClick={() => {
+                               if (auth) {
+                                 const provider = new (window as any).firebase.auth.GoogleAuthProvider();
+                                 (window as any).firebase.auth().signInWithPopup(provider);
+                               }
+                             }}
+                             className="hidden" // הלחצן ב-Auth.tsx הוא המרכזי
+                           >
+                             התחבר עכשיו
+                           </button>
                        </div>
                    )}
                    <CreationForm onSubmit={handleFormSubmit} isLoading={isLoading} />
