@@ -1,3 +1,4 @@
+
 import { cache } from 'react';
 import { db } from '../../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -34,7 +35,8 @@ const getPropertyDetails = cache(async (slug: string): Promise<PropertyDetails |
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      return { ...docSnap.data(), id: docSnap.id } as PropertyDetails;
+      // FIX: Casting docSnap.data() to object before spreading to satisfy TS spread rules
+      return { ...(docSnap.data() as object), id: docSnap.id } as PropertyDetails;
     }
     return null;
   } catch (err) {
