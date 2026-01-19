@@ -136,20 +136,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
       .catch(err => console.error('Failed to copy: ', err));
   };
 
-  const shareOnFacebook = () => {
-    // השיוך לדף עסקי מתבצע בתוך חלון השיתוף של פייסבוק ע"י המשתמש (בחירה ב-Share on a Page you manage)
+  const shareOnFacebook = (target: 'feed' | 'page' = 'feed') => {
+    const url = window.location.href;
+    
+    // אם היעד הוא דף עסקי, נשתמש ב-URL ייעודי שעוקף בעיות SDK ומכוון ישירות לשם
+    if (target === 'page') {
+      const pageShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&display=popup&share_channel=page_pinnable`;
+      window.open(pageShareUrl, 'facebook-share-dialog', 'width=626,height=436');
+      return;
+    }
+
+    // שיתוף רגיל (פרופיל אישי עם אפשרות בחירה)
     if (window.FB) {
         window.FB.ui({
           method: 'share',
-          href: window.location.href,
+          href: url,
           display: 'popup'
         }, function(response: any){
-            console.log('FB Share Response:', response);
+            if (!response || response.error) {
+               // Fallback אם ה-SDK חסום
+               const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+               window.open(shareUrl, 'facebook-share-dialog', 'width=626,height=436');
+            }
         });
     } else {
-        const url = window.location.href;
         const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-        window.open(shareUrl, 'facebook-share-dialog', 'width=600,height=500');
+        window.open(shareUrl, 'facebook-share-dialog', 'width=626,height=436');
     }
   };
 
@@ -216,7 +228,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
            {isPreview && onReset && (
                 <button 
                     onClick={onReset} 
-                    className="bg-black/60 text-white py-2.5 px-6 rounded-full hover:bg-black/80 transition-all text-sm backdrop-blur-md border border-white/20 font-medium flex items-center gap-2 font-sans"
+                    className="bg-brand-accent/20 text-white py-2.5 px-6 rounded-full hover:bg-black/80 transition-all text-sm backdrop-blur-md border border-white/20 font-medium flex items-center gap-2 font-sans"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/></svg>
                     חזרה לעריכה
@@ -248,19 +260,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                         הפצה ברשתות
                     </div>
                     
-                    <div className="relative group/fb">
+                    <div className="space-y-2">
                         <button 
-                            onClick={shareOnFacebook}
+                            onClick={() => shareOnFacebook('feed')}
                             className="w-full bg-[#1877F2] text-white py-3 px-4 rounded-xl hover:bg-[#166fe5] transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg hover:shadow-blue-500/20 active:scale-95"
                         >
                             <FacebookIcon />
-                            שתף בפייסבוק
+                            שתף בפרופיל אישי
                         </button>
-                        {/* Tooltip הסבר לשיתוף לדף עסקי */}
-                        <div className="absolute right-full mr-3 top-0 w-48 p-3 bg-slate-800 text-white text-[10px] rounded-xl opacity-0 group-hover/fb:opacity-100 pointer-events-none transition-opacity shadow-2xl border border-white/10 z-[60]">
-                           <p className="font-bold mb-1 text-brand-accent">שיתוף לדף עסקי:</p>
-                           בחלון שייפתח, לחצו למעלה על "שתף בפיד" ובחרו ב-<b>"שתף בדף בניהולך"</b>.
-                        </div>
+                        
+                        <button 
+                            onClick={() => shareOnFacebook('page')}
+                            className="w-full bg-slate-700 text-white py-2.5 px-4 rounded-xl hover:bg-slate-600 transition-all text-xs font-bold flex items-center justify-center gap-2 font-sans border border-white/10"
+                        >
+                            📢 שיתוף לדף עסקי
+                        </button>
                     </div>
 
                     <button 
@@ -293,6 +307,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                           </>
                       )}
                     </button>
+                    
+                    <div className="mt-2 p-3 bg-slate-800/50 rounded-lg text-[9px] text-slate-400 text-center leading-tight border border-white/5">
+                        <p>💡 <b>טיפ לשיתוף:</b> אם מופיעה שגיאת פלטפורמה, ודאו בהגדרות פייסבוק תחת "Apps and Websites" שהאפשרות "Turn On" מופעלת.</p>
+                    </div>
                 </div>
             )}
         </div>

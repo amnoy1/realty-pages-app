@@ -14,6 +14,7 @@ export const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<UserProfile | null>(null);
+  const [showLeadsFor, setShowLeadsFor] = useState<UserProfile | null>(null);
 
   const loadData = async () => {
     if (!db) {
@@ -64,6 +65,11 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
+  const getPropertyAddress = (id: string) => {
+    const p = data.props.find(item => item.id === id);
+    return p ? p.address : 'כתובת לא ידועה';
+  };
+
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-32" dir="rtl">
       <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand-accent border-t-transparent mb-4"></div>
@@ -71,6 +77,52 @@ export const AdminDashboard: React.FC = () => {
     </div>
   );
 
+  // תצוגת לידים עבור סוכן ספציפי (Modal/Overlay)
+  if (showLeadsFor) {
+    const agentLeads = data.leads.filter(l => l.ownerId === showLeadsFor.uid);
+    return (
+      <div className="container mx-auto px-4 py-8 animate-fade-in" dir="rtl">
+        <button onClick={() => setShowLeadsFor(null)} className="mb-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors font-bold">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          חזרה לרשימת הסוכנים
+        </button>
+        <div className="bg-slate-800 rounded-3xl border border-slate-700 overflow-hidden shadow-2xl">
+          <div className="p-6 bg-slate-900/50 border-b border-slate-700 flex justify-between items-center">
+            <h3 className="font-bold text-xl text-white">לידים עבור: {showLeadsFor.displayName}</h3>
+            <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-black">{agentLeads.length} לידים בסה"כ</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-right">
+              <thead className="text-slate-500 text-[10px] bg-slate-900/30 uppercase font-black">
+                <tr>
+                  <th className="p-5">תאריך</th>
+                  <th className="p-5">שם הלקוח</th>
+                  <th className="p-5">טלפון</th>
+                  <th className="p-5">מקור (נכס)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-700/50">
+                {agentLeads.length === 0 ? (
+                    <tr><td colSpan={4} className="p-10 text-center text-slate-500 italic">אין לידים לסוכן זה עדיין</td></tr>
+                ) : (
+                    agentLeads.map(lead => (
+                        <tr key={lead.id} className="hover:bg-white/5 transition-colors">
+                            <td className="p-5 text-slate-400 text-sm">{new Date(lead.createdAt).toLocaleDateString('he-IL')}</td>
+                            <td className="p-5 text-white font-bold">{lead.fullName}</td>
+                            <td className="p-5"><a href={`tel:${lead.phone}`} className="text-brand-accent font-bold hover:underline">{lead.phone}</a></td>
+                            <td className="p-5 text-slate-400 text-xs">{getPropertyAddress(lead.propertyId)}</td>
+                        </tr>
+                    ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // תצוגת פרופיל סוכן עם הנכסים שלו
   if (selectedAgent) {
     const agentProps = data.props.filter(p => p.userId === selectedAgent.uid);
     const agentLeads = data.leads.filter(l => l.ownerId === selectedAgent.uid);
@@ -85,9 +137,9 @@ export const AdminDashboard: React.FC = () => {
           חזרה לדשבורד ראשי
         </button>
 
-        <div className="bg-slate-800/50 rounded-3xl p-8 border border-slate-700 mb-8 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="bg-slate-800/50 rounded-3xl p-8 border border-slate-700 mb-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-2xl">
           <div className="flex items-center gap-6">
-            <div className="w-20 h-20 rounded-2xl bg-brand-accent flex items-center justify-center text-white text-3xl font-black shadow-xl overflow-hidden">
+            <div className="w-20 h-20 rounded-2xl bg-brand-accent flex items-center justify-center text-white text-3xl font-black shadow-xl overflow-hidden border-2 border-white/10">
               {selectedAgent.photoURL ? <img src={selectedAgent.photoURL} className="w-full h-full object-cover" /> : selectedAgent.displayName?.charAt(0)}
             </div>
             <div>
@@ -100,13 +152,16 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
           <div className="flex gap-4">
-             <div className="text-center bg-slate-900/50 p-4 rounded-2xl border border-slate-700 min-w-[100px]">
-                <p className="text-xs text-slate-500 mb-1">נכסים</p>
+             <div className="text-center bg-slate-900/50 p-4 rounded-2xl border border-slate-700 min-w-[100px] shadow-inner">
+                <p className="text-xs text-slate-500 mb-1 font-bold">נכסים</p>
                 <p className="text-2xl font-black text-white">{agentProps.length}</p>
              </div>
-             <div className="text-center bg-slate-900/50 p-4 rounded-2xl border border-slate-700 min-w-[100px]">
-                <p className="text-xs text-slate-500 mb-1">לידים</p>
-                <p className="text-2xl font-black text-green-400">{agentLeads.length}</p>
+             <div 
+                onClick={() => { setShowLeadsFor(selectedAgent); setSelectedAgent(null); }}
+                className="text-center bg-green-500/10 p-4 rounded-2xl border border-green-500/20 min-w-[100px] shadow-inner cursor-pointer hover:bg-green-500/20 transition-all group"
+             >
+                <p className="text-xs text-green-500/70 mb-1 font-bold">לידים (הצג)</p>
+                <p className="text-2xl font-black text-green-400 group-hover:scale-110 transition-transform">{agentLeads.length}</p>
              </div>
           </div>
         </div>
@@ -118,29 +173,37 @@ export const AdminDashboard: React.FC = () => {
               <p className="text-slate-500">לסוכן זה אין עדיין נכסים במערכת</p>
             </div>
           ) : (
-            agentProps.map(prop => (
-              <div key={prop.id} className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden group shadow-lg">
-                <div className="h-40 bg-slate-900 relative">
-                  <img src={prop.images[0]} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                </div>
-                <div className="p-4">
-                  <h4 className="text-white font-bold truncate">{prop.generatedTitle}</h4>
-                  <p className="text-slate-400 text-xs truncate mb-4">{prop.address}</p>
-                  <div className="flex gap-2">
-                    <a href={`/${prop.slug}-${prop.id}`} target="_blank" className="flex-1 bg-slate-700 hover:bg-brand-accent text-white text-center py-2 rounded-lg text-xs font-bold transition-colors">צפה באתר</a>
-                    <button onClick={() => handleDeleteProp(prop.id!)} className="p-2 bg-red-900/20 text-red-500 hover:bg-red-600 hover:text-white rounded-lg transition-all">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                    </button>
+            agentProps.map(prop => {
+              const propLeadsCount = agentLeads.filter(l => l.propertyId === prop.id).length;
+              return (
+                <div key={prop.id} className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden group shadow-lg hover:border-brand-accent/40 transition-all">
+                  <div className="h-40 bg-slate-900 relative">
+                    <img src={prop.images[0]} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                    <div className="absolute top-3 right-3 bg-green-600 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-xl flex items-center gap-1.5 border border-white/20">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                      {propLeadsCount} לידים
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <h4 className="text-white font-bold truncate">{prop.generatedTitle}</h4>
+                    <p className="text-slate-400 text-xs truncate mb-4">{prop.address}</p>
+                    <div className="flex gap-2">
+                      <a href={`/${prop.slug}-${prop.id}`} target="_blank" className="flex-1 bg-slate-700 hover:bg-brand-accent text-white text-center py-2 rounded-lg text-xs font-bold transition-colors">צפה באתר</a>
+                      <button onClick={() => handleDeleteProp(prop.id!)} className="p-2 bg-red-900/20 text-red-500 hover:bg-red-600 hover:text-white rounded-lg transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
     );
   }
 
+  // תצוגה ראשית של הטבלה
   return (
     <div className="container mx-auto px-4 py-8 animate-fade-in" dir="rtl">
       <div className="flex justify-between items-center mb-10 border-b border-slate-700 pb-6">
@@ -162,7 +225,7 @@ export const AdminDashboard: React.FC = () => {
       <div className="bg-slate-800/80 rounded-3xl border border-slate-700 overflow-hidden shadow-2xl backdrop-blur-md">
         <div className="p-6 bg-slate-900/50 border-b border-slate-700">
             <h3 className="font-bold text-lg text-white">רשימת סוכנים</h3>
-            <p className="text-slate-500 text-xs">לחץ על סוכן כדי לצפות בנכסים שלו</p>
+            <p className="text-slate-500 text-xs">לחץ על סוכן לפירוט או על כמות הלידים לצפייה בטבלה</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-right">
@@ -170,7 +233,7 @@ export const AdminDashboard: React.FC = () => {
               <tr>
                 <th className="p-5">סוכן</th>
                 <th className="p-5 text-center">נכסים</th>
-                <th className="p-5 text-center">לידים</th>
+                <th className="p-5 text-center">כמות הלידים</th>
                 <th className="p-5">מייל</th>
                 <th className="p-5">פעולה</th>
               </tr>
@@ -182,25 +245,39 @@ export const AdminDashboard: React.FC = () => {
                 return (
                   <tr 
                     key={u.uid} 
-                    onClick={() => setSelectedAgent(u)}
-                    className="hover:bg-white/5 cursor-pointer transition-colors group"
+                    className="hover:bg-white/5 transition-colors group"
                   >
-                    <td className="p-5">
+                    <td className="p-5 cursor-pointer" onClick={() => setSelectedAgent(u)}>
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center font-bold text-white border border-slate-600 group-hover:border-brand-accent transition-colors">
                             {u.photoURL ? <img src={u.photoURL} className="w-full h-full rounded-xl object-cover" /> : (u.displayName?.charAt(0) || 'U')}
                         </div>
                         <div>
-                          <div className="font-bold text-white group-hover:text-brand-accent">{u.displayName || 'סוכן ללא שם'}</div>
+                          <div className="font-bold text-white group-hover:text-brand-accent transition-colors">{u.displayName || 'סוכן ללא שם'}</div>
                           <div className="text-[10px] text-slate-500">הצטרף {u.createdAt ? new Date(u.createdAt).toLocaleDateString('he-IL') : '-'}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="p-5 text-center"><span className="bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full text-xs font-black">{uPropsCount}</span></td>
-                    <td className="p-5 text-center"><span className="bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-xs font-black">{uLeadsCount}</span></td>
+                    <td className="p-5 text-center cursor-pointer" onClick={() => setSelectedAgent(u)}>
+                        <span className="bg-amber-500/10 text-amber-500 px-3 py-1 rounded-full text-xs font-black border border-amber-500/10">{uPropsCount}</span>
+                    </td>
+                    <td className="p-5 text-center">
+                        <button 
+                            onClick={() => setShowLeadsFor(u)}
+                            className="bg-green-500/10 text-green-500 px-4 py-1.5 rounded-xl text-xs font-black border border-green-500/20 hover:bg-green-500/20 transition-all shadow-sm"
+                            title="לחץ לצפייה בטבלת הלידים"
+                        >
+                            {uLeadsCount} לידים
+                        </button>
+                    </td>
                     <td className="p-5 text-slate-400 text-sm">{u.email}</td>
                     <td className="p-5">
-                      <button className="text-brand-accent text-xs font-bold hover:underline">צפה בנכסים ←</button>
+                      <button 
+                        onClick={() => setSelectedAgent(u)}
+                        className="text-brand-accent text-xs font-bold hover:underline"
+                      >
+                        צפה בנכסים ←
+                      </button>
                     </td>
                   </tr>
                 );
