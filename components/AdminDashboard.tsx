@@ -77,7 +77,7 @@ export const AdminDashboard: React.FC = () => {
     </div>
   );
 
-  // תצוגת לידים עבור סוכן ספציפי (Modal/Overlay)
+  // תצוגת טבלת לידים עבור סוכן ספציפי
   if (showLeadsFor) {
     const agentLeads = data.leads.filter(l => l.ownerId === showLeadsFor.uid);
     return (
@@ -89,7 +89,7 @@ export const AdminDashboard: React.FC = () => {
         <div className="bg-slate-800 rounded-3xl border border-slate-700 overflow-hidden shadow-2xl">
           <div className="p-6 bg-slate-900/50 border-b border-slate-700 flex justify-between items-center">
             <h3 className="font-bold text-xl text-white">לידים עבור: {showLeadsFor.displayName}</h3>
-            <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-xs font-black">{agentLeads.length} לידים בסה"כ</span>
+            <span className="bg-green-500/20 text-green-400 px-4 py-1.5 rounded-xl text-xs font-black border border-green-500/20">{agentLeads.length} לידים</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-right">
@@ -122,7 +122,7 @@ export const AdminDashboard: React.FC = () => {
     );
   }
 
-  // תצוגת פרופיל סוכן עם הנכסים שלו
+  // תצוגת פירוט סוכן עם הנכסים שלו והלידים פר נכס
   if (selectedAgent) {
     const agentProps = data.props.filter(p => p.userId === selectedAgent.uid);
     const agentLeads = data.leads.filter(l => l.ownerId === selectedAgent.uid);
@@ -134,7 +134,7 @@ export const AdminDashboard: React.FC = () => {
           className="mb-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors font-bold"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-          חזרה לדשבורד ראשי
+          חזרה לדשבורד
         </button>
 
         <div className="bg-slate-800/50 rounded-3xl p-8 border border-slate-700 mb-8 flex flex-col md:flex-row justify-between items-center gap-6 shadow-2xl">
@@ -145,87 +145,78 @@ export const AdminDashboard: React.FC = () => {
             <div>
               <h2 className="text-3xl font-black text-white">{selectedAgent.displayName}</h2>
               <p className="text-slate-400">{selectedAgent.email}</p>
-              <div className="flex gap-3 mt-2">
-                <span className="bg-blue-500/20 text-blue-400 text-[10px] px-2 py-0.5 rounded font-bold uppercase border border-blue-500/20">סוכן פעיל</span>
-                <span className="text-slate-500 text-[10px] font-medium">הצטרף ב-{selectedAgent.createdAt ? new Date(selectedAgent.createdAt).toLocaleDateString('he-IL') : '-'}</span>
-              </div>
             </div>
           </div>
           <div className="flex gap-4">
-             <div className="text-center bg-slate-900/50 p-4 rounded-2xl border border-slate-700 min-w-[100px] shadow-inner">
-                <p className="text-xs text-slate-500 mb-1 font-bold">נכסים</p>
+             <div className="text-center bg-slate-900/50 p-4 rounded-2xl border border-slate-700 min-w-[120px]">
+                <p className="text-xs text-slate-500 mb-1 font-bold">סה"כ נכסים</p>
                 <p className="text-2xl font-black text-white">{agentProps.length}</p>
              </div>
              <div 
                 onClick={() => { setShowLeadsFor(selectedAgent); setSelectedAgent(null); }}
-                className="text-center bg-green-500/10 p-4 rounded-2xl border border-green-500/20 min-w-[100px] shadow-inner cursor-pointer hover:bg-green-500/20 transition-all group"
+                className="text-center bg-green-500/10 p-4 rounded-2xl border border-green-500/20 min-w-[120px] cursor-pointer hover:bg-green-500/20 transition-all group"
              >
-                <p className="text-xs text-green-500/70 mb-1 font-bold">לידים (הצג)</p>
+                <p className="text-xs text-green-500 mb-1 font-bold italic">סה"כ לידים</p>
                 <p className="text-2xl font-black text-green-400 group-hover:scale-110 transition-transform">{agentLeads.length}</p>
+                <span className="text-[9px] text-green-500 font-bold underline">צפה בטבלה</span>
              </div>
           </div>
         </div>
 
         <h3 className="text-xl font-bold text-white mb-6">נכסים של {selectedAgent.displayName}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {agentProps.length === 0 ? (
-            <div className="col-span-full py-20 bg-slate-800/30 rounded-3xl border border-dashed border-slate-700 text-center">
-              <p className="text-slate-500">לסוכן זה אין עדיין נכסים במערכת</p>
-            </div>
-          ) : (
-            agentProps.map(prop => {
-              const propLeadsCount = agentLeads.filter(l => l.propertyId === prop.id).length;
-              return (
-                <div key={prop.id} className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden group shadow-lg hover:border-brand-accent/40 transition-all">
-                  <div className="h-40 bg-slate-900 relative">
-                    <img src={prop.images[0]} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
-                    <div className="absolute top-3 right-3 bg-green-600 text-white text-[10px] font-black px-2 py-1 rounded-lg shadow-xl flex items-center gap-1.5 border border-white/20">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                      {propLeadsCount} לידים
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <h4 className="text-white font-bold truncate">{prop.generatedTitle}</h4>
-                    <p className="text-slate-400 text-xs truncate mb-4">{prop.address}</p>
-                    <div className="flex gap-2">
-                      <a href={`/${prop.slug}-${prop.id}`} target="_blank" className="flex-1 bg-slate-700 hover:bg-brand-accent text-white text-center py-2 rounded-lg text-xs font-bold transition-colors">צפה באתר</a>
-                      <button onClick={() => handleDeleteProp(prop.id!)} className="p-2 bg-red-900/20 text-red-500 hover:bg-red-600 hover:text-white rounded-lg transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                      </button>
-                    </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {agentProps.map(prop => {
+            // חישוב לידים ספציפית לנכס זה
+            const propertyLeadsCount = agentLeads.filter(l => l.propertyId === prop.id).length;
+            
+            return (
+              <div key={prop.id} className="bg-slate-800 border border-slate-700 rounded-3xl overflow-hidden group shadow-xl hover:border-brand-accent/40 transition-all flex flex-col">
+                <div className="h-48 bg-slate-900 relative">
+                  <img src={prop.images[0]} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                  
+                  {/* אינדיקטור לידים פר נכס - בולט וברור */}
+                  <div className="absolute top-4 left-4 bg-green-600 text-white text-xs font-black px-3 py-1.5 rounded-xl shadow-2xl flex items-center gap-2 border border-white/20 animate-fade-in">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    {propertyLeadsCount} לידים לנכס
                   </div>
                 </div>
-              );
-            })
-          )}
+                <div className="p-6 flex-1 flex flex-col">
+                  <h4 className="text-white font-bold text-lg mb-1 truncate">{prop.generatedTitle}</h4>
+                  <p className="text-slate-500 text-xs mb-6 truncate">{prop.address}</p>
+                  
+                  <div className="mt-auto flex gap-3">
+                    <a href={`/${prop.slug}-${prop.id}`} target="_blank" className="flex-1 bg-slate-700 hover:bg-brand-accent text-white text-center py-2.5 rounded-xl text-xs font-bold transition-all">צפה בנכס</a>
+                    <button onClick={() => handleDeleteProp(prop.id!)} className="bg-red-900/20 text-red-500 hover:bg-red-600 hover:text-white p-2.5 rounded-xl transition-all">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     );
   }
 
-  // תצוגה ראשית של הטבלה
   return (
     <div className="container mx-auto px-4 py-8 animate-fade-in" dir="rtl">
-      <div className="flex justify-between items-center mb-10 border-b border-slate-700 pb-6">
-        <div>
-            <h1 className="text-3xl font-black text-white">דשבורד מנהל</h1>
-            <p className="text-slate-400 mt-1">ניהול כלל הסוכנים והפעילות במערכת</p>
-        </div>
-        <button onClick={loadData} className="bg-slate-800 hover:bg-slate-700 text-white p-3 rounded-xl transition-all border border-slate-700">
+      <div className="flex justify-between items-center mb-10">
+        <h1 className="text-3xl font-black text-white">ניהול סוכנים</h1>
+        <button onClick={loadData} className="bg-slate-800 text-white p-3 rounded-xl hover:bg-slate-700 transition-all border border-slate-700">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         </button>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <StatCard title="סוכנים" value={data.users.length} color="blue" />
-        <StatCard title="נכסים" value={data.props.length} color="amber" />
-        <StatCard title="לידים" value={data.leads.length} color="green" />
+        <StatCard title="סוכנים רשומים" value={data.users.length} color="blue" />
+        <StatCard title="דפי נחיתה" value={data.props.length} color="amber" />
+        <StatCard title="לידים במערכת" value={data.leads.length} color="green" />
       </div>
 
-      <div className="bg-slate-800/80 rounded-3xl border border-slate-700 overflow-hidden shadow-2xl backdrop-blur-md">
-        <div className="p-6 bg-slate-900/50 border-b border-slate-700">
-            <h3 className="font-bold text-lg text-white">רשימת סוכנים</h3>
-            <p className="text-slate-500 text-xs">לחץ על סוכן לפירוט או על כמות הלידים לצפייה בטבלה</p>
+      <div className="bg-slate-800 rounded-3xl border border-slate-700 overflow-hidden shadow-2xl">
+        <div className="p-6 bg-slate-900/50 border-b border-slate-700 flex justify-between items-center">
+            <h3 className="font-bold text-white">רשימת סוכנים פעילים</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-right">
@@ -233,7 +224,7 @@ export const AdminDashboard: React.FC = () => {
               <tr>
                 <th className="p-5">סוכן</th>
                 <th className="p-5 text-center">נכסים</th>
-                <th className="p-5 text-center">כמות הלידים</th>
+                <th className="p-5 text-center">כמות הלידים (לחץ לפירוט)</th>
                 <th className="p-5">מייל</th>
                 <th className="p-5">פעולה</th>
               </tr>
@@ -243,19 +234,13 @@ export const AdminDashboard: React.FC = () => {
                 const uPropsCount = data.props.filter(p => p.userId === u.uid).length;
                 const uLeadsCount = data.leads.filter(l => l.ownerId === u.uid).length;
                 return (
-                  <tr 
-                    key={u.uid} 
-                    className="hover:bg-white/5 transition-colors group"
-                  >
+                  <tr key={u.uid} className="hover:bg-white/5 transition-colors group">
                     <td className="p-5 cursor-pointer" onClick={() => setSelectedAgent(u)}>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center font-bold text-white border border-slate-600 group-hover:border-brand-accent transition-colors">
+                        <div className="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center font-bold text-white border border-slate-600">
                             {u.photoURL ? <img src={u.photoURL} className="w-full h-full rounded-xl object-cover" /> : (u.displayName?.charAt(0) || 'U')}
                         </div>
-                        <div>
-                          <div className="font-bold text-white group-hover:text-brand-accent transition-colors">{u.displayName || 'סוכן ללא שם'}</div>
-                          <div className="text-[10px] text-slate-500">הצטרף {u.createdAt ? new Date(u.createdAt).toLocaleDateString('he-IL') : '-'}</div>
-                        </div>
+                        <div className="font-bold text-white group-hover:text-brand-accent transition-colors">{u.displayName}</div>
                       </div>
                     </td>
                     <td className="p-5 text-center cursor-pointer" onClick={() => setSelectedAgent(u)}>
@@ -264,20 +249,14 @@ export const AdminDashboard: React.FC = () => {
                     <td className="p-5 text-center">
                         <button 
                             onClick={() => setShowLeadsFor(u)}
-                            className="bg-green-500/10 text-green-500 px-4 py-1.5 rounded-xl text-xs font-black border border-green-500/20 hover:bg-green-500/20 transition-all shadow-sm"
-                            title="לחץ לצפייה בטבלת הלידים"
+                            className="bg-green-500/10 text-green-500 px-6 py-2 rounded-xl text-xs font-black border border-green-500/20 hover:bg-green-500/20 transition-all shadow-lg active:scale-95"
                         >
-                            {uLeadsCount} לידים
+                            {uLeadsCount} לידים במערכת
                         </button>
                     </td>
                     <td className="p-5 text-slate-400 text-sm">{u.email}</td>
                     <td className="p-5">
-                      <button 
-                        onClick={() => setSelectedAgent(u)}
-                        className="text-brand-accent text-xs font-bold hover:underline"
-                      >
-                        צפה בנכסים ←
-                      </button>
+                      <button onClick={() => setSelectedAgent(u)} className="text-brand-accent text-xs font-bold hover:underline">נהל סוכן ←</button>
                     </td>
                   </tr>
                 );
@@ -297,9 +276,9 @@ const StatCard = ({ title, value, color }: { title: string, value: number, color
         green: "border-green-500/30 text-green-400 bg-green-500/5"
     };
     return (
-        <div className={`p-8 rounded-3xl border shadow-xl relative overflow-hidden ${colors[color]}`}>
-            <p className="text-xs uppercase font-black tracking-widest mb-2 opacity-80">{title}</p>
-            <p className="text-6xl font-black text-white">{value}</p>
+        <div className={`p-8 rounded-3xl border shadow-xl ${colors[color]}`}>
+            <p className="text-xs uppercase font-black tracking-widest mb-2 opacity-70">{title}</p>
+            <p className="text-5xl font-black text-white">{value}</p>
         </div>
     );
 }
