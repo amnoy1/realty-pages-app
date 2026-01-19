@@ -88,7 +88,7 @@ export const AdminDashboard: React.FC = () => {
     return (
       <div className="container mx-auto px-4 py-8 animate-fade-in" dir="rtl">
         <button 
-          onClick={() => { setShowLeadsFor(null); setPropertyFilterId(null); }} 
+          onClick={() => { setShowLeadsFor(null); setPropertyFilterId(null); setSelectedAgent(null); }} 
           className="mb-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors font-bold"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -108,7 +108,7 @@ export const AdminDashboard: React.FC = () => {
                   onClick={() => setPropertyFilterId(null)}
                   className="text-xs text-slate-400 hover:text-white underline px-2"
                 >
-                  בטל סינון נכס
+                  בטל סינון נכס (הצג הכל)
                 </button>
               )}
               <span className="bg-green-500/20 text-green-400 px-4 py-1.5 rounded-xl text-xs font-black border border-green-500/20">{agentLeads.length} לידים</span>
@@ -198,13 +198,14 @@ export const AdminDashboard: React.FC = () => {
                   
                   {/* אינדיקטור לידים פר נכס - לחיץ ופותח טבלה מסוננת */}
                   <button 
-                    onClick={() => { 
-                      setShowLeadsFor(selectedAgent); 
+                    type="button"
+                    onClick={(e) => { 
+                      e.stopPropagation();
                       setPropertyFilterId(prop.id!); 
+                      setShowLeadsFor(selectedAgent); 
                       setSelectedAgent(null); 
                     }}
-                    className="absolute top-4 left-4 bg-green-600 text-white text-xs font-black px-4 py-2 rounded-xl shadow-2xl flex items-center gap-2 border border-white/20 hover:bg-green-500 hover:scale-105 transition-all active:scale-95 z-10"
-                    title="לחץ לצפייה בלידים של נכס זה"
+                    className="absolute top-4 left-4 bg-green-600 text-white text-xs font-black px-4 py-2 rounded-xl shadow-2xl flex items-center gap-2 border border-white/20 hover:bg-green-500 hover:scale-110 transition-all active:scale-95 z-20 cursor-pointer pointer-events-auto"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     {propertyLeadsCount} לידים
@@ -278,7 +279,7 @@ export const AdminDashboard: React.FC = () => {
                     </td>
                     <td className="p-5 text-center">
                         <button 
-                            onClick={() => { setShowLeadsFor(u); setPropertyFilterId(null); }}
+                            onClick={() => { setPropertyFilterId(null); setShowLeadsFor(u); }}
                             className="bg-green-500/10 text-green-500 px-6 py-2 rounded-xl text-xs font-black border border-green-500/20 hover:bg-green-500/20 transition-all shadow-lg active:scale-95"
                         >
                             {uLeadsCount} לידים במערכת
