@@ -102,13 +102,13 @@ export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => v
   const btnClasses = "py-4 px-8 bg-gradient-to-r from-brand-accent to-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-900/30 transform transition-all duration-200 hover:-translate-y-1 hover:shadow-orange-500/40 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none";
 
   return (
-    <div className="min-h-screen bg-slate-900 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-slate-900 py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden z-0 pointer-events-none">
             <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-brand-accent/10 rounded-full blur-[100px] animate-pulse-slow"></div>
             <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px]"></div>
         </div>
 
-      <div className="w-full max-w-6xl z-10 animate-fade-in">
+      <div className="w-full max-w-6xl z-10 animate-fade-in mb-20">
         <div className="text-center mb-12">
             <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-6 tracking-tight drop-shadow-lg">
                 מחולל <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-yellow-400">דפי נחיתה</span> לנדל"ן
@@ -293,6 +293,18 @@ export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => v
             </div>
         </form>
       </div>
+
+      {/* FOOTER SECTION ADDED */}
+      <footer className="w-full py-12 border-t border-slate-800 bg-slate-900/50 text-slate-500 text-center z-10">
+        <div className="container mx-auto px-4 flex flex-col items-center gap-4">
+            <p className="text-xs font-sans">© {new Date().getFullYear()} מחולל דפי נחיתה לנדל"ן - Realty-Pages.com</p>
+            <div className="flex gap-4 text-xs font-bold">
+                <a href="/privacy" className="hover:text-brand-accent transition-colors">מדיניות פרטיות</a>
+                <span className="opacity-20">|</span>
+                <a href="mailto:Support@realty-pages.com" className="hover:text-brand-accent transition-colors">תמיכה</a>
+            </div>
+        </div>
+      </footer>
     </div>
   );
 };
