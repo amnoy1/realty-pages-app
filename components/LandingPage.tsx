@@ -43,7 +43,7 @@ const ElevatorIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" he
 const WhatsAppIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.269.655 4.536 1.907 6.344l-1.495 5.454 5.57-1.451zm.5-7.527c.08-.135.143-.225.246-.354.103-.13.21-.211.353-.267.143-.057.3-.086.48-.086.195 0 .358.03.49.09.13.06.23.145.302.26.07.115.105.245.105.39.0.15-.03.28-.09.4-.06.12-.135.225-.225.315-.09.09-.195.17-.315.235-.12.065-.255.115-.405.15-.15.035-.315.06-.495.06-.205 0-.39-.03-.56-.09-.17-.06-.315-.145-.445-.255-.13-.11-.235-.24-.315-.375s-.13-.285-.15-.45c-.02-.165-.03-.32-.03-.465.0-.15.015-.285.045-.405zm1.996 2.95c.12-.06.225-.135.315-.225.09-.09.165-.195.225-.315s.105-.255.135-.405.045-.315.045.495c0-.21-.03-.4-.09-.56-.06-.16-.14-.295-.24-.41-.1-.115-.21-.2-.33-.255s-.25-.085-.39-.085c-.15 0-.285.03-.405.085s-.225.13-.315.225c-.09.09-.165.195-.225.315s-.105.255-.135-.405-.045.315-.045.495c0 .21.03.4.09.56s.14.295.24.41c.1.115.21.2.33.255s.25.085.39.085c.15 0 .285-.03.405-.085zm2.12-1.935c.15-.045.285-.105.405-.18s.225-.165.315-.27c.09-.105.165-.225.225-.36.06-.135.09-.285.09-.45 0-.18-.03-.345-.09-.5-.06-.155-.14-.29-.24-.405-.1-.115-.21-.2-.33-.255s-.25-.085-.39-.085c-.165 0-.315.03-.45.085s-.255.135-.36.255c-.105.12-.195.27-.27.45s-.12.375-.15.585c-.03.21-.045.42-.045.615.0.21.015.405.045.615.0.21.015.405.045.585s.075.345.135.495.135.285.225.405.195.225.315.315c.12.09.255.165.405.225.15.06.315.09.495.09.195 0 .375-.03.54-.09s.31-.14.435-.25c.125-.11.225-.24.3-.39s.125-.315.15-.495c.025-.18.038-.36.038-.525.0-.195-.03-.375-.09-.54s-.135-.315-.225-.45c-.09-.135-.195-.255-.315-.36-.12-.105-.255-.18-.405-.225s-.315-.06-.495-.06c-.195 0-.375.03-.54.09s-.31.14-.435.25c-.125-.11-.225-.24-.3.39s-.125-.315-.15-.495c-.025-.18-.038-.36-.038-.525z"/></svg>;
 const FacebookIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>;
 const CopyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>;
-const ShareIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>;
+const ShareIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>;
 
 const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: string }> = ({ icon, label, value }) => {
   if (!value) return null;
@@ -98,7 +98,9 @@ const FeaturesSection: React.FC<{ features: PropertyFeatures }> = ({ features })
 
 export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = false, onReset, onSave, isSaving }) => {
   const leadFormRef = useRef<HTMLDivElement>(null);
+  const shareMenuRef = useRef<HTMLDivElement>(null);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
+  const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
 
   // Initialize Facebook SDK
   useEffect(() => {
@@ -120,6 +122,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         fjs.parentNode.insertBefore(js, fjs);
       }(document, 'script', 'facebook-jssdk'));
     }
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (shareMenuRef.current && !shareMenuRef.current.contains(event.target as Node)) {
+        setIsShareMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleCtaClick = () => {
@@ -139,14 +149,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
   const shareOnFacebook = (target: 'feed' | 'page' = 'feed') => {
     const url = window.location.href;
     
-    // אם היעד הוא דף עסקי, נשתמש ב-URL ייעודי שעוקף בעיות SDK ומכוון ישירות לשם
     if (target === 'page') {
       const pageShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&display=popup&share_channel=page_pinnable`;
       window.open(pageShareUrl, 'facebook-share-dialog', 'width=626,height=436');
       return;
     }
 
-    // שיתוף רגיל (פרופיל אישי עם אפשרות בחירה)
     if (window.FB) {
         window.FB.ui({
           method: 'share',
@@ -154,7 +162,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
           display: 'popup'
         }, function(response: any){
             if (!response || response.error) {
-               // Fallback אם ה-SDK חסום
                const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
                window.open(shareUrl, 'facebook-share-dialog', 'width=626,height=436');
             }
@@ -224,7 +231,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
             </div>
         </div>
         
-        <div className="absolute top-6 left-6 flex flex-col items-start gap-3 z-50">
+        {/* Actions Bar (Top Left) */}
+        <div className="absolute top-6 left-6 flex flex-col items-start gap-4 z-50">
            {isPreview && onReset && (
                 <button 
                     onClick={onReset} 
@@ -253,64 +261,72 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                      )}
                 </button>
             )}
+
              {!isPreview && (
-                <div className="flex flex-col gap-3 p-4 rounded-2xl bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-2xl animate-fade-in w-64">
-                    <div className="text-white text-xs font-bold text-center border-b border-white/10 pb-2 mb-1 flex items-center justify-center gap-2 font-sans uppercase tracking-widest">
+                <div className="relative" ref={shareMenuRef}>
+                    <button 
+                        onClick={() => setIsShareMenuOpen(!isShareMenuOpen)}
+                        className={`flex items-center gap-3 py-3 px-6 rounded-2xl backdrop-blur-lg border border-white/20 transition-all shadow-2xl font-bold font-sans text-white hover:scale-105 active:scale-95 ${isShareMenuOpen ? 'bg-brand-accent/90 border-brand-accent shadow-brand-accent/20' : 'bg-slate-900/80 hover:bg-slate-900'}`}
+                    >
                         <ShareIcon />
-                        הפצה ברשתות
-                    </div>
-                    
-                    <div className="space-y-2">
-                        <button 
-                            onClick={() => shareOnFacebook('feed')}
-                            className="w-full bg-[#1877F2] text-white py-3 px-4 rounded-xl hover:bg-[#166fe5] transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg hover:shadow-blue-500/20 active:scale-95"
-                        >
-                            <FacebookIcon />
-                            שתף בפרופיל אישי
-                        </button>
-                        
-                        <button 
-                            onClick={() => shareOnFacebook('page')}
-                            className="w-full bg-slate-700 text-white py-2.5 px-4 rounded-xl hover:bg-slate-600 transition-all text-xs font-bold flex items-center justify-center gap-2 font-sans border border-white/10"
-                        >
-                            📢 שיתוף לדף עסקי
-                        </button>
-                    </div>
-
-                    <button 
-                        onClick={() => {
-                            const url = window.location.href;
-                            const text = `🏠 נכס חדש למכירה בבלעדיות!\n📍 ${details.address}\n💰 מחיר: ${formattedPrice} ₪\n\nלכל הפרטים והתמונות:\n${url}`;
-                            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-                        }}
-                        className="w-full bg-[#25D366] text-white py-3 px-4 rounded-xl hover:bg-[#1ebc57] transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg hover:shadow-green-500/20 active:scale-95"
-                    >
-                        <WhatsAppIcon />
-                        שלח בוואטסאפ
+                        <span>שיתוף והפצה</span>
                     </button>
 
-                    <div className="h-px bg-white/10 my-1"></div>
+                    {/* Share Dropdown Menu */}
+                    {isShareMenuOpen && (
+                        <div className="absolute top-14 left-0 w-64 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-4 animate-fade-in flex flex-col gap-3 z-[60]">
+                            <div className="text-white text-[10px] font-black uppercase tracking-widest text-center border-b border-white/5 pb-2 mb-1 opacity-60">אפשרויות שיתוף</div>
+                            
+                            <div className="space-y-2">
+                                <button 
+                                    onClick={() => { shareOnFacebook('feed'); setIsShareMenuOpen(false); }}
+                                    className="w-full bg-[#1877F2] text-white py-3 px-4 rounded-xl hover:bg-[#166fe5] transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg"
+                                >
+                                    <FacebookIcon />
+                                    פרופיל אישי
+                                </button>
+                                
+                                <button 
+                                    onClick={() => { shareOnFacebook('page'); setIsShareMenuOpen(false); }}
+                                    className="w-full bg-slate-700 text-white py-2.5 px-4 rounded-xl hover:bg-slate-600 transition-all text-xs font-bold flex items-center justify-center gap-2 font-sans border border-white/10"
+                                >
+                                    📢 דף עסקי
+                                </button>
+                            </div>
 
-                    <button 
-                      onClick={copyLink} 
-                      className={`w-full py-2.5 px-4 rounded-xl transition-all text-xs font-bold flex items-center justify-center gap-2 font-sans ${copyStatus === 'copied' ? 'bg-green-600 text-white shadow-inner' : 'bg-slate-700/50 text-white hover:bg-slate-700 hover:text-white border border-white/10'}`}
-                    >
-                      {copyStatus === 'copied' ? (
-                          <>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                            הקישור הועתק!
-                          </>
-                      ) : (
-                          <>
-                            <CopyIcon />
-                            העתק לינק ישיר
-                          </>
-                      )}
-                    </button>
-                    
-                    <div className="mt-2 p-3 bg-slate-800/50 rounded-lg text-[9px] text-slate-400 text-center leading-tight border border-white/5">
-                        <p>💡 <b>טיפ לשיתוף:</b> אם מופיעה שגיאת פלטפורמה, ודאו בהגדרות פייסבוק תחת "Apps and Websites" שהאפשרות "Turn On" מופעלת.</p>
-                    </div>
+                            <button 
+                                onClick={() => {
+                                    const url = window.location.href;
+                                    const text = `🏠 נכס חדש למכירה בבלעדיות!\n📍 ${details.address}\n💰 מחיר: ${formattedPrice} ₪\n\nלכל הפרטים והתמונות:\n${url}`;
+                                    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                                    setIsShareMenuOpen(false);
+                                }}
+                                className="w-full bg-[#25D366] text-white py-3 px-4 rounded-xl hover:bg-[#1ebc57] transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg"
+                            >
+                                <WhatsAppIcon />
+                                וואטסאפ
+                            </button>
+
+                            <div className="h-px bg-white/10 my-1"></div>
+
+                            <button 
+                              onClick={copyLink} 
+                              className={`w-full py-2.5 px-4 rounded-xl transition-all text-xs font-bold flex items-center justify-center gap-2 font-sans ${copyStatus === 'copied' ? 'bg-green-600 text-white shadow-inner' : 'bg-slate-800 text-white hover:bg-slate-700 border border-white/10'}`}
+                            >
+                              {copyStatus === 'copied' ? (
+                                  <>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    הועתק!
+                                  </>
+                              ) : (
+                                  <>
+                                    <CopyIcon />
+                                    העתק לינק
+                                  </>
+                              )}
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
@@ -321,7 +337,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
             
             <div className="lg:col-span-7 space-y-10">
                 <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
-                    {/* Header: Marketing Title as Introduction */}
                     <div className="mb-10">
                         <h2 className="text-[2.25rem] md:text-[2.75rem] font-extrabold text-slate-900 leading-tight font-sans">
                             {details.generatedTitle}
