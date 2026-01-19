@@ -137,15 +137,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
   };
 
   const shareOnFacebook = () => {
+    // השיוך לדף עסקי מתבצע בתוך חלון השיתוף של פייסבוק ע"י המשתמש (בחירה ב-Share on a Page you manage)
     if (window.FB) {
         window.FB.ui({
           method: 'share',
           href: window.location.href,
+          display: 'popup'
         }, function(response: any){
             console.log('FB Share Response:', response);
         });
     } else {
-        // Fallback if SDK fails to load
         const url = window.location.href;
         const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
         window.open(shareUrl, 'facebook-share-dialog', 'width=600,height=500');
@@ -247,13 +248,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                         הפצה ברשתות
                     </div>
                     
-                    <button 
-                        onClick={shareOnFacebook}
-                        className="w-full bg-[#1877F2] text-white py-3 px-4 rounded-xl hover:bg-[#166fe5] transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg hover:shadow-blue-500/20 active:scale-95"
-                    >
-                        <FacebookIcon />
-                        שתף בפייסבוק
-                    </button>
+                    <div className="relative group/fb">
+                        <button 
+                            onClick={shareOnFacebook}
+                            className="w-full bg-[#1877F2] text-white py-3 px-4 rounded-xl hover:bg-[#166fe5] transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg hover:shadow-blue-500/20 active:scale-95"
+                        >
+                            <FacebookIcon />
+                            שתף בפייסבוק
+                        </button>
+                        {/* Tooltip הסבר לשיתוף לדף עסקי */}
+                        <div className="absolute right-full mr-3 top-0 w-48 p-3 bg-slate-800 text-white text-[10px] rounded-xl opacity-0 group-hover/fb:opacity-100 pointer-events-none transition-opacity shadow-2xl border border-white/10 z-[60]">
+                           <p className="font-bold mb-1 text-brand-accent">שיתוף לדף עסקי:</p>
+                           בחלון שייפתח, לחצו למעלה על "שתף בפיד" ובחרו ב-<b>"שתף בדף בניהולך"</b>.
+                        </div>
+                    </div>
 
                     <button 
                         onClick={() => {
