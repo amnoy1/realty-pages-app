@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User } from 'firebase/auth';
-import { signInWithPopup, signOut, auth, GoogleAuthProvider, initializationError } from '../lib/firebase';
+import { signInWithPopup, signOut, auth, GoogleAuthProvider, initializationError, db } from '../lib/firebase';
+import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 
 interface AuthProps {
   user: User | null;
@@ -12,7 +13,32 @@ interface AuthProps {
 
 export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, currentView }) => {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [newLeadsCount, setNewLeadsCount] = useState(0);
   
+  // בדיקת לידים חדשים (מה-24 שעות האחרונות)
+  useEffect(() => {
+    if (user && db) {
+      const fetchNewLeads = async () => {
+        try {
+          const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+          const q = query(
+            collection(db, 'leads'),
+            where('ownerId', '==', user.uid),
+            where('createdAt', '>=', oneDayAgo)
+          );
+          const snap = await getDocs(q);
+          setNewLeadsCount(snap.size);
+        } catch (e) {
+          console.error("Error fetching new leads count:", e);
+        }
+      };
+      fetchNewLeads();
+      // רענון כל 5 דקות
+      const interval = setInterval(fetchNewLeads, 5 * 60 * 1000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
   const handleLogin = async () => {
     if (!auth) {
       let errorMsg = "מערכת האימות (Auth) לא אותחלה.";
@@ -26,25 +52,13 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
     }
 
     setIsLoggingIn(true);
-    
     try {
       const provider = new GoogleAuthProvider();
-      
-      // הוספת הגדרה המאלצת את גוגל להציג את בחירת החשבונות בכל פעם
-      provider.setCustomParameters({
-        prompt: 'select_account'
-      });
-
+      provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithPopup(auth, provider);
     } catch (error: any) {
       console.error("Login attempt failed:", error);
-      
-      if (error.code === 'auth/unauthorized-domain') {
-        const currentDomain = window.location.hostname;
-        alert(`הדומיין ${currentDomain} לא מורשה ב-Firebase.`);
-      } else if (error.code === 'auth/popup-closed-by-user') {
-        // No action needed
-      } else {
+      if (error.code !== 'auth/popup-closed-by-user') {
         alert(`התחברות נכשלה: ${error.message || 'שגיאה לא ידועה'}`);
       }
     } finally {
@@ -93,9 +107,14 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
              
              <button 
                 onClick={() => onViewChange('dashboard')}
-                className={`text-xs px-3 py-1.5 rounded-lg transition-all font-bold ${currentView === 'dashboard' ? 'bg-brand-accent text-white shadow-md' : 'text-slate-300 hover:text-white hover:bg-slate-700'}`}
+                className={`relative text-xs px-3 py-1.5 rounded-lg transition-all font-bold ${currentView === 'dashboard' ? 'bg-brand-accent text-white shadow-md' : 'text-slate-300 hover:text-white hover:bg-slate-700'}`}
              >
                 הנכסים שלי
+                {newLeadsCount > 0 && (
+                  <span className="absolute -top-1 -left-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] text-white shadow-lg animate-bounce border border-white/20">
+                    {newLeadsCount}
+                  </span>
+                )}
              </button>
 
              <button 

@@ -68,6 +68,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
   };
 
   const filteredLeads = filterId ? myLeads.filter(l => l.propertyId === filterId) : myLeads;
+  const newLeadsCount = myLeads.filter(l => l.createdAt >= (Date.now() - 24 * 60 * 60 * 1000)).length;
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-20">
@@ -85,13 +86,22 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
 
       <div className="flex gap-4 mb-8">
           <button onClick={() => { setActiveTab('properties'); setFilterId(null); }} className={`px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'properties' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>הנכסים שלי ({myProperties.length})</button>
-          <button onClick={() => setActiveTab('leads')} className={`px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'leads' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>לידים נכנסים ({myLeads.length})</button>
+          <button onClick={() => setActiveTab('leads')} className={`relative px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'leads' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+            לידים נכנסים ({myLeads.length})
+            {newLeadsCount > 0 && (
+              <span className="absolute -top-1 -left-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] text-white shadow-lg animate-pulse border border-white/20">
+                {newLeadsCount}
+              </span>
+            )}
+          </button>
       </div>
 
       {activeTab === 'properties' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {myProperties.map((prop) => {
             const propertyLeads = myLeads.filter(l => l.propertyId === prop.id);
+            const propertyNewLeads = propertyLeads.filter(l => l.createdAt >= (Date.now() - 24 * 60 * 60 * 1000)).length;
+
             return (
               <div key={prop.id} className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden hover:border-brand-accent/50 transition-all shadow-xl group">
                 <div className="h-44 relative overflow-hidden">
@@ -99,9 +109,9 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
                   <div className="absolute top-3 right-3 flex gap-2">
                     <button 
                       onClick={() => openLeadsForProperty(prop.id!)}
-                      className="bg-brand-accent hover:bg-brand-accentHover text-white text-[10px] px-2.5 py-1.5 rounded-lg font-bold shadow-lg flex items-center gap-1.5 transition-colors"
+                      className={`text-[10px] px-2.5 py-1.5 rounded-lg font-bold shadow-lg flex items-center gap-1.5 transition-colors ${propertyNewLeads > 0 ? 'bg-red-600 text-white animate-pulse' : 'bg-brand-accent hover:bg-brand-accentHover text-white'}`}
                     >
-                      <UsersIcon /> {propertyLeads.length} לידים
+                      <UsersIcon /> {propertyLeads.length} לידים {propertyNewLeads > 0 && `(${propertyNewLeads} חדשים!)`}
                     </button>
                   </div>
                 </div>
@@ -137,14 +147,24 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700">
-                {filteredLeads.map((lead) => (
-                  <tr key={lead.id} className="hover:bg-slate-700/30 transition-colors">
-                    <td className="p-4 text-slate-400 text-xs">{new Date(lead.createdAt).toLocaleDateString('he-IL')}</td>
-                    <td className="p-4 font-bold text-white">{lead.fullName}</td>
-                    <td className="p-4"><a href={`tel:${lead.phone}`} className="text-brand-accent hover:underline flex items-center gap-2"><PhoneIcon /> {lead.phone}</a></td>
-                    <td className="p-4 text-slate-300 truncate max-w-[200px]">{getAddress(lead.propertyId)}</td>
-                  </tr>
-                ))}
+                {filteredLeads.length === 0 ? (
+                  <tr><td colSpan={4} className="p-10 text-center text-slate-500 italic">לא נמצאו לידים</td></tr>
+                ) : (
+                  filteredLeads.map((lead) => {
+                    const isNew = lead.createdAt >= (Date.now() - 24 * 60 * 60 * 1000);
+                    return (
+                      <tr key={lead.id} className={`hover:bg-slate-700/30 transition-colors ${isNew ? 'bg-red-500/5' : ''}`}>
+                        <td className="p-4 text-slate-400 text-xs">
+                          {isNew && <span className="bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-2 font-black">NEW</span>}
+                          {new Date(lead.createdAt).toLocaleDateString('he-IL')}
+                        </td>
+                        <td className="p-4 font-bold text-white">{lead.fullName}</td>
+                        <td className="p-4"><a href={`tel:${lead.phone}`} className="text-brand-accent hover:underline flex items-center gap-2"><PhoneIcon /> {lead.phone}</a></td>
+                        <td className="p-4 text-slate-300 truncate max-w-[200px]">{getAddress(lead.propertyId)}</td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
