@@ -381,6 +381,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
             <div className="flex justify-center gap-6 text-xs font-medium">
                <a href="/privacy" className="hover:text-brand-accent transition-colors">מדיניות פרטיות</a>
                <span className="opacity-30">|</span>
+               <a href="/terms" className="hover:text-brand-accent transition-colors">תנאי שימוש</a>
+               <span className="opacity-30">|</span>
                <a href="/" className="hover:text-brand-accent transition-colors">צור נכס חדש</a>
             </div>
         </div>

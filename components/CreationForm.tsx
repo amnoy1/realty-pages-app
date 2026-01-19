@@ -294,12 +294,13 @@ export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => v
         </form>
       </div>
 
-      {/* FOOTER SECTION ADDED */}
       <footer className="w-full py-12 border-t border-slate-800 bg-slate-900/50 text-slate-500 text-center z-10">
         <div className="container mx-auto px-4 flex flex-col items-center gap-4">
             <p className="text-xs font-sans">© {new Date().getFullYear()} מחולל דפי נחיתה לנדל"ן - Realty-Pages.com</p>
             <div className="flex gap-4 text-xs font-bold">
                 <a href="/privacy" className="hover:text-brand-accent transition-colors">מדיניות פרטיות</a>
+                <span className="opacity-20">|</span>
+                <a href="/terms" className="hover:text-brand-accent transition-colors">תנאי שימוש</a>
                 <span className="opacity-20">|</span>
                 <a href="mailto:Support@realty-pages.com" className="hover:text-brand-accent transition-colors">תמיכה</a>
             </div>
