@@ -1,3 +1,4 @@
+
 import { cache } from 'react';
 import { db } from '../../lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -12,23 +13,15 @@ interface PageProps {
   };
 }
 
-// Optimized fetcher with better error handling for build time
 const getPropertyDetails = cache(async (slug: string): Promise<PropertyDetails | null> => {
   if (!slug) return null;
   
   try {
-    // Decoding the slug in case it's URL-encoded (common with Hebrew characters)
     const decodedSlug = decodeURIComponent(slug);
-    
-    // Extract the unique 20-character Firestore ID from the end of the slug
-    // Firestore IDs are exactly 20 characters of [a-zA-Z0-9]
     const idMatch = decodedSlug.match(/([a-zA-Z0-9]{20})$/);
     const id = idMatch ? idMatch[0] : null;
 
-    if (!id || !db) {
-      console.warn(`[PropertyPage] Missing ID or DB connection for slug: ${decodedSlug}`);
-      return null;
-    }
+    if (!id || !db) return null;
 
     const docRef = doc(db, 'landingPages', id);
     const docSnap = await getDoc(docRef);
@@ -54,17 +47,32 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ? details.enhancedDescription.property.substring(0, 160) 
     : details.generatedTitle;
 
+  const imageUrl = details.images?.[0] || '';
+
   return {
     title: details.generatedTitle,
     description: seoDescription,
     openGraph: {
       title: details.generatedTitle,
       description: seoDescription,
-      url: `/${params.slug}`,
+      url: `https://${process.env.NEXT_PUBLIC_VERCEL_URL || 'your-domain.com'}/${params.slug}`,
       siteName: 'מחולל דפי נחיתה לנדל"ן',
-      images: details.images?.[0] ? [{ url: details.images[0] }] : [],
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: details.address,
+        },
+      ],
       locale: 'he_IL',
       type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: details.generatedTitle,
+      description: seoDescription,
+      images: [imageUrl],
     },
   };
 }

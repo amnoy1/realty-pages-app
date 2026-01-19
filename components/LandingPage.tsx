@@ -1,10 +1,17 @@
 
 'use client';
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import type { PropertyDetails, PropertyFeatures } from '../types';
 import { ImageGallery } from './ImageGallery';
 import { LeadForm } from './LeadForm';
+
+declare global {
+  interface Window {
+    fbAsyncInit: () => void;
+    FB: any;
+  }
+}
 
 interface LandingPageProps {
   details: PropertyDetails;
@@ -14,7 +21,8 @@ interface LandingPageProps {
   isSaving?: boolean;
 }
 
-// פונקציה להוספת פסיקים (הפרדת אלפים) למחיר
+const FB_APP_ID = "1543354433396045";
+
 const formatPriceWithCommas = (priceStr: string) => {
   const cleaned = priceStr.replace(/[^\d]/g, '');
   if (!cleaned) return priceStr;
@@ -92,6 +100,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
   const leadFormRef = useRef<HTMLDivElement>(null);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
 
+  // Initialize Facebook SDK
+  useEffect(() => {
+    if (!window.FB) {
+      window.fbAsyncInit = function() {
+        window.FB.init({
+          appId: FB_APP_ID,
+          cookie: true,
+          xfbml: true,
+          version: 'v18.0'
+        });
+      };
+
+      (function(d, s, id) {
+        var js: any, fjs: any = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "https://connect.facebook.net/he_IL/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
+    }
+  }, []);
+
   const handleCtaClick = () => {
     leadFormRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -107,8 +137,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
   };
 
   const shareOnFacebook = () => {
-    const url = window.location.href;
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400');
+    if (window.FB) {
+        window.FB.ui({
+          method: 'share',
+          href: window.location.href,
+        }, function(response: any){
+            console.log('FB Share Response:', response);
+        });
+    } else {
+        // Fallback if SDK fails to load
+        const url = window.location.href;
+        const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+        window.open(shareUrl, 'facebook-share-dialog', 'width=600,height=500');
+    }
   };
 
   const formattedPrice = formatPriceWithCommas(details.price);
@@ -201,31 +242,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
             )}
              {!isPreview && (
                 <div className="flex flex-col gap-3 p-4 rounded-2xl bg-slate-900/80 backdrop-blur-md border border-white/10 shadow-2xl animate-fade-in w-64">
-                    <div className="text-white text-xs font-bold text-center border-b border-white/10 pb-2 mb-1 flex items-center justify-center gap-2 font-sans">
+                    <div className="text-white text-xs font-bold text-center border-b border-white/10 pb-2 mb-1 flex items-center justify-center gap-2 font-sans uppercase tracking-widest">
                         <ShareIcon />
-                        ניהול והפצה
+                        הפצה ברשתות
                     </div>
                     
                     <button 
-                      onClick={copyLink} 
-                      className={`w-full py-2.5 px-4 rounded-xl transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans ${copyStatus === 'copied' ? 'bg-green-600 text-white' : 'bg-brand-accent text-white hover:bg-brand-accentHover'}`}
-                    >
-                      {copyStatus === 'copied' ? (
-                          <>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                            הועתק ללוח!
-                          </>
-                      ) : (
-                          <>
-                            <CopyIcon />
-                            העתק קישור ייחודי
-                          </>
-                      )}
-                    </button>
-
-                    <button 
                         onClick={shareOnFacebook}
-                        className="w-full bg-[#1877F2] text-white py-2.5 px-4 rounded-xl hover:bg-[#166fe5] transition-colors text-sm font-bold flex items-center justify-center gap-2 font-sans"
+                        className="w-full bg-[#1877F2] text-white py-3 px-4 rounded-xl hover:bg-[#166fe5] transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg hover:shadow-blue-500/20 active:scale-95"
                     >
                         <FacebookIcon />
                         שתף בפייסבוק
@@ -234,13 +258,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                     <button 
                         onClick={() => {
                             const url = window.location.href;
-                            const text = `היי, אני רוצה לשתף איתך פרטים על הנכס: ${details.generatedTitle}\n${url}`;
+                            const text = `🏠 נכס חדש למכירה בבלעדיות!\n📍 ${details.address}\n💰 מחיר: ${formattedPrice} ₪\n\nלכל הפרטים והתמונות:\n${url}`;
                             window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                         }}
-                        className="w-full bg-[#25D366] text-white py-2.5 px-4 rounded-xl hover:bg-[#1ebc57] transition-colors text-sm font-bold flex items-center justify-center gap-2 font-sans"
+                        className="w-full bg-[#25D366] text-white py-3 px-4 rounded-xl hover:bg-[#1ebc57] transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg hover:shadow-green-500/20 active:scale-95"
                     >
                         <WhatsAppIcon />
                         שלח בוואטסאפ
+                    </button>
+
+                    <div className="h-px bg-white/10 my-1"></div>
+
+                    <button 
+                      onClick={copyLink} 
+                      className={`w-full py-2.5 px-4 rounded-xl transition-all text-xs font-bold flex items-center justify-center gap-2 font-sans ${copyStatus === 'copied' ? 'bg-green-600 text-white shadow-inner' : 'bg-slate-700/50 text-white hover:bg-slate-700 hover:text-white border border-white/10'}`}
+                    >
+                      {copyStatus === 'copied' ? (
+                          <>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            הקישור הועתק!
+                          </>
+                      ) : (
+                          <>
+                            <CopyIcon />
+                            העתק לינק ישיר
+                          </>
+                      )}
                     </button>
                 </div>
             )}
@@ -260,12 +303,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                         <div className="w-20 h-1.5 bg-brand-accent mt-4 rounded-full"></div>
                     </div>
                     
-                    <div className="space-y-8 text-lg md:text-xl text-slate-600 leading-loose font-sans">
+                    <div className="space-y-8 text-lg md:text-xl text-slate-600 leading-loose font-sans text-right">
                         <div className="p-6 bg-slate-50 rounded-2xl border-r-4 border-brand-accent/30">
                            <p className="font-medium text-slate-700 font-sans">{details.enhancedDescription.area}</p>
                         </div>
                         <div>
-                           <p className="font-sans">{details.enhancedDescription.property}</p>
+                           <p className="font-sans whitespace-pre-wrap">{details.enhancedDescription.property}</p>
                         </div>
                         <div className="bg-brand-accent/5 p-6 rounded-2xl border border-brand-accent/10">
                             <p className="font-bold text-slate-900 text-xl font-sans">{details.enhancedDescription.cta}</p>
@@ -290,8 +333,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                 
                 <div className="bg-white border border-slate-200 p-10 rounded-3xl shadow-lg text-center relative overflow-hidden">
                      <div className="absolute top-0 left-0 w-full h-1 bg-slate-100"></div>
-                    <div className="w-24 h-24 bg-slate-100 rounded-full mx-auto mb-6 flex items-center justify-center text-slate-300 border-4 border-white shadow-md">
-                        <UserIcon />
+                    <div className="w-24 h-24 bg-slate-100 rounded-full mx-auto mb-6 flex items-center justify-center text-slate-300 border-4 border-white shadow-md overflow-hidden">
+                        {details.logo ? <img src={details.logo} className="w-full h-full object-contain p-2" /> : <UserIcon />}
                     </div>
                     <p className="text-slate-500 mb-2 font-medium font-sans">הנכס מיוצג ע"י</p>
                     <h3 className="text-2xl font-bold text-slate-900 mb-4 font-sans">{details.agentName}</h3>
@@ -301,14 +344,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                             href={`https://wa.me/${details.agentWhatsApp}`} 
                             target="_blank" 
                             rel="noopener noreferrer" 
-                            className="flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebc57] text-white py-3 px-6 rounded-xl transition-colors font-bold font-sans"
+                            className="flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebc57] text-white py-3 px-6 rounded-xl transition-colors font-bold font-sans shadow-md"
                         >
                             <WhatsAppIcon/>
                             <span>וואטסאפ</span>
                         </a>
                         <a 
                              href={`tel:${details.agentWhatsApp.replace(/\D/g, '')}`}
-                             className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white py-3 px-6 rounded-xl transition-colors font-bold font-sans"
+                             className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white py-3 px-6 rounded-xl transition-colors font-bold font-sans shadow-md"
                         >
                              <span>חייג</span>
                         </a>
@@ -332,9 +375,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         </section>
       </main>
       
-      <footer className="bg-slate-900 text-slate-400 text-center py-10 mt-20 border-t border-slate-800">
-        <div className="container mx-auto">
+      <footer className="bg-slate-900 text-slate-400 text-center py-12 mt-20 border-t border-slate-800">
+        <div className="container mx-auto space-y-4">
             <p className="text-sm opacity-70 font-sans">© כל הזכויות שמורות - נוצר באמצעות מחולל דפי נחיתה לנדל"ן</p>
+            <div className="flex justify-center gap-6 text-xs font-medium">
+               <a href="/privacy" className="hover:text-brand-accent transition-colors">מדיניות פרטיות</a>
+               <span className="opacity-30">|</span>
+               <a href="/" className="hover:text-brand-accent transition-colors">צור נכס חדש</a>
+            </div>
         </div>
       </footer>
     </div>
