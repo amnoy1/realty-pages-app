@@ -23,6 +23,13 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [filterId, setFilterId] = useState<string | null>(null);
+  const [lastViewedLeads, setLastViewedLeads] = useState<number>(0);
+
+  useEffect(() => {
+    // טעינת זמן הצפייה האחרון מ-LocalStorage
+    const savedTime = localStorage.getItem(`lastViewedLeads_${userId}`);
+    if (savedTime) setLastViewedLeads(parseInt(savedTime));
+  }, [userId]);
 
   const fetchData = async () => {
     if (!db || !userId) return;
@@ -46,6 +53,15 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
 
   useEffect(() => { fetchData(); }, [userId]);
 
+  const handleTabChange = (tab: 'properties' | 'leads') => {
+    setActiveTab(tab);
+    if (tab === 'leads') {
+      const now = Date.now();
+      setLastViewedLeads(now);
+      localStorage.setItem(`lastViewedLeads_${userId}`, now.toString());
+    }
+  };
+
   const handleDeleteProperty = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     if (!db || !window.confirm('האם למחוק את הדף?')) return;
@@ -59,7 +75,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
 
   const openLeadsForProperty = (id: string) => {
     setFilterId(id);
-    setActiveTab('leads');
+    handleTabChange('leads');
   };
 
   const getAddress = (id: string) => {
@@ -68,7 +84,11 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
   };
 
   const filteredLeads = filterId ? myLeads.filter(l => l.propertyId === filterId) : myLeads;
-  const newLeadsCount = myLeads.filter(l => l.createdAt >= (Date.now() - 24 * 60 * 60 * 1000)).length;
+  
+  // לידים "חדשים" באמת (שלא נראו מעולם בטאב הלידים)
+  const unreadLeadsCount = myLeads.filter(l => l.createdAt > lastViewedLeads).length;
+  // לידים מה-24 שעות האחרונות (לצרכי אינדיקציה כללית)
+  const recentLeadsCount = myLeads.filter(l => l.createdAt >= (Date.now() - 24 * 60 * 60 * 1000)).length;
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-20">
@@ -85,12 +105,17 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
       </div>
 
       <div className="flex gap-4 mb-8">
-          <button onClick={() => { setActiveTab('properties'); setFilterId(null); }} className={`px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'properties' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>הנכסים שלי ({myProperties.length})</button>
-          <button onClick={() => setActiveTab('leads')} className={`relative px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'leads' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+          <button onClick={() => { handleTabChange('properties'); setFilterId(null); }} className={`px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'properties' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>הנכסים שלי ({myProperties.length})</button>
+          <button onClick={() => handleTabChange('leads')} className={`relative px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'leads' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
             לידים נכנסים ({myLeads.length})
-            {newLeadsCount > 0 && (
-              <span className="absolute -top-1 -left-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] text-white shadow-lg animate-pulse border border-white/20">
-                {newLeadsCount}
+            {unreadLeadsCount > 0 && (
+              <span className="absolute -top-1 -left-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] text-white shadow-lg animate-bounce border border-white/20 font-black">
+                {unreadLeadsCount}
+              </span>
+            )}
+            {unreadLeadsCount === 0 && recentLeadsCount > 0 && activeTab !== 'leads' && (
+              <span className="absolute -top-1 -left-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-accent text-[9px] text-white shadow-md border border-white/10">
+                {recentLeadsCount}
               </span>
             )}
           </button>
@@ -100,7 +125,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {myProperties.map((prop) => {
             const propertyLeads = myLeads.filter(l => l.propertyId === prop.id);
-            const propertyNewLeads = propertyLeads.filter(l => l.createdAt >= (Date.now() - 24 * 60 * 60 * 1000)).length;
+            const propertyNewLeads = propertyLeads.filter(l => l.createdAt > lastViewedLeads).length;
 
             return (
               <div key={prop.id} className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden hover:border-brand-accent/50 transition-all shadow-xl group">
@@ -140,26 +165,35 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
             <table className="w-full text-right text-sm">
               <thead className="bg-slate-900/50 text-slate-400 uppercase text-xs">
                 <tr>
-                  <th className="p-4">תאריך</th>
-                  <th className="p-4">שם</th>
+                  <th className="p-4">סטטוס</th>
+                  <th className="p-4">תאריך פנייה</th>
+                  <th className="p-4">שם הלקוח</th>
                   <th className="p-4">טלפון</th>
                   <th className="p-4">כתובת הנכס</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700">
                 {filteredLeads.length === 0 ? (
-                  <tr><td colSpan={4} className="p-10 text-center text-slate-500 italic">לא נמצאו לידים</td></tr>
+                  <tr><td colSpan={5} className="p-10 text-center text-slate-500 italic">לא נמצאו לידים</td></tr>
                 ) : (
                   filteredLeads.map((lead) => {
-                    const isNew = lead.createdAt >= (Date.now() - 24 * 60 * 60 * 1000);
+                    // ליד נחשב "חדש" אם הוא נוצר אחרי שביקרנו פעם אחרונה בטאב הלידים (לפני הלחיצה הנוכחית)
+                    // כאן לצורך התצוגה נשתמש ב-lastViewedLeads ששמרנו
+                    const isNew = lead.createdAt > (lastViewedLeads - 1000); // מרווח ביטחון קטן
                     return (
-                      <tr key={lead.id} className={`hover:bg-slate-700/30 transition-colors ${isNew ? 'bg-red-500/5' : ''}`}>
+                      <tr key={lead.id} className={`hover:bg-slate-700/30 transition-colors ${isNew ? 'bg-brand-accent/5' : ''}`}>
+                        <td className="p-4">
+                            {isNew ? (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-accent text-white shadow-sm">חדש</span>
+                            ) : (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-700 text-slate-400">טופל</span>
+                            )}
+                        </td>
                         <td className="p-4 text-slate-400 text-xs">
-                          {isNew && <span className="bg-red-600 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-2 font-black">NEW</span>}
-                          {new Date(lead.createdAt).toLocaleDateString('he-IL')}
+                          {new Date(lead.createdAt).toLocaleDateString('he-IL')} {new Date(lead.createdAt).toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'})}
                         </td>
                         <td className="p-4 font-bold text-white">{lead.fullName}</td>
-                        <td className="p-4"><a href={`tel:${lead.phone}`} className="text-brand-accent hover:underline flex items-center gap-2"><PhoneIcon /> {lead.phone}</a></td>
+                        <td className="p-4"><a href={`tel:${lead.phone}`} className="text-brand-accent hover:underline flex items-center gap-2 font-bold"><PhoneIcon /> {lead.phone}</a></td>
                         <td className="p-4 text-slate-300 truncate max-w-[200px]">{getAddress(lead.propertyId)}</td>
                       </tr>
                     );
