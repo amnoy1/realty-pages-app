@@ -61,7 +61,7 @@ const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: stri
 const KeyFeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: string }> = ({ icon, label, value }) => {
     if (!value) return null;
     return (
-        <div className="flex items-center gap-3 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] transition-all">
+        <div className="flex items-center gap-3 text-white transition-all">
             <div className="text-brand-accent">{icon}</div>
             <div className="font-sans">
                 <p className="font-bold text-lg leading-none mb-1">{value}</p>
@@ -206,16 +206,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
           </div>
         )}
 
-        <div className="absolute bottom-0 right-0 w-full p-6 md:p-16 pb-20 z-20 pointer-events-none">
-            <div className="container mx-auto max-w-7xl">
-                <div className="max-w-5xl animate-slide-up pointer-events-auto">
-                    
-                    <p className="text-3xl md:text-5xl font-extrabold text-white mb-10 flex items-center gap-4 w-fit drop-shadow-[0_5px_8px_rgba(0,0,0,0.9)] font-sans">
+        {/* Info Box Overlay with 50% opacity background */}
+        <div className="absolute bottom-10 right-6 md:right-16 z-20 max-w-[calc(100%-3rem)] md:max-w-5xl animate-slide-up">
+            <div className="bg-black/50 backdrop-blur-md p-6 md:p-10 rounded-3xl border border-white/10 shadow-2xl pointer-events-auto">
+                <div className="animate-slide-up">
+                    <p className="text-3xl md:text-5xl font-extrabold text-white mb-8 flex items-center gap-4 w-fit font-sans">
                         <span className="inline-block w-2 h-12 bg-brand-accent rounded-full shadow-[0_0_20px_rgba(217,119,6,0.9)]"></span>
                         <span className="tracking-tight">{details.address}</span>
                     </p>
 
-                    <div className="flex flex-wrap gap-6 mb-12">
+                    <div className="flex flex-wrap gap-6 mb-10">
                         {keyFeatures.slice(0, 4).map((feature, i) => (
                             <KeyFeatureItem key={i} {...feature} />
                         ))}
@@ -223,7 +223,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
 
                     <button
                         onClick={handleCtaClick}
-                        className="py-4 px-10 rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.5)] text-xl font-bold text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 border border-white/20 pointer-events-auto font-sans"
+                        className="py-4 px-10 rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.5)] text-xl font-bold text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 border border-white/20 font-sans"
                     >
                         תיאום סיור בנכס
                     </button>
