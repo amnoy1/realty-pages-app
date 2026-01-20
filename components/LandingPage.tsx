@@ -206,9 +206,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
           </div>
         )}
 
-        {/* Info Box Overlay with 50% opacity background */}
+        {/* Info Box Overlay with 70% transparency background (bg-black/30) */}
         <div className="absolute bottom-10 right-6 md:right-16 z-20 max-w-[calc(100%-3rem)] md:max-w-5xl animate-slide-up">
-            <div className="bg-black/50 backdrop-blur-md p-6 md:p-10 rounded-3xl border border-white/10 shadow-2xl pointer-events-auto">
+            <div className="bg-black/30 backdrop-blur-lg p-6 md:p-10 rounded-3xl border border-white/10 shadow-2xl pointer-events-auto">
                 <div className="animate-slide-up">
                     <p className="text-3xl md:text-5xl font-extrabold text-white mb-8 flex items-center gap-4 w-fit font-sans">
                         <span className="inline-block w-2 h-12 bg-brand-accent rounded-full shadow-[0_0_20px_rgba(217,119,6,0.9)]"></span>
