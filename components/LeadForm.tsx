@@ -110,9 +110,9 @@ export const LeadForm: React.FC<LeadFormProps> = ({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full flex justify-center py-5 px-4 rounded-xl shadow-xl text-xl font-black text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:from-orange-600 transition-all transform hover:scale-[1.01] active:scale-95 disabled:opacity-50"
+          className="w-full flex justify-center py-4 px-10 rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.3)] text-xl font-bold text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 active:translate-y-0 disabled:opacity-50 font-sans border border-white/10"
         >
-          {isSubmitting ? 'שולח...' : 'תיאום סיור עכשיו'}
+          {isSubmitting ? 'שולח...' : 'תיאום סיור בנכס'}
         </button>
         
         <p className="text-[10px] text-slate-400 text-center mt-4">
