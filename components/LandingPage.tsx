@@ -188,13 +188,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
   ].filter(f => f.value);
 
   return (
-    <div className="bg-slate-50 min-h-screen text-slate-800 font-sans">
+    <div className="bg-slate-50 min-h-screen text-slate-800 font-sans flex flex-col">
         {!isPreview && (
             <a href={`https://wa.me/${details.agentWhatsApp}`} target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-2xl z-50 hover:scale-110 transition-transform duration-300 border-4 border-white" aria-label="צור קשר ב-WhatsApp">
                 <WhatsAppIcon/>
             </a>
         )}
-      <header className="relative h-[90vh] min-h-[650px] text-white overflow-hidden">
+      <header className="relative h-[90vh] min-h-[650px] text-white overflow-hidden shrink-0">
         <div className="absolute inset-0 bg-slate-900">
           <ImageGallery images={details.images} />
         </div>
@@ -338,7 +338,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-16 md:py-24 max-w-7xl -mt-10 relative z-10">
+      <main className="container mx-auto px-4 py-16 md:py-24 max-w-7xl -mt-10 relative z-10 flex-grow">
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             
             <div className="lg:col-span-7 space-y-10">
@@ -421,16 +421,34 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
              </div>
         </section>
       </main>
+
+      {/* Promotion Footer */}
+      <section className="mt-20 py-12 px-4 bg-slate-900 border-t border-white/5 relative overflow-hidden shrink-0">
+          <div className="absolute inset-0 opacity-10 pointer-events-none">
+              <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand-accent rounded-full blur-[120px]"></div>
+          </div>
+          <div className="container mx-auto text-center relative z-10">
+              <p className="text-2xl md:text-3xl font-black text-white mb-4 font-sans leading-tight">
+                דף זה נוצר באמצעות מערכת ייצור דפי הנחיתה החזקה בעולם
+              </p>
+              <a 
+                href="/" 
+                className="text-brand-accent hover:text-white text-xl font-bold font-sans transition-all duration-300 hover:scale-110 inline-block border-b-2 border-brand-accent hover:border-white pb-1"
+              >
+                realty-pages.com
+              </a>
+          </div>
+      </section>
       
-      <footer className="bg-slate-900 text-slate-400 text-center py-12 mt-20 border-t border-slate-800">
+      <footer className="bg-slate-950 text-slate-500 text-center py-10 border-t border-white/5 shrink-0">
         <div className="container mx-auto space-y-4">
-            <p className="text-sm opacity-70 font-sans">© כל הזכויות שמורות - נוצר באמצעות מחולל דפי נחיתה לנדל"ן</p>
-            <div className="flex justify-center gap-6 text-xs font-medium">
+            <p className="text-xs opacity-50 font-sans tracking-wide">© {new Date().getFullYear()} - כל הזכויות שמורות Realty-Pages.com</p>
+            <div className="flex justify-center gap-6 text-[10px] font-bold uppercase tracking-widest">
                <a href="/privacy" className="hover:text-brand-accent transition-colors">מדיניות פרטיות</a>
-               <span className="opacity-30">|</span>
+               <span className="opacity-20">|</span>
                <a href="/terms" className="hover:text-brand-accent transition-colors">תנאי שימוש</a>
-               <span className="opacity-30">|</span>
-               <a href="/" className="hover:text-brand-accent transition-colors">צור נכס חדש</a>
+               <span className="opacity-20">|</span>
+               <a href="mailto:Support@realty-pages.com" className="hover:text-brand-accent transition-colors">תמיכה</a>
             </div>
         </div>
       </footer>
