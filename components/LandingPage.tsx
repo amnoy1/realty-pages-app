@@ -428,7 +428,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
               <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand-accent rounded-full blur-[120px]"></div>
           </div>
           <div className="container mx-auto text-center relative z-10">
-              <p className="text-2xl md:text-3xl font-black text-white mb-4 font-sans leading-tight">
+              <p className="text-lg md:text-xl font-medium text-slate-300 mb-4 font-sans leading-tight">
                 דף זה נוצר באמצעות מערכת ייצור דפי הנחיתה החזקה בעולם
               </p>
               <a 
