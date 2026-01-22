@@ -6,10 +6,10 @@ export interface PropertyFormData {
   agentName: string;
   agentEmail: string;
   agentWhatsApp: string;
-  images: string[]; // array of base64 strings
-  logo?: string; // base64 string
-  targetAudience?: string[]; // קהלי יעד נבחרים
-  propertyTitle?: string; // כותרת שיווקית אופציונלית מהמשתמש
+  images: string[];
+  logo?: string;
+  targetAudience?: string[];
+  propertyTitle?: string; // הכותרת השיווקית שהמשתמש מזין
 }
 
 export interface PropertyFeatures {
@@ -25,21 +25,29 @@ export interface PropertyFeatures {
   elevator?: string;
 }
 
+export interface FAQItem {
+  question: string;
+  answer: string;
+}
+
 export interface EnhancedDescription {
   area: string;
   property: string;
   cta: string;
+  longSeoContent?: string; // התוכן העמוק (900 מילים)
+  faq?: FAQItem[]; // שאלות נפוצות ל-Snippets
+  metaTitle?: string;
+  metaDescription?: string;
+  seoSlug?: string;
 }
 
 export interface PropertyDetails extends PropertyFormData {
   id?: string;
   slug?: string;
-  userId?: string; 
+  userId?: string;
   userEmail?: string;
   createdAt?: number;
-  generatedTitle: string; // זו הכותרת השיווקית
-  seoH1?: string;       // הכותרת ה"משעממת" ל-SEO
-  marketingH2?: string;  // הכותרת השיווקית בדרגת H2
+  generatedTitle: string;
   enhancedDescription: EnhancedDescription;
   features: PropertyFeatures;
 }

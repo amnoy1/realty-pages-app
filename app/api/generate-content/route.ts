@@ -19,38 +19,56 @@ export async function POST(request: Request) {
     
     const audienceString = targetAudience && targetAudience.length > 0 && !targetAudience.includes("לא רלבנטי") 
         ? targetAudience.join(", ") 
-        : "רוכשי נדל\"ן ומשקיעים פרטיים";
+        : "רוכשי נדל\"ן ומשקיעים";
 
     const systemInstruction = `
-    אתה פועל כמומחה SEO עולמי לנדל"ן. המשימה שלך היא לייצר תוכן לדף נחיתה עבור הנכס בכתובת: ${address}.
+    אתה פועל כמומחה SEO עולמי לנדל"ן ומערכות SaaS, עם ניסיון בהבאת דפי נחיתה לדירוגים 1–3 בגוגל בישראל.
+    המטרה: לייצר דף נחיתה בעברית עבור הכתובת: ${address}.
     
-    דרישות היררכיה (קריטי):
-    1. seoH1: כותרת H1 "משעממת" ומדויקת. פורמט: "דירה למכירה ב[כתובת מלאה], [עיר]" או "נכס למכירה ב[כתובת מלאה] | [עיר]".
-    2. marketingH2: כותרת שיווקית חזקה ומושכת (H2).
+    דרישות SEO מחייבות:
+    1. כותרת H1 ייחודית הכוללת את הרחוב, המספר והעיר.
+    2. Meta Title (55-60 תווים) ו-Meta Description (140-160 תווים).
+    3. תוכן באורך מינימום 900 מילים, מחולק ל-H2 ו-H3, הכולל: תיאור הסביבה, ביקוש באזור, סוגי נכסים, יתרונות ו-FAQ.
+    4. מבנה FAQ של 5 שאלות מותאמות ל-Featured Snippets. כל תשובה באורך 40-60 מילים, עונה ישירות על השאלה בראשיתה.
+    5. כתיבה אנושית, אמינה, ללא חזרתיות.
+    6. השתמש ב-Google Search כדי למצוא פרטים אמיתיים על השכונה, מוסדות חינוך קרובים, פארקים ותחבורה בכתובת המצוינת.
+    
+    אין להזכיר AI, מודל שפה או אוטומציה.
     `;
 
     const prompt = `
-    צור תוכן SEO עבור נכס בכתובת: ${address}
-    כותרת משתמש (אם קיימת): ${propertyTitle || ""}
-    תיאור חופשי: ${originalDescription || ""}
+    צור דף נחיתה SEO מלא עבור הנכס הבא:
+    כותרת המשתמש: ${propertyTitle || "נכס למכירה"}
+    כתובת: ${address}
+    מידע נוסף: ${originalDescription || ""}
     קהל יעד: ${audienceString}
 
-    החזר JSON במבנה:
+    החזר JSON במבנה הבא בלבד:
     {
-      "seoH1": "דירה למכירה ב...",
-      "marketingH2": "הכותרת השיווקית המושכת",
+      "title": "H1 Title",
+      "metaTitle": "SEO Meta Title",
+      "metaDescription": "SEO Meta Description",
+      "seoSlug": "hebrew-friendly-slug",
       "description": {
-        "area": "תיאור השכונה והסביבה (כ-60 מילים)",
-        "property": "תיאור הנכס והפוטנציאל (כ-80 מילים)",
-        "cta": "תיאום סיור בנכס עכשיו"
+        "area": "Short summary of area (60 words)",
+        "property": "Short summary of property (60 words)",
+        "cta": "Call to action text",
+        "longSeoContent": "The full 900+ words SEO article with H2/H3 markers (use <h2> and <h3> tags)",
+        "faq": [
+          {"question": "Question 1", "answer": "Answer 1"},
+          {"question": "Question 2", "answer": "Answer 2"},
+          {"question": "Question 3", "answer": "Answer 3"},
+          {"question": "Question 4", "answer": "Answer 4"},
+          {"question": "Question 5", "answer": "Answer 5"}
+        ]
       },
       "features": {
-        "rooms": "מספר חדרים",
-        "apartmentArea": "שטח במר",
-        "floor": "קומה",
+        "rooms": "Value",
+        "apartmentArea": "Value",
+        "floor": "Value",
         "elevator": "יש/אין",
         "safeRoom": "יש/אין",
-        "parking": "חנייה"
+        "parking": "Value"
       }
     }
     `;
@@ -61,18 +79,26 @@ export async function POST(request: Request) {
       config: {
         systemInstruction: systemInstruction,
         responseMimeType: "application/json",
+        tools: [{ googleSearch: {} }]
       },
     });
 
     const result = JSON.parse(response.text);
     
+    // Flatten the response to match the client expectation
     return new Response(JSON.stringify({
-      title: result.marketingH2, // נשמור על תאימות לאחור בשם השדה
-      generatedTitle: result.marketingH2,
-      seoH1: result.seoH1,
-      marketingH2: result.marketingH2,
-      description: result.description,
-      features: result.features
+      title: result.title,
+      description: {
+        area: result.description.area,
+        property: result.description.property,
+        cta: result.description.cta,
+        longSeoContent: result.description.longSeoContent,
+        faq: result.description.faq
+      },
+      features: result.features,
+      metaTitle: result.metaTitle,
+      metaDescription: result.metaDescription,
+      seoSlug: result.seoSlug
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -80,7 +106,7 @@ export async function POST(request: Request) {
 
   } catch (error) {
     console.error("Error:", error);
-    return new Response(JSON.stringify({ error: "Failed to generate SEO content" }), {
+    return new Response(JSON.stringify({ error: "Generation failed" }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
     });
