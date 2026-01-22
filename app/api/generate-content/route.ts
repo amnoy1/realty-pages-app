@@ -3,12 +3,10 @@ import { GoogleGenAI } from "@google/genai";
 
 export async function POST(request: Request) {
   const apiKey = process.env.API_KEY || 
-                 process.env.GEMINI_API_KEY || 
-                 process.env.NEXT_PUBLIC_API_KEY || 
-                 process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+                 process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: "Server configuration error: API_KEY is missing." }), {
+    return new Response(JSON.stringify({ error: "Server configuration error" }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -17,72 +15,48 @@ export async function POST(request: Request) {
   const ai = new GoogleGenAI({ apiKey });
 
   try {
-    const { originalDescription, address, targetAudience } = await request.json();
+    const { originalDescription, address, propertyTitle, targetAudience } = await request.json();
     
-    if (!originalDescription || !address) {
-        return new Response(JSON.stringify({ error: "Missing originalDescription or address" }), {
-            status: 400,
-            headers: { 'Content-Type': 'application/json' },
-        });
-    }
-
     const audienceString = targetAudience && targetAudience.length > 0 && !targetAudience.includes("לא רלבנטי") 
         ? targetAudience.join(", ") 
-        : "קהל כללי";
+        : "רוכשי נדל\"ן ומשקיעים פרטיים";
 
-    // System instruction updated for target audience focus
     const systemInstruction = `
-    You are an Expert Real Estate Marketing Strategist and Copywriter, writing in Hebrew.
+    אתה פועל כמומחה SEO עולמי לנדל"ן. המשימה שלך היא לייצר תוכן לדף נחיתה עבור הנכס בכתובת: ${address}.
     
-    CRITICAL TASK: Customize the marketing copy for the following Target Audience: [${audienceString}].
-    
-    COPYWRITING STRATEGY PER AUDIENCE:
-    - Families: Focus on safety, community, schools, parks, rooms, and space.
-    - Investors: Focus on ROI, yield, demand, location potential, and ease of management.
-    - Upgraders (משפרי דיור): Focus on luxury, size, premium features, balcony, and status.
-    - Adults/Downsizers: Focus on accessibility, elevator, convenience, quietness, and maintenance.
-    
-    COPYWRITING RULES:
-    1. **Headline (Title):** Create a powerful hook specifically for [${audienceString}].
-    2. **Language:** Professional, emotional, and persuasive.
-    3. **Tone:** High-end boutique agency style.
-    4. **CLEAN TEXT ONLY:** Do NOT use Markdown formatting.
-    
-    DATA EXTRACTION:
-    Extract all features accurately. If a value is missing, return empty string "".
+    דרישות היררכיה (קריטי):
+    1. seoH1: כותרת H1 "משעממת" ומדויקת. פורמט: "דירה למכירה ב[כתובת מלאה], [עיר]" או "נכס למכירה ב[כתובת מלאה] | [עיר]".
+    2. marketingH2: כותרת שיווקית חזקה ומושכת (H2).
     `;
 
     const prompt = `
-    Analyze this property.
-    Target Audience: ${audienceString}
-    Address: ${address}
-    User Description: "${originalDescription}"
+    צור תוכן SEO עבור נכס בכתובת: ${address}
+    כותרת משתמש (אם קיימת): ${propertyTitle || ""}
+    תיאור חופשי: ${originalDescription || ""}
+    קהל יעד: ${audienceString}
 
-    Output JSON structure:
+    החזר JSON במבנה:
     {
-      "title": "Marketing Headline for ${audienceString}",
+      "seoH1": "דירה למכירה ב...",
+      "marketingH2": "הכותרת השיווקית המושכת",
       "description": {
-        "area": "Area marketing copy focused on benefits for ${audienceString} (60 words).",
-        "property": "Property marketing copy highlighting features attractive to ${audienceString} (60 words).",
-        "cta": "Compelling call to action"
+        "area": "תיאור השכונה והסביבה (כ-60 מילים)",
+        "property": "תיאור הנכס והפוטנציאל (כ-80 מילים)",
+        "cta": "תיאום סיור בנכס עכשיו"
       },
       "features": {
-        "rooms": "Number",
-        "apartmentArea": "Number",
-        "lotArea": "Number",
-        "balconyArea": "Number",
-        "floor": "Number",
-        "parking": "Number",
+        "rooms": "מספר חדרים",
+        "apartmentArea": "שטח במר",
+        "floor": "קומה",
         "elevator": "יש/אין",
-        "safeRoom": "ממ\"ד/אין",
-        "storage": "יש/אין",
-        "airDirections": "Directions"
+        "safeRoom": "יש/אין",
+        "parking": "חנייה"
       }
     }
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview', // Pro for better reasoning on audience customization
+      model: 'gemini-3-pro-preview',
       contents: prompt,
       config: {
         systemInstruction: systemInstruction,
@@ -90,14 +64,23 @@ export async function POST(request: Request) {
       },
     });
 
-    return new Response(response.text, {
+    const result = JSON.parse(response.text);
+    
+    return new Response(JSON.stringify({
+      title: result.marketingH2, // נשמור על תאימות לאחור בשם השדה
+      generatedTitle: result.marketingH2,
+      seoH1: result.seoH1,
+      marketingH2: result.marketingH2,
+      description: result.description,
+      features: result.features
+    }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error("Error in API route:", error);
-    return new Response(JSON.stringify({ error: "Failed to generate content" }), {
+    console.error("Error:", error);
+    return new Response(JSON.stringify({ error: "Failed to generate SEO content" }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
     });

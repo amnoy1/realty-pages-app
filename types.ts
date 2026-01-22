@@ -9,6 +9,7 @@ export interface PropertyFormData {
   images: string[]; // array of base64 strings
   logo?: string; // base64 string
   targetAudience?: string[]; // קהלי יעד נבחרים
+  propertyTitle?: string; // כותרת שיווקית אופציונלית מהמשתמש
 }
 
 export interface PropertyFeatures {
@@ -33,10 +34,12 @@ export interface EnhancedDescription {
 export interface PropertyDetails extends PropertyFormData {
   id?: string;
   slug?: string;
-  userId?: string; // ה-UID של הסוכן שיצר את הדף
+  userId?: string; 
   userEmail?: string;
   createdAt?: number;
-  generatedTitle: string;
+  generatedTitle: string; // זו הכותרת השיווקית
+  seoH1?: string;       // הכותרת ה"משעממת" ל-SEO
+  marketingH2?: string;  // הכותרת השיווקית בדרגת H2
   enhancedDescription: EnhancedDescription;
   features: PropertyFeatures;
 }
@@ -48,14 +51,14 @@ export interface UserProfile {
   photoURL: string | null;
   role: 'user' | 'admin';
   lastLogin: number;
-  createdAt?: number; // מועד הצטרפות למערכת
+  createdAt?: number;
 }
 
 export interface Lead {
   id?: string;
-  propertyId: string;    // מזהה הנכס שעליו פנו
-  propertyTitle: string; // כותרת הנכס (לנוחות תצוגה)
-  ownerId: string;       // ה-UID של הסוכן (למי הליד שייך)
+  propertyId: string;
+  propertyTitle: string;
+  ownerId: string;
   fullName: string;
   phone: string;
   createdAt: number;
