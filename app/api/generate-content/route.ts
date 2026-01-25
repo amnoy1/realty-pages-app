@@ -30,7 +30,6 @@ export async function POST(request: Request) {
         ? targetAudience.join(", ") 
         : "קהל כללי";
 
-    // System instruction updated for target audience focus
     const systemInstruction = `
     You are an Expert Real Estate Marketing Strategist and Copywriter, writing in Hebrew.
     
@@ -43,13 +42,11 @@ export async function POST(request: Request) {
     - Adults/Downsizers: Focus on accessibility, elevator, convenience, quietness, and maintenance.
     
     COPYWRITING RULES:
-    1. **Headline (Title):** Create a powerful hook specifically for [${audienceString}].
-    2. **Language:** Professional, emotional, and persuasive.
-    3. **Tone:** High-end boutique agency style.
-    4. **CLEAN TEXT ONLY:** Do NOT use Markdown formatting.
-    
-    DATA EXTRACTION:
-    Extract all features accurately. If a value is missing, return empty string "".
+    1. **Property Type Identification:** Identify if the property is a "דירה", "בית פרטי", "פנטהאוז", "מגרש", "קרקע", "דו-משפחתי", etc., based on the description.
+    2. **Headline (Title):** Create a powerful hook specifically for [${audienceString}].
+    3. **Language:** Professional, emotional, and persuasive.
+    4. **Tone:** High-end boutique agency style.
+    5. **CLEAN TEXT ONLY:** Do NOT use Markdown formatting.
     `;
 
     const prompt = `
@@ -60,6 +57,7 @@ export async function POST(request: Request) {
 
     Output JSON structure:
     {
+      "propertyType": "Type of property in Hebrew (e.g., דירה / בית פרטי / פנטהאוז / מגרש)",
       "title": "Marketing Headline for ${audienceString}",
       "description": {
         "area": "Area marketing copy focused on benefits for ${audienceString} (60 words).",
@@ -82,7 +80,7 @@ export async function POST(request: Request) {
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview', // Pro for better reasoning on audience customization
+      model: 'gemini-3-pro-preview',
       contents: prompt,
       config: {
         systemInstruction: systemInstruction,

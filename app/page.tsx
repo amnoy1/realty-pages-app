@@ -49,17 +49,14 @@ const HomePage: React.FC = () => {
               const now = Date.now();
               
               if (userSnap.exists()) {
-                  // עדכון פרטי התחברות אחרונה
                   await updateDoc(userRef, {
                       lastLogin: now,
                       displayName: currentUser.displayName,
                       photoURL: currentUser.photoURL,
                       email: currentUser.email,
-                      // רק אם זה האדמין המוגדר, נעדכן לו את ה-Role ל-admin
                       role: isUserAdmin ? 'admin' : (userSnap.data() as UserProfile).role || 'user'
                   });
               } else {
-                  // יצירת משתמש חדש במערכת (יוזר רגיל)
                   console.log("[Auth] Creating new user profile in DB...");
                   await setDoc(userRef, {
                       uid: currentUser.uid,
@@ -73,7 +70,6 @@ const HomePage: React.FC = () => {
               }
             } catch (error) {
               console.error("[Auth] Error syncing user to DB:", error);
-              // אם יש שגיאת הרשאות כאן, זה אומר שהחוקים ב-Firebase חוסמים יצירת משתמש חדש
             }
         }
       } else {
@@ -103,6 +99,7 @@ const HomePage: React.FC = () => {
         userId: user.uid,
         userEmail: user.email || '',
         generatedTitle: generatedData.title,
+        propertyType: generatedData.propertyType || "נכס",
         enhancedDescription: generatedData.description,
         features: generatedData.features,
       });
@@ -202,17 +199,6 @@ const HomePage: React.FC = () => {
                        <div className="absolute inset-0 z-40 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
                            <h2 className="text-3xl font-bold text-white mb-4">ניהול נכסי נדל"ן</h2>
                            <p className="text-slate-300 mb-6">התחבר כדי להתחיל ליצור דפי נחיתה מקצועיים</p>
-                           <button 
-                             onClick={() => {
-                               if (auth) {
-                                 const provider = new (window as any).firebase.auth.GoogleAuthProvider();
-                                 (window as any).firebase.auth().signInWithPopup(provider);
-                               }
-                             }}
-                             className="hidden" // הלחצן ב-Auth.tsx הוא המרכזי
-                           >
-                             התחבר עכשיו
-                           </button>
                        </div>
                    )}
                    <CreationForm onSubmit={handleFormSubmit} isLoading={isLoading} />

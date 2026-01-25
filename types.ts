@@ -37,6 +37,7 @@ export interface PropertyDetails extends PropertyFormData {
   userEmail?: string;
   createdAt?: number;
   generatedTitle: string;
+  propertyType: string; // סוג הנכס (דירה, בית פרטי, פנטהאוז וכו')
   enhancedDescription: EnhancedDescription;
   features: PropertyFeatures;
 }
