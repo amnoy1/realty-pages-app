@@ -197,8 +197,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         <div className="absolute bottom-10 right-6 md:right-16 z-20 max-w-[calc(100%-3rem)] md:max-w-5xl animate-slide-up">
             <div className="bg-black/30 backdrop-blur-xl p-8 md:p-12 rounded-3xl border border-white/10 shadow-2xl pointer-events-auto">
                 <div className="animate-slide-up">
-                    {/* Fixed Format Property Type Tag */}
-                    <div className="text-lg md:text-xl font-bold text-brand-accent mb-2 uppercase tracking-wide opacity-90 font-sans">
+                    {/* Fixed Format Property Type Tag - Color changed to light gray (slate-300) */}
+                    <div className="text-lg md:text-xl font-bold text-slate-300 mb-2 uppercase tracking-wide opacity-90 font-sans">
                         {propertyTypeLabel}
                     </div>
                     
