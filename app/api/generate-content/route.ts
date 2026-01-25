@@ -3,10 +3,12 @@ import { GoogleGenAI } from "@google/genai";
 
 export async function POST(request: Request) {
   const apiKey = process.env.API_KEY || 
-                 process.env.GEMINI_API_KEY;
+                 process.env.GEMINI_API_KEY || 
+                 process.env.NEXT_PUBLIC_API_KEY || 
+                 process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: "Server configuration error" }), {
+    return new Response(JSON.stringify({ error: "Server configuration error: API_KEY is missing." }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -15,103 +17,87 @@ export async function POST(request: Request) {
   const ai = new GoogleGenAI({ apiKey });
 
   try {
-    const { originalDescription, address, propertyTitle, targetAudience } = await request.json();
+    const { originalDescription, address, targetAudience } = await request.json();
     
+    if (!originalDescription || !address) {
+        return new Response(JSON.stringify({ error: "Missing originalDescription or address" }), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+
     const audienceString = targetAudience && targetAudience.length > 0 && !targetAudience.includes("לא רלבנטי") 
         ? targetAudience.join(", ") 
-        : "רוכשי נדל\"ן ומשקיעים";
+        : "קהל כללי";
 
+    // System instruction updated for target audience focus
     const systemInstruction = `
-    אתה פועל כמומחה SEO עולמי לנדל"ן ומערכות SaaS, עם ניסיון בהבאת דפי נחיתה לדירוגים 1–3 בגוגל בישראל.
-    המטרה: לייצר דף נחיתה בעברית עבור הכתובת: ${address}.
+    You are an Expert Real Estate Marketing Strategist and Copywriter, writing in Hebrew.
     
-    דרישות SEO מחייבות:
-    1. כותרת H1 ייחודית הכוללת את הרחוב, המספר והעיר.
-    2. Meta Title (55-60 תווים) ו-Meta Description (140-160 תווים).
-    3. תוכן באורך מינימום 900 מילים, מחולק ל-H2 ו-H3, הכולל: תיאור הסביבה, ביקוש באזור, סוגי נכסים, יתרונות ו-FAQ.
-    4. מבנה FAQ של 5 שאלות מותאמות ל-Featured Snippets. כל תשובה באורך 40-60 מילים, עונה ישירות על השאלה בראשיתה.
-    5. כתיבה אנושית, אמינה, ללא חזרתיות.
-    6. השתמש ב-Google Search כדי למצוא פרטים אמיתיים על השכונה, מוסדות חינוך קרובים, פארקים ותחבורה בכתובת המצוינת.
+    CRITICAL TASK: Customize the marketing copy for the following Target Audience: [${audienceString}].
     
-    אין להזכיר AI, מודל שפה או אוטומציה.
+    COPYWRITING STRATEGY PER AUDIENCE:
+    - Families: Focus on safety, community, schools, parks, rooms, and space.
+    - Investors: Focus on ROI, yield, demand, location potential, and ease of management.
+    - Upgraders (משפרי דיור): Focus on luxury, size, premium features, balcony, and status.
+    - Adults/Downsizers: Focus on accessibility, elevator, convenience, quietness, and maintenance.
+    
+    COPYWRITING RULES:
+    1. **Headline (Title):** Create a powerful hook specifically for [${audienceString}].
+    2. **Language:** Professional, emotional, and persuasive.
+    3. **Tone:** High-end boutique agency style.
+    4. **CLEAN TEXT ONLY:** Do NOT use Markdown formatting.
+    
+    DATA EXTRACTION:
+    Extract all features accurately. If a value is missing, return empty string "".
     `;
 
     const prompt = `
-    צור דף נחיתה SEO מלא עבור הנכס הבא:
-    כותרת המשתמש: ${propertyTitle || "נכס למכירה"}
-    כתובת: ${address}
-    מידע נוסף: ${originalDescription || ""}
-    קהל יעד: ${audienceString}
+    Analyze this property.
+    Target Audience: ${audienceString}
+    Address: ${address}
+    User Description: "${originalDescription}"
 
-    החזר JSON במבנה הבא בלבד:
+    Output JSON structure:
     {
-      "title": "H1 Title",
-      "metaTitle": "SEO Meta Title",
-      "metaDescription": "SEO Meta Description",
-      "seoSlug": "hebrew-friendly-slug",
+      "title": "Marketing Headline for ${audienceString}",
       "description": {
-        "area": "Short summary of area (60 words)",
-        "property": "Short summary of property (60 words)",
-        "cta": "Call to action text",
-        "longSeoContent": "The full 900+ words SEO article with H2/H3 markers (use <h2> and <h3> tags)",
-        "faq": [
-          {"question": "Question 1", "answer": "Answer 1"},
-          {"question": "Question 2", "answer": "Answer 2"},
-          {"question": "Question 3", "answer": "Answer 3"},
-          {"question": "Question 4", "answer": "Answer 4"},
-          {"question": "Question 5", "answer": "Answer 5"}
-        ]
+        "area": "Area marketing copy focused on benefits for ${audienceString} (60 words).",
+        "property": "Property marketing copy highlighting features attractive to ${audienceString} (60 words).",
+        "cta": "Compelling call to action"
       },
       "features": {
-        "rooms": "Value",
-        "apartmentArea": "Value",
-        "floor": "Value",
+        "rooms": "Number",
+        "apartmentArea": "Number",
+        "lotArea": "Number",
+        "balconyArea": "Number",
+        "floor": "Number",
+        "parking": "Number",
         "elevator": "יש/אין",
-        "safeRoom": "יש/אין",
-        "parking": "Value"
+        "safeRoom": "ממ\"ד/אין",
+        "storage": "יש/אין",
+        "airDirections": "Directions"
       }
     }
     `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-pro-preview',
+      model: 'gemini-3-pro-preview', // Pro for better reasoning on audience customization
       contents: prompt,
       config: {
         systemInstruction: systemInstruction,
         responseMimeType: "application/json",
-        tools: [{ googleSearch: {} }]
       },
     });
 
-    const responseText = response.text;
-    if (!responseText) {
-      throw new Error("No text content returned from Gemini");
-    }
-
-    const result = JSON.parse(responseText);
-    
-    // Flatten the response to match the client expectation
-    return new Response(JSON.stringify({
-      title: result.title,
-      description: {
-        area: result.description.area,
-        property: result.description.property,
-        cta: result.description.cta,
-        longSeoContent: result.description.longSeoContent,
-        faq: result.description.faq
-      },
-      features: result.features,
-      metaTitle: result.metaTitle,
-      metaDescription: result.metaDescription,
-      seoSlug: result.seoSlug
-    }), {
+    return new Response(response.text, {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error("Error:", error);
-    return new Response(JSON.stringify({ error: "Generation failed" }), {
+    console.error("Error in API route:", error);
+    return new Response(JSON.stringify({ error: "Failed to generate content" }), {
         status: 500,
         headers: { 'Content-Type': 'application/json' },
     });

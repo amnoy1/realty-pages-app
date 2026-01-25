@@ -6,10 +6,9 @@ export interface PropertyFormData {
   agentName: string;
   agentEmail: string;
   agentWhatsApp: string;
-  images: string[];
-  logo?: string;
-  targetAudience?: string[];
-  propertyTitle?: string; // הכותרת השיווקית שהמשתמש מזין
+  images: string[]; // array of base64 strings
+  logo?: string; // base64 string
+  targetAudience?: string[]; // קהלי יעד נבחרים
 }
 
 export interface PropertyFeatures {
@@ -25,26 +24,16 @@ export interface PropertyFeatures {
   elevator?: string;
 }
 
-export interface FAQItem {
-  question: string;
-  answer: string;
-}
-
 export interface EnhancedDescription {
   area: string;
   property: string;
   cta: string;
-  longSeoContent?: string; // התוכן העמוק (900 מילים)
-  faq?: FAQItem[]; // שאלות נפוצות ל-Snippets
-  metaTitle?: string;
-  metaDescription?: string;
-  seoSlug?: string;
 }
 
 export interface PropertyDetails extends PropertyFormData {
   id?: string;
   slug?: string;
-  userId?: string;
+  userId?: string; // ה-UID של הסוכן שיצר את הדף
   userEmail?: string;
   createdAt?: number;
   generatedTitle: string;
@@ -59,14 +48,14 @@ export interface UserProfile {
   photoURL: string | null;
   role: 'user' | 'admin';
   lastLogin: number;
-  createdAt?: number;
+  createdAt?: number; // מועד הצטרפות למערכת
 }
 
 export interface Lead {
   id?: string;
-  propertyId: string;
-  propertyTitle: string;
-  ownerId: string;
+  propertyId: string;    // מזהה הנכס שעליו פנו
+  propertyTitle: string; // כותרת הנכס (לנוחות תצוגה)
+  ownerId: string;       // ה-UID של הסוכן (למי הליד שייך)
   fullName: string;
   phone: string;
   createdAt: number;

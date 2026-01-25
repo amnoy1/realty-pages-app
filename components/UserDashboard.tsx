@@ -23,13 +23,11 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [filterId, setFilterId] = useState<string | null>(null);
-  
-  // המועד האחרון בו הסוכן צפה בטאב הלידים (לפני הכניסה הנוכחית)
-  const [lastViewedThreshold, setLastViewedThreshold] = useState<number>(0);
+  const [lastViewedLeads, setLastViewedLeads] = useState<number>(0);
 
   useEffect(() => {
     const savedTime = localStorage.getItem(`lastViewedLeads_${userId}`);
-    if (savedTime) setLastViewedThreshold(parseInt(savedTime));
+    if (savedTime) setLastViewedLeads(parseInt(savedTime));
   }, [userId]);
 
   const fetchData = async () => {
@@ -44,7 +42,6 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
       const qLeads = query(collection(db, 'leads'), where('ownerId', '==', userId));
       const leadSnap = await getDocs(qLeads);
       const leads = leadSnap.docs.map(doc => ({ ...doc.data() as object, id: doc.id } as Lead));
-      // מיון: הכי חדש למעלה
       setMyLeads(leads.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
     } catch (err) {
       console.error("Dashboard fetch error:", err);
@@ -56,12 +53,14 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
   useEffect(() => { fetchData(); }, [userId]);
 
   const handleTabChange = (tab: 'properties' | 'leads') => {
-    // אם עוברים ללידים, אנחנו מעדכנים את ה-Threshold ב-localStorage,
-    // אבל משאירים את ה-State המקומי כפי שהיה כדי שהמשתמש יראה את ה-"NEW" בפעם הזו.
-    if (tab === 'leads') {
-      localStorage.setItem(`lastViewedLeads_${userId}`, Date.now().toString());
-    }
     setActiveTab(tab);
+    if (tab === 'leads') {
+      const now = Date.now();
+      // נשמור את ה-timestamp רגע לפני העדכון כדי שנוכל להציג את הלידים כ"נקראו" עכשיו
+      localStorage.setItem(`lastViewedLeads_${userId}`, now.toString());
+      // אנחנו לא מעדכנים את ה-State מיד כדי שהמשתמש יראה את הצבע משתנה בזמן אמת בטאב
+      setLastViewedLeads(now);
+    }
   };
 
   const handleDeleteProperty = async (e: React.MouseEvent, id: string) => {
@@ -87,8 +86,13 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
 
   const filteredLeads = filterId ? myLeads.filter(l => l.propertyId === filterId) : myLeads;
   
-  // לידים שלא נראו עדיין (נוצרו אחרי ה-threshold השמור)
-  const unreadLeadsCount = myLeads.filter(l => l.createdAt > lastViewedThreshold).length;
+  // לידים "חדשים" באמת - כאלו שנוצרו מאז הצפייה האחרונה (לפני הטאב הנוכחי)
+  // לצורך הבאדג' האדום: נשתמש בערך שנשמר ב-LocalStorage בטעינה
+  const lastSavedTime = parseInt(localStorage.getItem(`lastViewedLeads_${userId}`) || "0");
+  const unreadLeadsCount = myLeads.filter(l => l.createdAt > lastSavedTime).length;
+  
+  // לידים מה-24 שעות האחרונות
+  const recentLeadsCount = myLeads.filter(l => l.createdAt >= (Date.now() - 24 * 60 * 60 * 1000)).length;
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center py-20">
@@ -108,9 +112,16 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
           <button onClick={() => { handleTabChange('properties'); setFilterId(null); }} className={`px-6 py-2 rounded-xl font-bold transition-all font-sans ${activeTab === 'properties' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>הנכסים שלי ({myProperties.length})</button>
           <button onClick={() => handleTabChange('leads')} className={`relative px-6 py-2 rounded-xl font-bold transition-all font-sans ${activeTab === 'leads' ? 'bg-white text-slate-900 shadow-xl' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
             לידים נכנסים ({myLeads.length})
+            {/* באדג' אדום - רק אם לא נכנסנו לטאב הלידים עדיין */}
             {unreadLeadsCount > 0 && activeTab !== 'leads' && (
               <span className="absolute -top-1 -left-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] text-white shadow-lg animate-bounce border border-white/20 font-black">
                 {unreadLeadsCount}
+              </span>
+            )}
+            {/* באדג' כתום - אם כבר נכנסנו לטאב או שאין לידים חדשים מחייבים, אבל יש לידים מה-24 שעות האחרונות */}
+            {(unreadLeadsCount === 0 || activeTab === 'leads') && recentLeadsCount > 0 && (
+              <span className={`absolute -top-1 -left-1 flex h-4 w-4 items-center justify-center rounded-full text-[9px] text-white shadow-md border border-white/10 font-bold transition-colors ${activeTab === 'leads' ? 'bg-brand-accent/50' : 'bg-brand-accent'}`}>
+                {recentLeadsCount}
               </span>
             )}
           </button>
@@ -120,7 +131,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {myProperties.map((prop) => {
             const propertyLeads = myLeads.filter(l => l.propertyId === prop.id);
-            const propertyNewLeadsCount = propertyLeads.filter(l => l.createdAt > lastViewedThreshold).length;
+            const propertyNewLeads = propertyLeads.filter(l => l.createdAt > lastSavedTime).length;
 
             return (
               <div key={prop.id} className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden hover:border-brand-accent/50 transition-all shadow-xl group">
@@ -129,9 +140,9 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
                   <div className="absolute top-3 right-3 flex gap-2">
                     <button 
                       onClick={() => openLeadsForProperty(prop.id!)}
-                      className={`text-[10px] px-2.5 py-1.5 rounded-lg font-bold shadow-lg flex items-center gap-1.5 transition-colors font-sans ${propertyNewLeadsCount > 0 ? 'bg-red-600 text-white animate-pulse' : 'bg-brand-accent hover:bg-brand-accentHover text-white'}`}
+                      className={`text-[10px] px-2.5 py-1.5 rounded-lg font-bold shadow-lg flex items-center gap-1.5 transition-colors font-sans ${propertyNewLeads > 0 ? 'bg-red-600 text-white animate-pulse' : 'bg-brand-accent hover:bg-brand-accentHover text-white'}`}
                     >
-                      <UsersIcon /> {propertyLeads.length} לידים {propertyNewLeadsCount > 0 && `(חדש!)`}
+                      <UsersIcon /> {propertyLeads.length} לידים {propertyNewLeads > 0 && `(${propertyNewLeads} חדשים!)`}
                     </button>
                   </div>
                 </div>
@@ -172,14 +183,15 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
                   <tr><td colSpan={5} className="p-10 text-center text-slate-500 italic">לא נמצאו לידים</td></tr>
                 ) : (
                   filteredLeads.map((lead) => {
-                    const isNew = lead.createdAt > lastViewedThreshold;
+                    // ליד נחשב "חדש" רק אם הוא נוצר אחרי ה-timestamp ששמרנו לפני המעבר הנוכחי לטאב
+                    const isNew = lead.createdAt > lastSavedTime;
                     return (
-                      <tr key={lead.id} className={`hover:bg-slate-700/30 transition-colors ${isNew ? 'bg-red-600/5' : ''}`}>
+                      <tr key={lead.id} className={`hover:bg-slate-700/30 transition-colors ${isNew ? 'bg-brand-accent/5' : ''}`}>
                         <td className="p-4">
                             {isNew ? (
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black bg-red-600 text-white shadow-lg animate-pulse">NEW</span>
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-accent text-white shadow-sm animate-pulse">נצפה עכשיו</span>
                             ) : (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-700 text-slate-500">נצפה</span>
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-700 text-slate-400">טופל</span>
                             )}
                         </td>
                         <td className="p-4 text-slate-400 text-xs">
