@@ -83,7 +83,12 @@ export async function POST(request: Request) {
       },
     });
 
-    const result = JSON.parse(response.text);
+    const responseText = response.text;
+    if (!responseText) {
+      throw new Error("No text content returned from Gemini");
+    }
+
+    const result = JSON.parse(responseText);
     
     // Flatten the response to match the client expectation
     return new Response(JSON.stringify({
