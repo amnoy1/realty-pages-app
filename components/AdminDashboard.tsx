@@ -18,6 +18,11 @@ export const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>('agents');
   const [selectedAgent, setSelectedAgent] = useState<UserProfile | null>(null);
 
+  const isLeadNew = (timestamp: number) => {
+    const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+    return timestamp >= oneDayAgo;
+  };
+
   const loadData = async () => {
     if (!db) {
       setError("חיבור ל-Firebase לא הוגדר כראוי.");
@@ -35,10 +40,14 @@ export const AdminDashboard: React.FC = () => {
         fetchCollection('landingPages'),
         fetchCollection('leads')
       ]);
+
+      // סיווג ומיון לידים - החדשים ביותר למעלה
+      const sortedLeads = (leads as Lead[]).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
       setData({ 
         users: users as UserProfile[], 
         props: props as PropertyDetails[], 
-        leads: leads as Lead[] 
+        leads: sortedLeads 
       });
     } catch (err: any) {
       setError(err.message || "שגיאה בטעינת הנתונים.");
@@ -106,22 +115,33 @@ export const AdminDashboard: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-700/50 font-sans">
-                            {data.users.map(u => (
-                                <tr key={u.uid} className="hover:bg-white/5 transition-colors group">
-                                    <td className="p-5 flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center font-bold text-white border border-slate-600 overflow-hidden">
-                                            {u.photoURL ? <img src={u.photoURL} className="w-full h-full object-cover" /> : (u.displayName?.charAt(0))}
-                                        </div>
-                                        <span className="font-bold text-white group-hover:text-brand-accent transition-colors">{u.displayName}</span>
-                                    </td>
-                                    <td className="p-5 text-center"><span className="bg-slate-900 text-slate-300 px-3 py-1 rounded-full text-xs font-bold">{data.props.filter(p => p.userId === u.uid).length}</span></td>
-                                    <td className="p-5 text-center"><span className="bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-xs font-bold">{data.leads.filter(l => l.ownerId === u.uid).length}</span></td>
-                                    <td className="p-5 text-slate-400 text-sm">{u.email}</td>
-                                    <td className="p-5">
-                                        <button onClick={() => setSelectedAgent(u)} className="text-brand-accent text-xs font-bold hover:underline">פרטי סוכן ←</button>
-                                    </td>
-                                </tr>
-                            ))}
+                            {data.users.map(u => {
+                                const agentLeads = data.leads.filter(l => l.ownerId === u.uid);
+                                const hasNewLeads = agentLeads.some(l => isLeadNew(l.createdAt));
+                                return (
+                                    <tr key={u.uid} className="hover:bg-white/5 transition-colors group">
+                                        <td className="p-5 flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center font-bold text-white border border-slate-600 overflow-hidden">
+                                                {u.photoURL ? <img src={u.photoURL} className="w-full h-full object-cover" /> : (u.displayName?.charAt(0))}
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="font-bold text-white group-hover:text-brand-accent transition-colors">{u.displayName}</span>
+                                                {hasNewLeads && <span className="text-[10px] font-black text-red-500 animate-pulse">לידים חדשים!</span>}
+                                            </div>
+                                        </td>
+                                        <td className="p-5 text-center"><span className="bg-slate-900 text-slate-300 px-3 py-1 rounded-full text-xs font-bold">{data.props.filter(p => p.userId === u.uid).length}</span></td>
+                                        <td className="p-5 text-center">
+                                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${hasNewLeads ? 'bg-red-500/20 text-red-500' : 'bg-green-500/10 text-green-500'}`}>
+                                                {agentLeads.length}
+                                            </span>
+                                        </td>
+                                        <td className="p-5 text-slate-400 text-sm">{u.email}</td>
+                                        <td className="p-5">
+                                            <button onClick={() => setSelectedAgent(u)} className="text-brand-accent text-xs font-bold hover:underline">פרטי סוכן ←</button>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -145,22 +165,30 @@ export const AdminDashboard: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-700/50 font-sans">
-                            {data.props.map(prop => (
-                                <tr key={prop.id} className="hover:bg-white/5 transition-colors">
-                                    <td className="p-5">
-                                        <div className="flex flex-col">
-                                            <span className="text-white font-bold">{prop.address}</span>
-                                            <span className="text-slate-500 text-[10px] truncate max-w-xs">{prop.generatedTitle}</span>
-                                        </div>
-                                    </td>
-                                    <td className="p-5 text-slate-300 text-sm font-medium">{getAgentName(prop.userId!)}</td>
-                                    <td className="p-5 text-brand-accent font-bold">₪ {prop.price}</td>
-                                    <td className="p-5"><span className="bg-green-500/20 text-green-400 px-2 py-1 rounded-lg text-xs font-bold">{data.leads.filter(l => l.propertyId === prop.id).length}</span></td>
-                                    <td className="p-5">
-                                        <a href={`/${prop.slug}-${prop.id}`} target="_blank" className="text-blue-400 hover:underline text-xs font-bold">צפה בדף</a>
-                                    </td>
-                                </tr>
-                            ))}
+                            {data.props.map(prop => {
+                                const propLeads = data.leads.filter(l => l.propertyId === prop.id);
+                                const hasNewLeads = propLeads.some(l => isLeadNew(l.createdAt));
+                                return (
+                                    <tr key={prop.id} className="hover:bg-white/5 transition-colors">
+                                        <td className="p-5">
+                                            <div className="flex flex-col">
+                                                <span className="text-white font-bold">{prop.address}</span>
+                                                <span className="text-slate-500 text-[10px] truncate max-w-xs">{prop.generatedTitle}</span>
+                                            </div>
+                                        </td>
+                                        <td className="p-5 text-slate-300 text-sm font-medium">{getAgentName(prop.userId!)}</td>
+                                        <td className="p-5 text-brand-accent font-bold">₪ {prop.price}</td>
+                                        <td className="p-5">
+                                            <span className={`px-2 py-1 rounded-lg text-xs font-bold ${hasNewLeads ? 'bg-red-500 text-white animate-pulse' : 'bg-green-500/20 text-green-400'}`}>
+                                                {propLeads.length} {hasNewLeads && "NEW"}
+                                            </span>
+                                        </td>
+                                        <td className="p-5">
+                                            <a href={`/${prop.slug}-${prop.id}`} target="_blank" className="text-blue-400 hover:underline text-xs font-bold">צפה בדף</a>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -170,12 +198,13 @@ export const AdminDashboard: React.FC = () => {
         {activeTab === 'leads' && (
             <>
                 <div className="p-6 bg-slate-900/50 border-b border-slate-700">
-                    <h3 className="font-bold text-white font-sans">כל הלידים שנכנסו למערכת</h3>
+                    <h3 className="font-bold text-white font-sans">כל הלידים שנכנסו למערכת (חדשים בראש הרשימה)</h3>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-right">
                         <thead className="text-slate-500 text-[10px] bg-slate-900/30 uppercase font-black font-sans">
                             <tr>
+                                <th className="p-5">סטטוס</th>
                                 <th className="p-5">תאריך</th>
                                 <th className="p-5">שם הלקוח</th>
                                 <th className="p-5">טלפון</th>
@@ -184,15 +213,29 @@ export const AdminDashboard: React.FC = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-700/50 font-sans">
-                            {data.leads.map(lead => (
-                                <tr key={lead.id} className="hover:bg-white/5 transition-colors">
-                                    <td className="p-5 text-slate-400 text-xs">{new Date(lead.createdAt).toLocaleDateString('he-IL')}</td>
-                                    <td className="p-5 text-white font-bold">{lead.fullName}</td>
-                                    <td className="p-5 text-brand-accent font-bold">{lead.phone}</td>
-                                    <td className="p-5 text-slate-300 text-sm">{getAgentName(lead.ownerId)}</td>
-                                    <td className="p-5 text-slate-500 text-xs truncate max-w-[150px]">{getPropertyAddress(lead.propertyId)}</td>
-                                </tr>
-                            ))}
+                            {data.leads.map(lead => {
+                                const isNew = isLeadNew(lead.createdAt);
+                                return (
+                                    <tr key={lead.id} className={`hover:bg-white/5 transition-colors ${isNew ? 'bg-red-500/5' : ''}`}>
+                                        <td className="p-5">
+                                            {isNew ? (
+                                                <span className="bg-red-600 text-white text-[10px] px-2 py-1 rounded-full font-black shadow-lg shadow-red-500/20 animate-bounce inline-block">NEW</span>
+                                            ) : (
+                                                <span className="text-slate-600 text-[10px] font-bold">ישן</span>
+                                            )}
+                                        </td>
+                                        <td className="p-5 text-slate-400 text-xs">
+                                            {new Date(lead.createdAt).toLocaleDateString('he-IL')}
+                                            <br/>
+                                            {new Date(lead.createdAt).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
+                                        </td>
+                                        <td className="p-5 text-white font-bold">{lead.fullName}</td>
+                                        <td className="p-5 text-brand-accent font-bold">{lead.phone}</td>
+                                        <td className="p-5 text-slate-300 text-sm">{getAgentName(lead.ownerId)}</td>
+                                        <td className="p-5 text-slate-500 text-xs truncate max-w-[150px]">{getPropertyAddress(lead.propertyId)}</td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
@@ -228,15 +271,22 @@ export const AdminDashboard: React.FC = () => {
                       </div>
                       <h4 className="font-bold text-white mb-4">נכסים פעילים</h4>
                       <div className="space-y-3">
-                          {data.props.filter(p => p.userId === selectedAgent.uid).map(prop => (
-                              <div key={prop.id} className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex justify-between items-center">
-                                  <div>
-                                    <p className="text-white font-bold text-sm">{prop.address}</p>
-                                    <p className="text-slate-500 text-[10px]">{data.leads.filter(l => l.propertyId === prop.id).length} לידים</p>
-                                  </div>
-                                  <a href={`/${prop.slug}-${prop.id}`} target="_blank" className="text-brand-accent text-xs font-bold">פתח דף ←</a>
-                              </div>
-                          ))}
+                          {data.props.filter(p => p.userId === selectedAgent.uid).map(prop => {
+                              const propLeads = data.leads.filter(l => l.propertyId === prop.id);
+                              const hasNewLeads = propLeads.some(l => isLeadNew(l.createdAt));
+                              return (
+                                <div key={prop.id} className="bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex justify-between items-center">
+                                    <div>
+                                        <p className="text-white font-bold text-sm">{prop.address}</p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <p className="text-slate-500 text-[10px]">{propLeads.length} לידים</p>
+                                            {hasNewLeads && <span className="bg-red-600 text-white text-[8px] px-1.5 py-0.5 rounded-full font-black animate-pulse">NEW</span>}
+                                        </div>
+                                    </div>
+                                    <a href={`/${prop.slug}-${prop.id}`} target="_blank" className="text-brand-accent text-xs font-bold">פתח דף ←</a>
+                                </div>
+                              );
+                          })}
                       </div>
                   </div>
               </div>
