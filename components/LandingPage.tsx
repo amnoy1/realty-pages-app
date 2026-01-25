@@ -59,7 +59,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         <div className="absolute inset-0 bg-slate-900"><ImageGallery images={details.images} /></div>
         <div className="absolute bottom-10 right-6 md:right-16 z-20 max-w-5xl animate-slide-up">
             <div className="bg-black/30 backdrop-blur-xl p-8 md:p-12 rounded-3xl border border-white/10 shadow-2xl">
-                <h1 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">{details.title || details.generatedTitle}</h1>
+                <h1 className="text-4xl md:text-6xl font-black text-white mb-6 leading-tight">{details.propertyTitle || details.generatedTitle}</h1>
                 <p className="text-2xl md:text-3xl font-bold text-brand-accent mb-8">{details.address}</p>
                 <div className="flex flex-wrap gap-6 mb-10">
                     {details.features.rooms && <div className="flex items-center gap-2"><BedIcon /> <span className="font-bold text-xl">{details.features.rooms} חדרים</span></div>}
