@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { db } from '../lib/firebase';
-import { collection, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import type { PropertyDetails, UserProfile, Lead } from '../types';
 
 type AdminTab = 'agents' | 'properties' | 'leads';
@@ -41,7 +41,7 @@ export const AdminDashboard: React.FC = () => {
         fetchCollection('leads')
       ]);
 
-      // סיווג ומיון לידים - החדשים ביותר למעלה
+      // Sort leads - Newest first
       const sortedLeads = (leads as Lead[]).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
       setData({ 

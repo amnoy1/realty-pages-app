@@ -52,7 +52,9 @@ const CopyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height
 const ShareIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>;
 
 const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: string }> = ({ icon, label, value }) => {
-  if (!value) return null;
+  // Strict filter: only show if value is present and not explicitly negative/null.
+  if (!value || typeof value !== 'string' || value.trim() === '' || value === 'null' || value === 'אין' || value === 'ללא' || value === 'לא צוין' || value === '0') return null;
+  
   return (
     <div className="flex flex-col items-center justify-center text-center p-6 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 group hover:-translate-y-1">
       <div className="mb-4 p-3 bg-slate-50 rounded-full text-brand-accent group-hover:bg-brand-accent group-hover:text-white transition-colors">
@@ -65,7 +67,8 @@ const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: stri
 };
 
 const FeaturesSection: React.FC<{ features: PropertyFeatures }> = ({ features }) => {
-  const hasFeatures = Object.values(features).some(val => val);
+  // Check if at least one feature is valid to show the entire section.
+  const hasFeatures = Object.values(features).some(val => typeof val === 'string' && val.trim() !== '' && val !== 'null' && val !== 'אין' && val !== 'ללא' && val !== 'לא צוין' && val !== '0');
   if (!hasFeatures) return null;
 
   return (
@@ -197,12 +200,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         <div className="absolute bottom-10 right-6 md:right-16 z-20 max-w-[calc(100%-3rem)] md:max-w-5xl animate-slide-up">
             <div className="bg-black/30 backdrop-blur-xl p-8 md:p-12 rounded-3xl border border-white/10 shadow-2xl pointer-events-auto">
                 <div className="animate-slide-up">
-                    {/* Fixed Format Property Type Tag - Color changed to light gray (slate-300) */}
                     <div className="text-lg md:text-xl font-bold text-slate-300 mb-2 uppercase tracking-wide opacity-90 font-sans">
                         {propertyTypeLabel}
                     </div>
                     
-                    {/* Main H1 - Full Address for SEO */}
                     <h1 className="text-4xl md:text-6xl font-black text-white mb-8 leading-tight tracking-tight font-sans">
                         {details.address}
                     </h1>

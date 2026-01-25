@@ -2,10 +2,8 @@
 import { GoogleGenAI } from "@google/genai";
 
 export async function POST(request: Request) {
-  const apiKey = process.env.API_KEY || 
-                 process.env.GEMINI_API_KEY || 
-                 process.env.NEXT_PUBLIC_API_KEY || 
-                 process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  // Use exclusively process.env.API_KEY as per guidelines.
+  const apiKey = process.env.API_KEY;
 
   if (!apiKey) {
     return new Response(JSON.stringify({ error: "Server configuration error: API_KEY is missing." }), {
@@ -14,6 +12,7 @@ export async function POST(request: Request) {
     });
   }
 
+  // Initialize client with named parameter apiKey.
   const ai = new GoogleGenAI({ apiKey });
 
   try {
@@ -44,9 +43,13 @@ export async function POST(request: Request) {
     COPYWRITING RULES:
     1. **Property Type Identification:** Identify if the property is a "דירה", "בית פרטי", "פנטהאוז", "מגרש", "קרקע", "דו-משפחתי", etc., based on the description.
     2. **Headline (Title):** Create a powerful hook specifically for [${audienceString}].
-    3. **Language:** Professional, emotional, and persuasive.
-    4. **Tone:** High-end boutique agency style.
-    5. **CLEAN TEXT ONLY:** Do NOT use Markdown formatting.
+    3. **Property Features (Strict Rule):** You MUST extract only the features explicitly mentioned in the text. 
+       - If a feature (rooms, area, parking, elevator, etc.) is NOT mentioned, return null or an empty string for it.
+       - DO NOT assume or hallucinate features that are not in the source text.
+       - "אין" or "ללא" mentions should also be treated as empty/null if they are not explicitly part of a marketing point.
+    4. **Language:** Professional, emotional, and persuasive.
+    5. **Tone:** High-end boutique agency style.
+    6. **CLEAN TEXT ONLY:** Do NOT use Markdown formatting.
     `;
 
     const prompt = `
@@ -65,20 +68,21 @@ export async function POST(request: Request) {
         "cta": "Compelling call to action"
       },
       "features": {
-        "rooms": "Number",
-        "apartmentArea": "Number",
-        "lotArea": "Number",
-        "balconyArea": "Number",
-        "floor": "Number",
-        "parking": "Number",
-        "elevator": "יש/אין",
-        "safeRoom": "ממ\"ד/אין",
-        "storage": "יש/אין",
-        "airDirections": "Directions"
+        "rooms": "string or null",
+        "apartmentArea": "string or null",
+        "lotArea": "string or null",
+        "balconyArea": "string or null",
+        "floor": "string or null",
+        "parking": "string or null",
+        "elevator": "string or null",
+        "safeRoom": "string or null",
+        "storage": "string or null",
+        "airDirections": "string or null"
       }
     }
     `;
 
+    // Use ai.models.generateContent with model name and prompt.
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: prompt,
@@ -88,6 +92,7 @@ export async function POST(request: Request) {
       },
     });
 
+    // Access .text property directly (correct usage).
     return new Response(response.text, {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
