@@ -13,13 +13,15 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
   // Threshold for a swipe to be registered (in pixels)
   const minSwipeDistance = 50;
 
-  const goToPrevious = () => {
+  const goToPrevious = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     const isFirstImage = currentIndex === 0;
     const newIndex = isFirstImage ? images.length - 1 : currentIndex - 1;
     setCurrentIndex(newIndex);
   };
 
-  const goToNext = () => {
+  const goToNext = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     const isLastImage = currentIndex === images.length - 1;
     const newIndex = isLastImage ? 0 : currentIndex + 1;
     setCurrentIndex(newIndex);
@@ -66,6 +68,24 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
           className="w-full h-full object-cover transition-all duration-500 ease-in-out select-none" 
           draggable="false"
         />
+      </div>
+
+      {/* Desktop Navigation Arrows - Visible only on md screens and up on hover */}
+      <div className="hidden md:block">
+        <button 
+          onClick={goToPrevious}
+          className="absolute top-1/2 -translate-y-1/2 right-4 z-30 p-3 rounded-full bg-black/20 hover:bg-black/50 text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 border border-white/10"
+          aria-label="הקודם"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+        <button 
+          onClick={goToNext}
+          className="absolute top-1/2 -translate-y-1/2 left-4 z-30 p-3 rounded-full bg-black/20 hover:bg-black/50 text-white backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 border border-white/10"
+          aria-label="הבא"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
       </div>
 
       {/* Navigation Dots */}
