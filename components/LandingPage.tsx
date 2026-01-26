@@ -46,7 +46,7 @@ const SafeRoomIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" he
 const StorageIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>;
 const WindIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>;
 const ElevatorIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={iconClasses}><path d="M10 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h4V3zm10 0h-4v18h4a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM15 9l-3-3-3 3M15 15l-3 3-3-3"/></svg>;
-const WhatsAppIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.269.655 4.536 1.907 6.344l-1.495 5.454 5.57-1.451zm.5-7.527c.08-.135.143-.225.246-.354.103-.13.21-.211.353-.267.143-.057.3-.086.48-.086.195 0 .358.03.49.09.13.06.23.145.302.26.07.115.105.245.105.39.0.15-.03.28-.09.4-.06.12-.135.225-.225.315-.09.09-.195.17-.315.235-.12.065-.255.115-.405.15-.15.035-.315.06-.495.06-.205 0-.39-.03-.56-.09-.17-.06-.315-.145-.445-.255-.13-.11-.235-.24-.315-.375s-.13-.285-.15-.45c-.02-.165-.03-.32-.03-.465.0-.15.015-.285.045-.405zm1.996 2.95c.12-.06.225-.135.315-.225.09-.09.165-.195.225-.315s.105-.255.135-.405.045-.315.045.495c0-.21-.03-.4-.09-.56-.06-.16-.14-.295-.24-.41-.1-.115-.21-.2-.33-.255s-.25-.085-.39-.085c-.165 0-.315.03-.45.085s-.255.135-.36.255c-.105.12-.195.27-.27.45s-.12.375-.15.585c-.03.21-.045.42-.045.615.0.21.015.405.045.615.0.21.015.405.045.585s.075.345.135.495.135.285.225.405.195.225.315.315c.12.09.255.165.405.225.15.06.315.09.495.09.195 0 .375-.03.54-.09s.31-.14.435-.25c.125-.11.225-.24.3-.39s.125-.315.15-.495c.025-.18.038-.36.038-.525.0-.195-.03-.375-.09-.54s-.135-.315-.225-.45c-.09-.135-.195-.255-.315-.36-.12-.105-.255-.18-.405-.225s-.315-.06-.495-.06c-.195 0-.375.03-.54.09s-.31.14-.435.25c-.125-.11-.225-.24-.3.39s-.125-.315-.15-.495c-.025-.18-.038-.36-.038-.525z"/></svg>;
+const WhatsAppIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.269.655 4.536 1.907 6.344l-1.495 5.454 5.57-1.451zm.5-7.527c.08-.135.143-.225.246-.354.103-.13.21-.211.353-.267.143-.057.3-.086.48-.086.195 0 .358.03.49.09.13.06.23.145.302.26.07.115.105.245.105.39.0.15-.03.28-.09.4-.06.12-.135.225-.225.315-.09.09-.195.17-.315.235-.12.065-.255.115-.405.15-.15.035-.315.06-.495.06-.205 0-.39-.03-.56-.09-.17-.06-.315-.145-.445-.255-.13-.11-.235-.24-.315-.375s-.13-.285-.15-.45c-.02-.165-.03-.32-.03-.465.0-.15.015-.285.045-.405zm1.996 2.95c.12-.06.225-.135.315-.225.09-.09.165-.195.225-.315s.105-.255.135-.405.045-.315.045.495c0-.21-.03-.4-.09-.56-.06-.16-.14-.295-.24-.41-.1-.115-.21-.2-.33-.255s-.25-.085-.39-.085c-.165 0-.315.03-.45.085s-.255.135-.36.255c-.105.12-.195.27-.27.45s-.12.375-.15.585c-.03.21-.045.42-.045.615.0.21.015.405.045.615.0.21.015.405.045.585s.075.345.135.495.135.285.225.405.195.225.315.315c.12.09.255.165.405.225.15.06.315.09.495.09.195 0 .375-.03.54-.09s.31-.14.435-.25c.125-.11.225-.24.3-.39s.125-.315.15-.495c.025-.18.038-.36.038-.525.0-.195-.03-.375-.09-.54s-.135-.315-.225-.45c-.09-.135-.195-.255-.315-.36-.12-.105-.255-.18-.405-.225s-.315-.06-.495-.06c-.195 0-.375.03-.54.09s-.31.14-.435.25c-.125-.11.225-.24.3-.39s-.125-.315-.15-.495c-.025-.18-.038-.36-.038-.525z"/></svg>;
 const FacebookIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>;
 const CopyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>;
 const ShareIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>;
@@ -178,33 +178,51 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                 <WhatsAppIcon/>
             </a>
         )}
-      <header className="relative h-[90vh] min-h-[650px] text-white overflow-hidden shrink-0">
-        <div className="absolute inset-0 bg-slate-900">
+      
+      {/* Dynamic Header: Responsive Stacking */}
+      <header className="relative md:h-[90vh] md:min-h-[650px] text-white overflow-hidden shrink-0 flex flex-col md:block bg-slate-900">
+        
+        {/* Image Gallery Container - Landscape Aspect Ratio on Mobile, capped at 45% screen height */}
+        <div className="relative w-full h-[45vh] md:h-full md:absolute md:inset-0">
           <ImageGallery images={details.images} />
         </div>
         
-        {/* Logo */}
+        {/* Logo - Adjusted positioning */}
         {details.logo && (
-          <div className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-lg animate-fade-in z-30">
+          <div className="absolute top-4 right-4 md:top-6 md:right-6 bg-white/95 backdrop-blur-sm p-2 md:p-4 rounded-xl md:rounded-2xl shadow-lg animate-fade-in z-30">
              <img 
                 src={details.logo} 
                 alt="לוגו המשרד" 
-                width={160}
-                height={80}
-                className="h-14 md:h-20 w-auto object-contain" 
+                className="h-10 md:h-20 w-auto object-contain" 
              />
           </div>
         )}
 
-        {/* SEO Focused Info Box Overlay */}
-        <div className="absolute bottom-10 right-6 md:right-16 z-20 max-w-[calc(100%-3rem)] md:max-w-5xl animate-slide-up">
-            <div className="bg-black/30 backdrop-blur-xl p-8 md:p-12 rounded-3xl border border-white/10 shadow-2xl pointer-events-auto">
+        {/* Mobile-Only Info Stack - Positioned Under the Image */}
+        <div className="block md:hidden bg-white text-slate-900 p-6 border-b border-slate-200">
+            <h1 className="text-2xl font-black text-slate-900 mb-2 leading-tight font-sans">
+                {details.address}
+            </h1>
+            <div className="text-sm font-bold text-slate-400 mb-6 uppercase tracking-wide font-sans">
+                {propertyTypeLabel}
+            </div>
+            <button
+                onClick={handleCtaClick}
+                className="w-full py-4 rounded-2xl shadow-lg text-lg font-black text-white bg-gradient-to-r from-brand-accent to-orange-600 active:scale-95 transition-transform duration-200 font-sans"
+            >
+                תיאום סיור בנכס
+            </button>
+        </div>
+
+        {/* Desktop-Only Overlay Box */}
+        <div className="hidden md:block absolute bottom-10 right-16 z-20 max-w-5xl animate-slide-up">
+            <div className="bg-black/30 backdrop-blur-xl p-12 rounded-3xl border border-white/10 shadow-2xl pointer-events-auto">
                 <div className="animate-slide-up">
-                    <div className="text-lg md:text-xl font-bold text-slate-300 mb-2 uppercase tracking-wide opacity-90 font-sans">
+                    <div className="text-xl font-bold text-slate-300 mb-2 uppercase tracking-wide opacity-90 font-sans">
                         {propertyTypeLabel}
                     </div>
                     
-                    <h1 className="text-4xl md:text-6xl font-black text-white mb-8 leading-tight tracking-tight font-sans">
+                    <h1 className="text-6xl font-black text-white mb-8 leading-tight tracking-tight font-sans">
                         {details.address}
                     </h1>
 
@@ -220,31 +238,31 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
             </div>
         </div>
         
-        {/* Actions Bar (Top Left) */}
-        <div className="absolute top-6 left-6 flex flex-col items-start gap-4 z-50">
+        {/* Actions Bar (Top Left) - Works on both */}
+        <div className="absolute top-4 left-4 md:top-6 md:left-6 flex flex-col items-start gap-3 z-50">
            {isPreview && onReset && (
                 <button 
                     onClick={onReset} 
-                    className="bg-brand-accent/20 text-white py-2.5 px-6 rounded-full hover:bg-black/80 transition-all text-sm backdrop-blur-md border border-white/20 font-medium flex items-center gap-2 font-sans"
+                    className="bg-brand-accent/20 text-white py-2 px-4 md:py-2.5 md:px-6 rounded-full hover:bg-black/80 transition-all text-xs md:text-sm backdrop-blur-md border border-white/20 font-medium flex items-center gap-2 font-sans"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/></svg>
-                    חזרה לעריכה
+                    <span>חזרה לעריכה</span>
                 </button>
             )}
              {isPreview && onSave && (
                 <button 
                     onClick={onSave}
                     disabled={isSaving}
-                    className="bg-brand-accent text-white py-2.5 px-8 rounded-full hover:bg-brand-accentHover transition-all disabled:opacity-70 shadow-lg font-bold border border-transparent flex items-center gap-2 font-sans"
+                    className="bg-brand-accent text-white py-2 px-6 md:py-2.5 md:px-8 rounded-full hover:bg-brand-accentHover transition-all disabled:opacity-70 shadow-lg font-bold border border-transparent flex items-center gap-2 font-sans text-xs md:text-base"
                 >
                      {isSaving ? (
                         <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <div className="w-3 h-3 md:w-4 md:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                           <span>מפרסם...</span>
                         </>
                      ) : (
                         <>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="hidden md:block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                           <span>שמור ופרסם דף</span>
                         </>
                      )}
@@ -255,7 +273,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                 <div className="relative" ref={shareMenuRef}>
                     <button 
                         onClick={() => setIsShareMenuOpen(!isShareMenuOpen)}
-                        className={`flex items-center gap-3 py-3 px-6 rounded-2xl backdrop-blur-lg border border-white/20 transition-all shadow-2xl font-bold font-sans text-white hover:scale-105 active:scale-95 ${isShareMenuOpen ? 'bg-brand-accent/90 border-brand-accent shadow-brand-accent/20' : 'bg-slate-900/80 hover:bg-slate-900'}`}
+                        className={`flex items-center gap-2 md:gap-3 py-2 px-4 md:py-3 md:px-6 rounded-2xl backdrop-blur-lg border border-white/20 transition-all shadow-2xl font-bold font-sans text-white hover:scale-105 active:scale-95 text-xs md:text-base ${isShareMenuOpen ? 'bg-brand-accent/90 border-brand-accent shadow-brand-accent/20' : 'bg-slate-900/80 hover:bg-slate-900'}`}
                     >
                         <ShareIcon />
                         <span>שיתוף והפצה</span>
@@ -263,7 +281,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
 
                     {/* Share Dropdown Menu */}
                     {isShareMenuOpen && (
-                        <div className="absolute top-14 left-0 w-64 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-4 animate-fade-in flex flex-col gap-3 z-[60]">
+                        <div className="absolute top-12 md:top-14 left-0 w-64 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-4 animate-fade-in flex flex-col gap-3 z-[60]">
                             <div className="text-white text-[10px] font-black uppercase tracking-widest text-center border-b border-white/5 pb-2 mb-1 opacity-60">אפשרויות שיתוף</div>
                             
                             <div className="space-y-2">
@@ -321,13 +339,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-16 md:py-24 max-w-7xl -mt-10 relative z-10 flex-grow">
+      {/* Main Content Area - Adjust top margin based on header stacking */}
+      <main className="container mx-auto px-4 py-16 md:py-24 max-w-7xl md:-mt-10 relative z-10 flex-grow">
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             
             <div className="lg:col-span-7 space-y-10">
                 <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
                     <div className="mb-10">
-                        <h2 className="text-[2.25rem] md:text-[2.75rem] font-extrabold text-slate-900 leading-tight font-sans">
+                        <h2 className="text-[2rem] md:text-[2.75rem] font-extrabold text-slate-900 leading-tight font-sans">
                             {details.generatedTitle}
                         </h2>
                         <div className="w-20 h-1.5 bg-brand-accent mt-4 rounded-full"></div>
@@ -354,8 +373,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                      
                     <p className="text-slate-400 mb-3 text-sm uppercase tracking-widest font-bold font-sans">מחיר מבוקש</p>
                     <div className="flex items-start justify-center gap-1 text-white direction-ltr font-sans">
-                        <span className="text-5xl md:text-6xl font-extrabold tracking-tight">{formattedPrice}</span>
-                        <span className="text-3xl font-light mt-2 text-brand-accent">₪</span>
+                        <span className="text-4xl md:text-6xl font-extrabold tracking-tight">{formattedPrice}</span>
+                        <span className="text-2xl md:text-3xl font-light mt-1 md:mt-2 text-brand-accent">₪</span>
                     </div>
                 </div>
 
