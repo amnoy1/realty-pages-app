@@ -214,22 +214,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
             </button>
         </div>
 
-        {/* Desktop-Only Overlay Box */}
-        <div className="hidden md:block absolute bottom-10 right-16 z-20 max-w-5xl animate-slide-up">
-            <div className="bg-black/30 backdrop-blur-xl p-12 rounded-3xl border border-white/10 shadow-2xl pointer-events-auto">
+        {/* Desktop-Only Overlay Box - Reduced size by approx 15% */}
+        <div className="hidden md:block absolute bottom-10 right-16 z-20 max-w-4xl animate-slide-up">
+            <div className="bg-black/30 backdrop-blur-xl p-10 rounded-[2rem] border border-white/10 shadow-2xl pointer-events-auto">
                 <div className="animate-slide-up">
-                    <div className="text-xl font-bold text-slate-300 mb-2 uppercase tracking-wide opacity-90 font-sans">
+                    <div className="text-lg font-bold text-slate-300 mb-2 uppercase tracking-wide opacity-90 font-sans">
                         {propertyTypeLabel}
                     </div>
                     
-                    <h1 className="text-6xl font-black text-white mb-8 leading-tight tracking-tight font-sans">
+                    <h1 className="text-5xl font-black text-white mb-6 leading-tight tracking-tight font-sans">
                         {details.address}
                     </h1>
 
                     <div className="flex flex-wrap gap-4 items-center">
                         <button
                             onClick={handleCtaClick}
-                            className="py-5 px-12 rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.5)] text-2xl font-black text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 border border-white/20 font-sans"
+                            className="py-4 px-10 rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.5)] text-xl font-black text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 border border-white/20 font-sans"
                         >
                             תיאום סיור בנכס
                         </button>
