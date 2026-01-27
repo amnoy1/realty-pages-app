@@ -27,9 +27,8 @@ const HomePage: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   
-  // 'loading' now just means we are waiting for initial Auth state.
-  // We won't show a splash screen, just a blank background to prevent flickering.
-  const [currentView, setCurrentView] = useState<'create' | 'dashboard' | 'admin' | 'edit' | 'loading'>('loading');
+  // Views: loading, create, dashboard, preview, admin, edit
+  const [currentView, setCurrentView] = useState<'create' | 'dashboard' | 'admin' | 'edit' | 'preview' | 'loading'>('loading');
   const hasAutoRedirected = useRef(false);
   const router = useAppRouter();
 
@@ -41,7 +40,6 @@ const HomePage: React.FC = () => {
     }
     
     const unsubscribe = onAuthStateChanged(auth, async (currentUser: User | null) => {
-      console.log("[Auth State Change] User:", currentUser?.email);
       setUser(currentUser);
       
       if (currentUser) {
@@ -115,6 +113,8 @@ const HomePage: React.FC = () => {
         enhancedDescription: generatedData.description,
         features: generatedData.features,
       });
+      // Switch to preview view immediately after generation
+      setCurrentView('preview');
     } catch (err: any) {
       console.error(err);
       alert("שגיאה בייצור תוכן");
@@ -196,8 +196,7 @@ const HomePage: React.FC = () => {
 
   if (!isClient) return null;
 
-  // Instead of a splash screen, we show a blank container with the app's background.
-  // This is much smoother as it matches the body's background color.
+  // Render blank screen instead of splash during initial auth check
   if (currentView === 'loading') {
     return <div className="min-h-screen bg-slate-900"></div>;
   }
@@ -209,13 +208,9 @@ const HomePage: React.FC = () => {
             user={user} 
             isAdmin={isAdmin} 
             onViewChange={(view) => { 
-                if (view === 'create') {
-                    navigateToCreate();
-                } else {
-                    setCurrentView(view); 
-                    setPropertyDetails(null); 
-                    setEditingProperty(null);
-                }
+                setPropertyDetails(null);
+                setEditingProperty(null);
+                setCurrentView(view); 
             }} 
             currentView={currentView} 
           />
@@ -232,30 +227,31 @@ const HomePage: React.FC = () => {
                 onCreateNew={navigateToCreate} 
                 onEdit={(p) => { setEditingProperty(p); setCurrentView('edit'); }} 
               />
-          ) : (
-              propertyDetails ? (
-                <LandingPage 
+          ) : currentView === 'preview' && propertyDetails ? (
+              <LandingPage 
                   details={propertyDetails} 
                   isPreview={true} 
-                  onReset={() => setPropertyDetails(null)} 
+                  onReset={() => {
+                    setPropertyDetails(null);
+                    setCurrentView('create');
+                  }} 
                   onSave={handleSaveAndPublish} 
                   isSaving={isSaving} 
                   onNavigateToDashboard={() => {
                     setPropertyDetails(null);
                     setCurrentView('dashboard');
                   }}
-                />
-              ) : (
-                <div className="relative">
-                   {!user && (
-                       <div className="absolute inset-0 z-40 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
-                           <h2 className="text-3xl font-bold text-white mb-4">ניהול נכסי נדל"ן</h2>
-                           <p className="text-slate-300 mb-6">התחבר כדי להתחיל ליצור דפי נחיתה מקצועיים</p>
-                       </div>
-                   )}
-                   <CreationForm onSubmit={handleFormSubmit} isLoading={isLoading} />
-                </div>
-              )
+              />
+          ) : (
+              <div className="relative">
+                 {!user && (
+                     <div className="absolute inset-0 z-40 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
+                         <h2 className="text-3xl font-bold text-white mb-4">ניהול נכסי נדל"ן</h2>
+                         <p className="text-slate-300 mb-6">התחבר כדי להתחיל ליצור דפי נחיתה מקצועיים</p>
+                     </div>
+                 )}
+                 <CreationForm onSubmit={handleFormSubmit} isLoading={isLoading} />
+              </div>
           )}
       </div>
     </div>
