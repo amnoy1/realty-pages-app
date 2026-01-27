@@ -184,12 +184,32 @@ const HomePage: React.FC = () => {
     finally { setIsSaving(false); }
   };
 
+  // Helper function to navigate to creation view and reset states
+  const navigateToCreate = () => {
+    setPropertyDetails(null);
+    setEditingProperty(null);
+    setCurrentView('create');
+  };
+
   if (!isClient) return null;
 
   return (
     <div className="min-h-screen bg-slate-900">
       <div className="absolute top-0 left-0 right-0 p-4 z-50 flex justify-between items-start">
-          <Auth user={user} isAdmin={isAdmin} onViewChange={(view) => { setCurrentView(view); setPropertyDetails(null); setEditingProperty(null); }} currentView={currentView} />
+          <Auth 
+            user={user} 
+            isAdmin={isAdmin} 
+            onViewChange={(view) => { 
+                if (view === 'create') {
+                    navigateToCreate();
+                } else {
+                    setCurrentView(view); 
+                    setPropertyDetails(null); 
+                    setEditingProperty(null);
+                }
+            }} 
+            currentView={currentView} 
+          />
       </div>
       <div className="pt-16">
           {currentView === 'edit' && editingProperty ? (
@@ -197,7 +217,12 @@ const HomePage: React.FC = () => {
           ) : currentView === 'admin' && isAdmin ? (
               <AdminDashboard />
           ) : currentView === 'dashboard' && user ? (
-              <UserDashboard userId={user.uid} userEmail={user.email} onCreateNew={() => setCurrentView('create')} onEdit={(p) => { setEditingProperty(p); setCurrentView('edit'); }} />
+              <UserDashboard 
+                userId={user.uid} 
+                userEmail={user.email} 
+                onCreateNew={navigateToCreate} 
+                onEdit={(p) => { setEditingProperty(p); setCurrentView('edit'); }} 
+              />
           ) : (
               propertyDetails ? (
                 <LandingPage details={propertyDetails} isPreview={true} onReset={() => setPropertyDetails(null)} onSave={handleSaveAndPublish} isSaving={isSaving} />
