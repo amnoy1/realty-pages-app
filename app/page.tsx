@@ -26,13 +26,17 @@ const HomePage: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [currentView, setCurrentView] = useState<'create' | 'dashboard' | 'admin' | 'edit'>('create');
+  // Added 'loading' as the initial view to prevent flickering
+  const [currentView, setCurrentView] = useState<'create' | 'dashboard' | 'admin' | 'edit' | 'loading'>('loading');
   const hasAutoRedirected = useRef(false);
   const router = useAppRouter();
 
   useEffect(() => {
     setIsClient(true);
-    if (!auth) return;
+    if (!auth) {
+        setCurrentView('create');
+        return;
+    }
     
     const unsubscribe = onAuthStateChanged(auth, async (currentUser: User | null) => {
       console.log("[Auth State Change] User:", currentUser?.email);
@@ -43,7 +47,6 @@ const HomePage: React.FC = () => {
         const isUserAdmin = ADMIN_EMAILS.some(email => email.toLowerCase() === userEmail);
         setIsAdmin(isUserAdmin);
         
-        // Only auto-redirect to dashboard ONCE when the user first logs in or the app loads
         if (!hasAutoRedirected.current) {
             setCurrentView(isUserAdmin ? 'admin' : 'dashboard');
             hasAutoRedirected.current = true;
@@ -64,7 +67,6 @@ const HomePage: React.FC = () => {
                       role: isUserAdmin ? 'admin' : (userSnap.data() as UserProfile).role || 'user'
                   });
               } else {
-                  console.log("[Auth] Creating new user profile in DB...");
                   await setDoc(userRef, {
                       uid: currentUser.uid,
                       email: currentUser.email,
@@ -86,7 +88,7 @@ const HomePage: React.FC = () => {
       }
     });
     return () => unsubscribe();
-  }, []); // Removed currentView dependency to prevent infinite redirect loops
+  }, []);
 
   const handleFormSubmit = async (formData: PropertyFormData) => {
     if (!user) { alert("עליך להתחבר למערכת."); return; }
@@ -184,7 +186,6 @@ const HomePage: React.FC = () => {
     finally { setIsSaving(false); }
   };
 
-  // Helper function to navigate to creation view and reset states
   const navigateToCreate = () => {
     setPropertyDetails(null);
     setEditingProperty(null);
@@ -192,6 +193,22 @@ const HomePage: React.FC = () => {
   };
 
   if (!isClient) return null;
+
+  // Render a clean loading screen during initial auth check
+  if (currentView === 'loading') {
+    return (
+        <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center">
+            <div className="relative mb-8">
+                <div className="w-20 h-20 border-4 border-brand-accent/20 border-t-brand-accent rounded-full animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-10 h-10 bg-brand-accent rounded-lg rotate-45 animate-pulse"></div>
+                </div>
+            </div>
+            <h2 className="text-2xl font-black text-white font-sans tracking-tight animate-pulse">REALTY-PAGES</h2>
+            <p className="text-slate-500 text-sm mt-2 font-medium">מאמת נתונים...</p>
+        </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-900">
