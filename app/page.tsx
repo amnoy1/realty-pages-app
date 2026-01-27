@@ -42,6 +42,11 @@ const HomePage: React.FC = () => {
         const isUserAdmin = ADMIN_EMAILS.some(email => email.toLowerCase() === userEmail);
         setIsAdmin(isUserAdmin);
         
+        // If we are on the 'create' view but user is logged in, default to dashboard
+        if (currentView === 'create') {
+            setCurrentView(isUserAdmin ? 'admin' : 'dashboard');
+        }
+
         if (db) {
             try {
               const userRef = doc(db, 'users', currentUser.uid);
@@ -78,7 +83,7 @@ const HomePage: React.FC = () => {
       }
     });
     return () => unsubscribe();
-  }, []);
+  }, [currentView]); // Adding currentView dependency to allow the auto-switch logic
 
   const handleFormSubmit = async (formData: PropertyFormData) => {
     if (!user) { alert("עליך להתחבר למערכת."); return; }
