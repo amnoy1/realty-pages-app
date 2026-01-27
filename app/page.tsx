@@ -26,7 +26,9 @@ const HomePage: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  // Added 'loading' as the initial view to prevent flickering
+  
+  // 'loading' now just means we are waiting for initial Auth state.
+  // We won't show a splash screen, just a blank background to prevent flickering.
   const [currentView, setCurrentView] = useState<'create' | 'dashboard' | 'admin' | 'edit' | 'loading'>('loading');
   const hasAutoRedirected = useRef(false);
   const router = useAppRouter();
@@ -194,20 +196,10 @@ const HomePage: React.FC = () => {
 
   if (!isClient) return null;
 
-  // Render a clean loading screen during initial auth check
+  // Instead of a splash screen, we show a blank container with the app's background.
+  // This is much smoother as it matches the body's background color.
   if (currentView === 'loading') {
-    return (
-        <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center">
-            <div className="relative mb-8">
-                <div className="w-20 h-20 border-4 border-brand-accent/20 border-t-brand-accent rounded-full animate-spin"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-10 h-10 bg-brand-accent rounded-lg rotate-45 animate-pulse"></div>
-                </div>
-            </div>
-            <h2 className="text-2xl font-black text-white font-sans tracking-tight animate-pulse">REALTY-PAGES</h2>
-            <p className="text-slate-500 text-sm mt-2 font-medium">מאמת נתונים...</p>
-        </div>
-    );
+    return <div className="min-h-screen bg-slate-900"></div>;
   }
 
   return (
@@ -242,7 +234,17 @@ const HomePage: React.FC = () => {
               />
           ) : (
               propertyDetails ? (
-                <LandingPage details={propertyDetails} isPreview={true} onReset={() => setPropertyDetails(null)} onSave={handleSaveAndPublish} isSaving={isSaving} />
+                <LandingPage 
+                  details={propertyDetails} 
+                  isPreview={true} 
+                  onReset={() => setPropertyDetails(null)} 
+                  onSave={handleSaveAndPublish} 
+                  isSaving={isSaving} 
+                  onNavigateToDashboard={() => {
+                    setPropertyDetails(null);
+                    setCurrentView('dashboard');
+                  }}
+                />
               ) : (
                 <div className="relative">
                    {!user && (

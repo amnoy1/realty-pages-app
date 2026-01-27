@@ -25,6 +25,7 @@ interface LandingPageProps {
   onReset?: () => void;
   onSave?: () => void;
   isSaving?: boolean;
+  onNavigateToDashboard?: () => void;
 }
 
 const FB_APP_ID = "1543354433396045";
@@ -93,7 +94,7 @@ const FeaturesSection: React.FC<{ features: PropertyFeatures }> = ({ features })
 };
 
 
-export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = false, onReset, onSave, isSaving }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = false, onReset, onSave, isSaving, onNavigateToDashboard }) => {
   const leadFormRef = useRef<HTMLDivElement>(null);
   const shareMenuRef = useRef<HTMLDivElement>(null);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
@@ -141,6 +142,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
           setTimeout(() => setCopyStatus('idle'), 2000);
       })
       .catch(err => console.error('Failed to copy: ', err));
+  };
+
+  const handleManagementClick = () => {
+    if (onNavigateToDashboard) {
+      onNavigateToDashboard();
+    } else {
+      window.location.href = '/';
+    }
   };
 
   const shareOnFacebook = (target: 'feed' | 'page' = 'feed') => {
@@ -287,7 +296,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                             
                             {/* Management Option */}
                             <button 
-                                onClick={() => { window.location.href = '/'; }}
+                                onClick={handleManagementClick}
                                 className="w-full bg-slate-800 text-white py-3 px-4 rounded-xl hover:bg-slate-700 transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg border border-white/10"
                             >
                                 <ManagementIcon />
