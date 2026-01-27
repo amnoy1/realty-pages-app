@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { db, storage, auth, onAuthStateChanged, User, initializationError, debugEnv, signOut } from '../lib/firebase';
 import { collection, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -27,6 +27,7 @@ const HomePage: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentView, setCurrentView] = useState<'create' | 'dashboard' | 'admin' | 'edit'>('create');
+  const hasAutoRedirected = useRef(false);
   const router = useAppRouter();
 
   useEffect(() => {
@@ -42,9 +43,10 @@ const HomePage: React.FC = () => {
         const isUserAdmin = ADMIN_EMAILS.some(email => email.toLowerCase() === userEmail);
         setIsAdmin(isUserAdmin);
         
-        // If we are on the 'create' view but user is logged in, default to dashboard
-        if (currentView === 'create') {
+        // Only auto-redirect to dashboard ONCE when the user first logs in or the app loads
+        if (!hasAutoRedirected.current) {
             setCurrentView(isUserAdmin ? 'admin' : 'dashboard');
+            hasAutoRedirected.current = true;
         }
 
         if (db) {
@@ -80,10 +82,11 @@ const HomePage: React.FC = () => {
       } else {
         setIsAdmin(false);
         setCurrentView('create');
+        hasAutoRedirected.current = false;
       }
     });
     return () => unsubscribe();
-  }, [currentView]); // Adding currentView dependency to allow the auto-switch logic
+  }, []); // Removed currentView dependency to prevent infinite redirect loops
 
   const handleFormSubmit = async (formData: PropertyFormData) => {
     if (!user) { alert("עליך להתחבר למערכת."); return; }
