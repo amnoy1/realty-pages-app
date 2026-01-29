@@ -190,21 +190,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
 
   return (
     <div className="bg-slate-50 min-h-screen text-slate-800 font-sans flex flex-col">
-        {!isPreview && (
+        {!isPreview && !details.isSold && (
             <a href={`https://wa.me/${details.agentWhatsApp}`} target="_blank" rel="noopener noreferrer" className="fixed bottom-6 right-6 bg-[#25D366] text-white p-4 rounded-full shadow-2xl z-50 hover:scale-110 transition-transform duration-300 border-4 border-white" aria-label="צור קשר ב-WhatsApp">
                 <WhatsAppIcon/>
             </a>
         )}
       
       {/* Dynamic Header: Responsive Stacking */}
-      <header className="relative md:h-[90vh] md:min-h-[650px] text-white overflow-hidden shrink-0 flex flex-col md:block bg-slate-900">
+      <header className={`relative text-white overflow-hidden shrink-0 flex flex-col md:block bg-slate-900 ${details.isSold ? 'h-[100vh] min-h-[600px]' : 'md:h-[90vh] md:min-h-[650px]'}`}>
         
-        {/* Image Gallery Container - Landscape Aspect Ratio on Mobile, capped at 45% screen height */}
+        {/* Main Background Image - Single image for sold state */}
         <div className="relative w-full h-[45vh] md:h-full md:absolute md:inset-0">
-          <ImageGallery images={details.images} />
+          {details.isSold ? (
+            <div className="w-full h-full relative">
+               <img src={details.images[0]} alt={details.address} className="w-full h-full object-cover" />
+               <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
+                  <div className="bg-brand-accent/90 text-white px-12 py-6 md:px-20 md:py-10 rounded-[2rem] shadow-[0_0_60px_rgba(217,119,6,0.5)] transform -rotate-3 border-4 border-white animate-bounce-slow">
+                    <span className="text-6xl md:text-9xl font-black font-sans tracking-tight">נמכר!</span>
+                  </div>
+               </div>
+            </div>
+          ) : (
+            <ImageGallery images={details.images} />
+          )}
         </div>
         
-        {/* Logo - Adjusted positioning */}
+        {/* Agent Logo (Top Right) */}
         {details.logo && (
           <div className="absolute top-4 right-4 md:top-6 md:right-6 bg-white/95 backdrop-blur-sm p-2 md:p-4 rounded-xl md:rounded-2xl shadow-lg animate-fade-in z-30">
              <img 
@@ -215,47 +226,79 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
           </div>
         )}
 
-        {/* Mobile-Only Info Stack - Positioned Under the Image */}
-        <div className="block md:hidden bg-white text-slate-900 p-6 border-b border-slate-200">
-            <h1 className="text-2xl font-black text-slate-900 mb-2 leading-tight font-sans">
-                {details.address}
-            </h1>
-            <div className="text-sm font-bold text-slate-400 mb-6 uppercase tracking-wide font-sans">
-                {propertyTypeLabel}
-            </div>
-            <button
-                onClick={handleCtaClick}
-                className="w-full py-4 rounded-2xl shadow-lg text-lg font-black text-white bg-gradient-to-r from-brand-accent to-orange-600 active:scale-95 transition-transform duration-200 font-sans"
-            >
-                תיאום סיור בנכס
-            </button>
-        </div>
-
-        {/* Desktop-Only Overlay Box - Reduced size by approx 15% */}
-        <div className="hidden md:block absolute bottom-10 right-16 z-20 max-w-4xl animate-slide-up">
-            <div className="bg-black/30 backdrop-blur-xl p-10 rounded-[2rem] border border-white/10 shadow-2xl pointer-events-auto">
-                <div className="animate-slide-up">
-                    <div className="text-lg font-bold text-slate-300 mb-2 uppercase tracking-wide opacity-90 font-sans">
-                        {propertyTypeLabel}
-                    </div>
-                    
-                    <h1 className="text-5xl font-black text-white mb-6 leading-tight tracking-tight font-sans">
-                        {details.address}
-                    </h1>
-
-                    <div className="flex flex-wrap gap-4 items-center">
-                        <button
-                            onClick={handleCtaClick}
-                            className="py-4 px-10 rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.5)] text-xl font-black text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 border border-white/20 font-sans"
-                        >
-                            תיאום סיור בנכס
-                        </button>
-                    </div>
+        {/* Address Bar - Bottom Overlay (Desktop/Mobile unified logic for Sold) */}
+        <div className={`absolute bottom-8 right-0 left-0 px-4 md:px-16 z-20 animate-slide-up ${details.isSold ? 'block' : 'hidden md:block'}`}>
+            <div className="bg-black/40 backdrop-blur-xl p-6 md:p-10 rounded-[1.5rem] md:rounded-[2.5rem] border border-white/10 shadow-2xl max-w-4xl">
+                <div className="text-lg font-bold text-slate-300 mb-1 uppercase tracking-wide opacity-90 font-sans">
+                    {propertyTypeLabel}
                 </div>
+                <h1 className="text-3xl md:text-5xl font-black text-white leading-tight tracking-tight font-sans">
+                    {details.address}
+                </h1>
+                
+                {details.isSold && (
+                  <div className="mt-6 pt-6 border-t border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center border border-white/30">
+                        <UserIcon />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-white font-bold text-lg md:text-xl font-sans">{details.agentName}</span>
+                        <span className="text-slate-300 text-sm font-sans">הסוכן שביצע את העסקה</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <a 
+                        href={`tel:${details.agentWhatsApp}`} 
+                        className="bg-white text-slate-900 px-6 py-3 rounded-full font-bold shadow-lg hover:scale-105 transition-all text-sm font-sans"
+                      >
+                        חייג לסוכן
+                      </a>
+                      <a 
+                        href={`https://wa.me/${details.agentWhatsApp}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="bg-[#25D366] text-white px-6 py-3 rounded-full font-bold shadow-lg hover:scale-105 transition-all text-sm font-sans flex items-center gap-2"
+                      >
+                        <WhatsAppIcon />
+                        וואטסאפ
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {!details.isSold && (
+                  <div className="mt-8">
+                    <button
+                        onClick={handleCtaClick}
+                        className="py-4 px-10 rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.5)] text-xl font-black text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 border border-white/20 font-sans"
+                    >
+                        תיאום סיור בנכס
+                    </button>
+                  </div>
+                )}
             </div>
         </div>
+
+        {/* Mobile Info Stack (Non-Sold) */}
+        {!details.isSold && (
+          <div className="block md:hidden bg-white text-slate-900 p-6 border-b border-slate-200">
+              <h1 className="text-2xl font-black text-slate-900 mb-2 leading-tight font-sans">
+                  {details.address}
+              </h1>
+              <div className="text-sm font-bold text-slate-400 mb-6 uppercase tracking-wide font-sans">
+                  {propertyTypeLabel}
+              </div>
+              <button
+                  onClick={handleCtaClick}
+                  className="w-full py-4 rounded-2xl shadow-lg text-lg font-black text-white bg-gradient-to-r from-brand-accent to-orange-600 active:scale-95 transition-transform duration-200 font-sans"
+              >
+                  תיאום סיור בנכס
+              </button>
+          </div>
+        )}
         
-        {/* Actions Bar (Top Left) - Works on both */}
+        {/* Actions Bar (Top Left) */}
         <div className="absolute top-4 left-4 md:top-6 md:left-6 flex flex-col items-start gap-3 z-50">
            {isPreview && onReset && (
                 <button 
@@ -367,101 +410,103 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         </div>
       </header>
 
-      {/* Main Content Area - Adjust top margin based on header stacking */}
-      <main className="container mx-auto px-4 py-16 md:py-24 max-w-7xl md:-mt-10 relative z-10 flex-grow text-right">
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            
-            <div className="lg:col-span-7 space-y-4">
-                {/* Location outside the text cube, aligned to the right edge (justify-start in RTL) */}
-                <div className="flex justify-start px-2">
-                  <button 
-                    onClick={() => setIsMapModalOpen(true)}
-                    className="flex items-center gap-1.5 text-brand-accent hover:text-brand-accentHover transition-all text-sm md:text-base font-bold"
-                  >
-                    <MapDropIcon />
-                    <span className="underline underline-offset-4 decoration-brand-accent/30 hover:decoration-brand-accent">מיקום על המפה</span>
-                  </button>
-                </div>
+      {/* Main Content Area - Hidden if sold to focus on sold billboard */}
+      {!details.isSold && (
+        <main className="container mx-auto px-4 py-16 md:py-24 max-w-7xl md:-mt-10 relative z-10 flex-grow text-right">
+          <section className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+              
+              <div className="lg:col-span-7 space-y-4">
+                  {/* Location outside the text cube, aligned to the right edge (justify-start in RTL) */}
+                  <div className="flex justify-start px-2">
+                    <button 
+                      onClick={() => setIsMapModalOpen(true)}
+                      className="flex items-center gap-1.5 text-brand-accent hover:text-brand-accentHover transition-all text-sm md:text-base font-bold"
+                    >
+                      <MapDropIcon />
+                      <span className="underline underline-offset-4 decoration-brand-accent/30 hover:decoration-brand-accent">מיקום על המפה</span>
+                    </button>
+                  </div>
 
-                <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
-                    <div className="mb-10 text-right">
-                        <h2 className="text-[2rem] md:text-[2.75rem] font-extrabold text-slate-900 leading-tight font-sans">
-                            {details.generatedTitle}
-                        </h2>
-                        <div className="w-20 h-1.5 bg-brand-accent mt-4 rounded-full mr-0"></div>
-                    </div>
-                    
-                    <div className="space-y-8 text-lg md:text-xl text-slate-600 leading-loose font-sans">
-                        <div className="p-6 bg-slate-50 rounded-2xl border-r-4 border-brand-accent/30">
-                           <p className="font-medium text-slate-700 font-sans">{details.enhancedDescription.area}</p>
-                        </div>
-                        <div>
-                           <p className="font-sans whitespace-pre-wrap">{details.enhancedDescription.property}</p>
-                        </div>
-                        <div className="bg-brand-accent/5 p-6 rounded-2xl border border-brand-accent/10">
-                            <p className="font-bold text-slate-900 text-xl font-sans">{details.enhancedDescription.cta}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                  <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
+                      <div className="mb-10 text-right">
+                          <h2 className="text-[2rem] md:text-[2.75rem] font-extrabold text-slate-900 leading-tight font-sans">
+                              {details.generatedTitle}
+                          </h2>
+                          <div className="w-20 h-1.5 bg-brand-accent mt-4 rounded-full mr-0"></div>
+                      </div>
+                      
+                      <div className="space-y-8 text-lg md:text-xl text-slate-600 leading-loose font-sans">
+                          <div className="p-6 bg-slate-50 rounded-2xl border-r-4 border-brand-accent/30">
+                             <p className="font-medium text-slate-700 font-sans">{details.enhancedDescription.area}</p>
+                          </div>
+                          <div>
+                             <p className="font-sans whitespace-pre-wrap">{details.enhancedDescription.property}</p>
+                          </div>
+                          <div className="bg-brand-accent/5 p-6 rounded-2xl border border-brand-accent/10">
+                              <p className="font-bold text-slate-900 text-xl font-sans">{details.enhancedDescription.cta}</p>
+                          </div>
+                      </div>
+                  </div>
+              </div>
 
-            <aside className="lg:col-span-5 space-y-8">
-                <div className="bg-slate-900 text-white p-10 rounded-3xl shadow-2xl text-center relative overflow-hidden transform hover:scale-[1.02] transition-transform duration-300">
-                     <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-brand-accent via-orange-400 to-brand-accent"></div>
-                     <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
-                     
-                    <p className="text-slate-400 mb-3 text-sm uppercase tracking-widest font-bold font-sans">מחיר מבוקש</p>
-                    <div className="flex items-start justify-center gap-1 text-white direction-ltr font-sans">
-                        <span className="text-4xl md:text-6xl font-extrabold tracking-tight">{formattedPrice}</span>
-                        <span className="text-2xl md:text-3xl font-light mt-1 md:mt-2 text-brand-accent">₪</span>
-                    </div>
-                </div>
+              <aside className="lg:col-span-5 space-y-8">
+                  <div className="bg-slate-900 text-white p-10 rounded-3xl shadow-2xl text-center relative overflow-hidden transform hover:scale-[1.02] transition-transform duration-300">
+                       <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-brand-accent via-orange-400 to-brand-accent"></div>
+                       <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
+                       
+                      <p className="text-slate-400 mb-3 text-sm uppercase tracking-widest font-bold font-sans">מחיר מבוקש</p>
+                      <div className="flex items-start justify-center gap-1 text-white direction-ltr font-sans">
+                          <span className="text-4xl md:text-6xl font-extrabold tracking-tight">{formattedPrice}</span>
+                          <span className="text-2xl md:text-3xl font-light mt-1 md:mt-2 text-brand-accent">₪</span>
+                      </div>
+                  </div>
 
-                <FeaturesSection features={details.features} />
-                
-                <div className="bg-white border border-slate-200 p-10 rounded-3xl shadow-lg text-center relative overflow-hidden">
-                     <div className="absolute top-0 left-0 w-full h-1 bg-slate-100"></div>
-                    <div className="w-24 h-24 bg-slate-100 rounded-full mx-auto mb-6 flex items-center justify-center text-slate-300 border-4 border-white shadow-md overflow-hidden">
-                        {details.logo ? <img src={details.logo} className="w-full h-full object-contain p-2" /> : <UserIcon />}
-                    </div>
-                    <p className="text-slate-500 mb-2 font-medium font-sans">הנכס מיוצג ע"י</p>
-                    <h3 className="text-2xl font-bold text-slate-900 mb-4 font-sans">{details.agentName}</h3>
-                    
-                    <div className="flex justify-center gap-3">
-                         <a 
-                            href={`https://wa.me/${details.agentWhatsApp}`} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebc57] text-white py-3 px-6 rounded-xl transition-colors font-bold font-sans shadow-md"
-                        >
-                            <WhatsAppIcon/>
-                            <span>וואטסאפ</span>
-                        </a>
-                        <a 
-                             href={`tel:${details.agentWhatsApp.replace(/\D/g, '')}`}
-                             className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white py-3 px-6 rounded-xl transition-colors font-bold font-sans shadow-md"
-                        >
-                             <span>חייג</span>
-                        </a>
-                    </div>
-                </div>
-            </aside>
-        </section>
+                  <FeaturesSection features={details.features} />
+                  
+                  <div className="bg-white border border-slate-200 p-10 rounded-3xl shadow-lg text-center relative overflow-hidden">
+                       <div className="absolute top-0 left-0 w-full h-1 bg-slate-100"></div>
+                      <div className="w-24 h-24 bg-slate-100 rounded-full mx-auto mb-6 flex items-center justify-center text-slate-300 border-4 border-white shadow-md overflow-hidden">
+                          {details.logo ? <img src={details.logo} className="w-full h-full object-contain p-2" /> : <UserIcon />}
+                      </div>
+                      <p className="text-slate-500 mb-2 font-medium font-sans">הנכס מיוצג ע"י</p>
+                      <h3 className="text-2xl font-bold text-slate-900 mb-4 font-sans">{details.agentName}</h3>
+                      
+                      <div className="flex justify-center gap-3">
+                           <a 
+                              href={`https://wa.me/${details.agentWhatsApp}`} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebc57] text-white py-3 px-6 rounded-xl transition-colors font-bold font-sans shadow-md"
+                          >
+                              <WhatsAppIcon/>
+                              <span>וואטסאפ</span>
+                          </a>
+                          <a 
+                               href={`tel:${details.agentWhatsApp.replace(/\D/g, '')}`}
+                               className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white py-3 px-6 rounded-xl transition-colors font-bold font-sans shadow-md"
+                          >
+                               <span>חייג</span>
+                          </a>
+                      </div>
+                  </div>
+              </aside>
+          </section>
 
-        <section ref={leadFormRef} className="mt-24 max-w-4xl mx-auto relative">
-             <div className="absolute -inset-4 bg-gradient-to-r from-brand-accent to-orange-600 rounded-[2.5rem] opacity-20 blur-xl"></div>
-             <div className="relative">
-                <LeadForm 
-                  agentWhatsApp={details.agentWhatsApp} 
-                  agentEmail={details.agentEmail} 
-                  propertyTitle={details.generatedTitle} 
-                  agentName={details.agentName} 
-                  propertyId={details.id}
-                  ownerId={details.userId}
-                />
-             </div>
-        </section>
-      </main>
+          <section ref={leadFormRef} className="mt-24 max-w-4xl mx-auto relative">
+               <div className="absolute -inset-4 bg-gradient-to-r from-brand-accent to-orange-600 rounded-[2.5rem] opacity-20 blur-xl"></div>
+               <div className="relative">
+                  <LeadForm 
+                    agentWhatsApp={details.agentWhatsApp} 
+                    agentEmail={details.agentEmail} 
+                    propertyTitle={details.generatedTitle} 
+                    agentName={details.agentName} 
+                    propertyId={details.id}
+                    ownerId={details.userId}
+                  />
+               </div>
+          </section>
+        </main>
+      )}
 
       {/* Map Modal */}
       {isMapModalOpen && (

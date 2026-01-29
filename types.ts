@@ -40,6 +40,7 @@ export interface PropertyDetails extends PropertyFormData {
   propertyType: string; // סוג הנכס (דירה, בית פרטי, פנטהאוז וכו')
   enhancedDescription: EnhancedDescription;
   features: PropertyFeatures;
+  isSold?: boolean;
 }
 
 export interface UserProfile {

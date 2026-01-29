@@ -61,14 +61,15 @@ export const EditForm: React.FC<EditFormProps> = ({ property, onSave, onCancel, 
   };
 
   const handleMarkAsSold = () => {
-    if (window.confirm('האם לסמן את הנכס כנמכר? פעולה זו תוסיף ציון "נמכר" לכותרת ותשמור את הדף.')) {
+    if (window.confirm('האם לסמן את הנכס כנמכר? פעולה זו תציג את הדף כ"נמכר" עם פרטי הסוכן ותשמור את הדף.')) {
         const soldTitle = data.generatedTitle.includes('נמכר') 
             ? data.generatedTitle 
             : `${data.generatedTitle} - נמכר!`;
         
-        const updatedData = {
+        const updatedData: PropertyDetails = {
             ...data,
-            generatedTitle: soldTitle
+            generatedTitle: soldTitle,
+            isSold: true
         };
         onSave(updatedData);
     }
