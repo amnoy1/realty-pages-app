@@ -124,8 +124,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         if (d.getElementById(id)) return;
         js = d.createElement(s); js.id = id;
         js.src = "https://connect.facebook.net/he_IL/sdk.js";
-        fjs.parentNode.insertBefore(js, fjs);
-      }(document, 'script', 'facebook-jssdk'));
+        fjs.parentNode.insertBefore(id, 'script', 'facebook-jssdk'));
     }
 
     const handleClickOutside = (event: MouseEvent) => {
@@ -375,7 +374,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                             <button 
                                 onClick={() => {
                                     const url = window.location.href;
-                                    const text = `🏠 נכס חדש למכירה בבלעדיות!\n📍 ${details.address}\n💰 מחיר: ${formattedPrice} ₪\n\nלכל הפרטים והתמונות:\n${url}`;
+                                    const text = details.isSold 
+                                        ? `🏠 עוד נכס נמכר בהצלחה בבלעדיות!\n📍 ${details.address}\n\nשמח לבשר שהעסקה נחתמה והנכס עבר לבעליו החדשים.\n\nלכל הפרטים:\n${url}`
+                                        : `🏠 נכס חדש למכירה בבלעדיות!\n📍 ${details.address}\n💰 מחיר: ${formattedPrice} ₪\n\nלכל הפרטים והתמונות:\n${url}`;
                                     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                                     setIsShareMenuOpen(false);
                                 }}
