@@ -365,22 +365,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
       <main className="container mx-auto px-4 py-16 md:py-24 max-w-7xl md:-mt-10 relative z-10 flex-grow">
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             
-            <div className="lg:col-span-7 space-y-10">
+            <div className="lg:col-span-7 space-y-6">
+                <div className="flex justify-start">
+                  <button 
+                    onClick={() => setIsMapModalOpen(true)}
+                    className="flex items-center gap-1.5 text-brand-accent hover:text-brand-accentHover transition-all text-sm md:text-base font-bold px-1"
+                  >
+                    <span className="text-xl">📍</span>
+                    <span className="underline underline-offset-4 decoration-brand-accent/30 hover:decoration-brand-accent">מיקום על המפה</span>
+                  </button>
+                </div>
+                
                 <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
-                    <div className="mb-10">
-                        <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between mb-2">
-                          <button 
-                            onClick={() => setIsMapModalOpen(true)}
-                            className="flex items-center gap-1.5 text-brand-accent hover:text-brand-accentHover transition-all text-sm md:text-base font-bold self-start md:self-center order-2 md:order-1"
-                          >
-                            <span className="text-xl">📍</span>
-                            <span className="underline underline-offset-4 decoration-brand-accent/30 hover:decoration-brand-accent">מיקום על המפה</span>
-                          </button>
-                          <h2 className="text-[2rem] md:text-[2.75rem] font-extrabold text-slate-900 leading-tight font-sans order-1 md:order-2">
-                              {details.generatedTitle}
-                          </h2>
-                        </div>
-                        <div className="w-20 h-1.5 bg-brand-accent mt-4 rounded-full"></div>
+                    <div className="mb-10 text-right">
+                        <h2 className="text-[2rem] md:text-[2.75rem] font-extrabold text-slate-900 leading-tight font-sans">
+                            {details.generatedTitle}
+                        </h2>
+                        <div className="w-20 h-1.5 bg-brand-accent mt-4 rounded-full mr-0"></div>
                     </div>
                     
                     <div className="space-y-8 text-lg md:text-xl text-slate-600 leading-loose font-sans text-right">
