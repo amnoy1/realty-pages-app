@@ -52,6 +52,7 @@ const FacebookIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" he
 const CopyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>;
 const ShareIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>;
 const ManagementIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>;
+const MapPinIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>;
 
 const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: string }> = ({ icon, label, value }) => {
   // Strict filter: only show if value is present and not explicitly negative/null.
@@ -99,6 +100,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
   const shareMenuRef = useRef<HTMLDivElement>(null);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
 
   // Initialize Facebook SDK
   useEffect(() => {
@@ -367,9 +369,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
             <div className="lg:col-span-7 space-y-10">
                 <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
                     <div className="mb-10">
-                        <h2 className="text-[2rem] md:text-[2.75rem] font-extrabold text-slate-900 leading-tight font-sans">
-                            {details.generatedTitle}
-                        </h2>
+                        <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between mb-2">
+                          <h2 className="text-[2rem] md:text-[2.75rem] font-extrabold text-slate-900 leading-tight font-sans">
+                              {details.generatedTitle}
+                          </h2>
+                          <button 
+                            onClick={() => setIsMapModalOpen(true)}
+                            className="flex items-center gap-2 bg-slate-100 hover:bg-brand-accent/10 text-brand-accent px-4 py-2 rounded-full transition-all text-sm font-bold shadow-sm self-start md:self-center border border-slate-200"
+                          >
+                            <MapPinIcon />
+                            <span>מיקום על המפה</span>
+                          </button>
+                        </div>
                         <div className="w-20 h-1.5 bg-brand-accent mt-4 rounded-full"></div>
                     </div>
                     
@@ -444,6 +455,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
              </div>
         </section>
       </main>
+
+      {/* Map Modal */}
+      {isMapModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-fade-in" onClick={() => setIsMapModalOpen(false)}>
+          <div className="bg-white w-full max-w-4xl h-[70vh] rounded-3xl shadow-2xl relative overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 flex justify-between items-center border-b border-slate-100 bg-slate-50">
+              <h3 className="font-bold text-slate-800 text-lg font-sans">מיקום הנכס: {details.address}</h3>
+              <button onClick={() => setIsMapModalOpen(false)} className="bg-slate-200 hover:bg-slate-300 text-slate-600 w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-inner">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            </div>
+            <div className="flex-1 w-full h-full relative">
+              <iframe 
+                width="100%" 
+                height="100%" 
+                frameBorder="0" 
+                style={{ border: 0 }}
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(details.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`} 
+                allowFullScreen
+                loading="lazy"
+                title="Google Maps"
+              ></iframe>
+            </div>
+          </div>
+        </div>
+      )}
 
       <section className="mt-20 py-12 px-4 bg-slate-900 border-t border-white/5 relative overflow-hidden shrink-0">
           <div className="absolute inset-0 opacity-10 pointer-events-none">
