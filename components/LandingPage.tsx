@@ -59,8 +59,9 @@ const MapDropIcon = () => (
   </svg>
 );
 
+const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>;
+
 const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: string }> = ({ icon, label, value }) => {
-  // Strict filter: only show if value is present and not explicitly negative/null.
   if (!value || typeof value !== 'string' || value.trim() === '' || value === 'null' || value === 'אין' || value === 'ללא' || value === 'לא צוין' || value === '0') return null;
   
   return (
@@ -75,7 +76,6 @@ const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: stri
 };
 
 const FeaturesSection: React.FC<{ features: PropertyFeatures }> = ({ features }) => {
-  // Check if at least one feature is valid to show the entire section.
   const hasFeatures = Object.values(features).some(val => typeof val === 'string' && val.trim() !== '' && val !== 'null' && val !== 'אין' && val !== 'ללא' && val !== 'לא צוין' && val !== '0');
   if (!hasFeatures) return null;
 
@@ -99,7 +99,6 @@ const FeaturesSection: React.FC<{ features: PropertyFeatures }> = ({ features })
   );
 };
 
-
 export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = false, onReset, onSave, isSaving, onNavigateToDashboard }) => {
   const leadFormRef = useRef<HTMLDivElement>(null);
   const shareMenuRef = useRef<HTMLDivElement>(null);
@@ -107,7 +106,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
 
-  // Initialize Facebook SDK
   useEffect(() => {
     if (!window.FB) {
       window.fbAsyncInit = function() {
@@ -120,11 +118,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
       };
 
       (function(d, s, id) {
-        var js: any, fjs: any = d.getElementsByTagName(s)[0];
+        var js, fjs = d.getElementsByTagName(s)[0];
         if (d.getElementById(id)) return;
-        js = d.createElement(s); js.id = id;
+        js = d.createElement(s) as HTMLScriptElement;
+        js.id = id;
         js.src = "https://connect.facebook.net/he_IL/sdk.js";
-        fjs.parentNode.insertBefore(id, 'script', 'facebook-jssdk'));
+        if (fjs && fjs.parentNode) {
+            fjs.parentNode.insertBefore(js, fjs);
+        } else {
+            d.head.appendChild(js);
+        }
+      }(document, 'script', 'facebook-jssdk'));
     }
 
     const handleClickOutside = (event: MouseEvent) => {
@@ -195,16 +199,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
             </a>
         )}
       
-      {/* Dynamic Header: Responsive Stacking */}
       <header className={`relative text-white overflow-hidden shrink-0 flex flex-col md:block bg-slate-900 ${details.isSold ? 'h-[100vh] min-h-[600px]' : 'md:h-[90vh] md:min-h-[650px]'}`}>
         
-        {/* Main Background Image - Single image for sold state */}
         <div className="relative w-full h-[45vh] md:h-full md:absolute md:inset-0">
           {details.isSold ? (
             <div className="w-full h-full relative">
                <img src={details.images[0]} alt={details.address} className="w-full h-full object-cover" />
                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center">
-                  <div className="bg-brand-accent/90 text-white px-12 py-6 md:px-20 md:py-10 rounded-[2rem] shadow-[0_0_60px_rgba(217,119,6,0.5)] transform -rotate-3 border-4 border-white animate-bounce-slow">
+                  <div className="bg-brand-accent/90 text-white px-12 py-6 md:px-20 md:py-10 rounded-[2rem] shadow-[0_0_60px_rgba(217,119,6,0.5)] transform -rotate-3 border-4 border-white">
                     <span className="text-6xl md:text-9xl font-black font-sans tracking-tight">נמכר!</span>
                   </div>
                </div>
@@ -214,18 +216,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
           )}
         </div>
         
-        {/* Agent Logo (Top Right) */}
         {details.logo && (
           <div className="absolute top-4 right-4 md:top-6 md:right-6 bg-white/95 backdrop-blur-sm p-2 md:p-4 rounded-xl md:rounded-2xl shadow-lg animate-fade-in z-30">
-             <img 
-                src={details.logo} 
-                alt="לוגו המשרד" 
-                className="h-10 md:h-20 w-auto object-contain" 
-             />
+             <img src={details.logo} alt="לוגו המשרד" className="h-10 md:h-20 w-auto object-contain" />
           </div>
         )}
 
-        {/* Address Bar - Bottom Overlay (Desktop/Mobile unified logic for Sold) */}
         <div className={`absolute bottom-8 right-0 left-0 px-4 md:px-16 z-20 animate-slide-up ${details.isSold ? 'block' : 'hidden md:block'}`}>
             <div className="bg-black/40 backdrop-blur-xl p-6 md:p-10 rounded-[1.5rem] md:rounded-[2.5rem] border border-white/10 shadow-2xl max-w-4xl">
                 <div className="text-lg font-bold text-slate-300 mb-1 uppercase tracking-wide opacity-90 font-sans">
@@ -247,20 +243,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                       </div>
                     </div>
                     <div className="flex gap-3">
-                      <a 
-                        href={`tel:${details.agentWhatsApp}`} 
-                        className="bg-white text-slate-900 px-6 py-3 rounded-full font-bold shadow-lg hover:scale-105 transition-all text-sm font-sans"
-                      >
-                        חייג לסוכן
-                      </a>
-                      <a 
-                        href={`https://wa.me/${details.agentWhatsApp}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        className="bg-[#25D366] text-white px-6 py-3 rounded-full font-bold shadow-lg hover:scale-105 transition-all text-sm font-sans flex items-center gap-2"
-                      >
-                        <WhatsAppIcon />
-                        וואטסאפ
+                      <a href={`tel:${details.agentWhatsApp}`} className="bg-white text-slate-900 px-6 py-3 rounded-full font-bold shadow-lg hover:scale-105 transition-all text-sm font-sans">חייג לסוכן</a>
+                      <a href={`https://wa.me/${details.agentWhatsApp}`} target="_blank" rel="noopener noreferrer" className="bg-[#25D366] text-white px-6 py-3 rounded-full font-bold shadow-lg hover:scale-105 transition-all text-sm font-sans flex items-center gap-2">
+                        <WhatsAppIcon /> וואטסאפ
                       </a>
                     </div>
                   </div>
@@ -268,141 +253,77 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
 
                 {!details.isSold && (
                   <div className="mt-8">
-                    <button
-                        onClick={handleCtaClick}
-                        className="py-4 px-10 rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.5)] text-xl font-black text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 border border-white/20 font-sans"
-                    >
-                        תיאום סיור בנכס
-                    </button>
+                    <button onClick={handleCtaClick} className="py-4 px-10 rounded-full shadow-[0_4px_14px_rgba(0,0,0,0.5)] text-xl font-black text-white bg-gradient-to-r from-brand-accent to-orange-600 hover:to-orange-700 transition-all duration-300 transform hover:-translate-y-1 border border-white/20 font-sans">תיאום סיור בנכס</button>
                   </div>
                 )}
             </div>
         </div>
 
-        {/* Mobile Info Stack (Non-Sold) */}
         {!details.isSold && (
           <div className="block md:hidden bg-white text-slate-900 p-6 border-b border-slate-200">
-              <h1 className="text-2xl font-black text-slate-900 mb-2 leading-tight font-sans">
-                  {details.address}
-              </h1>
-              <div className="text-sm font-bold text-slate-400 mb-6 uppercase tracking-wide font-sans">
-                  {propertyTypeLabel}
-              </div>
-              <button
-                  onClick={handleCtaClick}
-                  className="w-full py-4 rounded-2xl shadow-lg text-lg font-black text-white bg-gradient-to-r from-brand-accent to-orange-600 active:scale-95 transition-transform duration-200 font-sans"
-              >
-                  תיאום סיור בנכס
-              </button>
+              <h1 className="text-2xl font-black text-slate-900 mb-2 leading-tight font-sans">{details.address}</h1>
+              <div className="text-sm font-bold text-slate-400 mb-6 uppercase tracking-wide font-sans">{propertyTypeLabel}</div>
+              <button onClick={handleCtaClick} className="w-full py-4 rounded-2xl shadow-lg text-lg font-black text-white bg-gradient-to-r from-brand-accent to-orange-600 active:scale-95 transition-transform duration-200 font-sans">תיאום סיור בנכס</button>
           </div>
         )}
         
-        {/* Actions Bar (Top Left) */}
         <div className="absolute top-4 left-4 md:top-6 md:left-6 flex flex-col items-start gap-3 z-50">
            {isPreview && onReset && (
-                <button 
-                    onClick={onReset} 
-                    className="bg-brand-accent/20 text-white py-2 px-4 md:py-2.5 md:px-6 rounded-full hover:bg-black/80 transition-all text-xs md:text-sm backdrop-blur-md border border-white/20 font-medium flex items-center gap-2 font-sans"
-                >
+                <button onClick={onReset} className="bg-brand-accent/20 text-white py-2 px-4 md:py-2.5 md:px-6 rounded-full hover:bg-black/80 transition-all text-xs md:text-sm backdrop-blur-md border border-white/20 font-medium flex items-center gap-2 font-sans">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/></svg>
                     <span>חזרה לעריכה</span>
                 </button>
             )}
              {isPreview && onSave && (
-                <button 
-                    onClick={onSave}
-                    disabled={isSaving}
-                    className="bg-brand-accent text-white py-2 px-6 md:py-2.5 md:px-8 rounded-full hover:bg-brand-accentHover transition-all disabled:opacity-70 shadow-lg font-bold border border-transparent flex items-center gap-2 font-sans text-xs md:text-base"
-                >
+                <button onClick={onSave} disabled={isSaving} className="bg-brand-accent text-white py-2 px-6 md:py-2.5 md:px-8 rounded-full hover:bg-brand-accentHover transition-all disabled:opacity-70 shadow-lg font-bold border border-transparent flex items-center gap-2 font-sans text-xs md:text-base">
                      {isSaving ? (
-                        <>
-                          <div className="w-3 h-3 md:w-4 md:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>מפרסם...</span>
-                        </>
+                        <><div className="w-3 h-3 md:w-4 md:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>מפרסם...</span></>
                      ) : (
-                        <>
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="hidden md:block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                          <span>שמור ופרסם דף</span>
-                        </>
+                        <><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="hidden md:block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg><span>שמור ופרסם דף</span></>
                      )}
                 </button>
             )}
 
              {!isPreview && (
                 <div className="relative" ref={shareMenuRef}>
-                    <button 
-                        onClick={() => setIsShareMenuOpen(!isShareMenuOpen)}
-                        className={`flex items-center gap-2 md:gap-3 py-2 px-4 md:py-3 md:px-6 rounded-2xl backdrop-blur-lg border border-white/20 transition-all shadow-2xl font-bold font-sans text-white hover:scale-105 active:scale-95 text-xs md:text-base ${isShareMenuOpen ? 'bg-brand-accent/90 border-brand-accent shadow-brand-accent/20' : 'bg-slate-900/80 hover:bg-slate-900'}`}
-                    >
-                        <ShareIcon />
-                        <span>שיתוף וניהול</span>
+                    <button onClick={() => setIsShareMenuOpen(!isShareMenuOpen)} className={`flex items-center gap-2 md:gap-3 py-2 px-4 md:py-3 md:px-6 rounded-2xl backdrop-blur-lg border border-white/20 transition-all shadow-2xl font-bold font-sans text-white hover:scale-105 active:scale-95 text-xs md:text-base ${isShareMenuOpen ? 'bg-brand-accent/90 border-brand-accent shadow-brand-accent/20' : 'bg-slate-900/80 hover:bg-slate-900'}`}>
+                        <ShareIcon /> <span>שיתוף וניהול</span>
                     </button>
 
-                    {/* Share Dropdown Menu */}
                     {isShareMenuOpen && (
                         <div className="absolute top-12 md:top-14 left-0 w-64 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-4 animate-fade-in flex flex-col gap-3 z-[60]">
                             <div className="text-white text-[10px] font-black uppercase tracking-widest text-center border-b border-white/5 pb-2 mb-1 opacity-60">אפשרויות שיתוף וניהול</div>
                             
-                            {/* Management Option */}
-                            <button 
-                                onClick={handleManagementClick}
-                                className="w-full bg-slate-800 text-white py-3 px-4 rounded-xl hover:bg-slate-700 transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg border border-white/10"
-                            >
-                                <ManagementIcon />
-                                ניהול נכסים ולידים
+                            <button onClick={handleManagementClick} className="w-full bg-slate-800 text-white py-3 px-4 rounded-xl hover:bg-slate-700 transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg border border-white/10">
+                                <ManagementIcon /> ניהול נכסים ולידים
                             </button>
 
                             <div className="h-px bg-white/10 my-1"></div>
 
                             <div className="space-y-2">
-                                <button 
-                                    onClick={() => { shareOnFacebook('feed'); setIsShareMenuOpen(false); }}
-                                    className="w-full bg-[#1877F2] text-white py-3 px-4 rounded-xl hover:bg-[#166fe5] transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg"
-                                >
-                                    <FacebookIcon />
-                                    פרופיל אישי
+                                <button onClick={() => { shareOnFacebook('feed'); setIsShareMenuOpen(false); }} className="w-full bg-[#1877F2] text-white py-3 px-4 rounded-xl hover:bg-[#166fe5] transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg">
+                                    <FacebookIcon /> פרופיל אישי
                                 </button>
-                                
-                                <button 
-                                    onClick={() => { shareOnFacebook('page'); setIsShareMenuOpen(false); }}
-                                    className="w-full bg-slate-700 text-white py-2.5 px-4 rounded-xl hover:bg-slate-600 transition-all text-xs font-bold flex items-center justify-center gap-2 font-sans border border-white/10"
-                                >
+                                <button onClick={() => { shareOnFacebook('page'); setIsShareMenuOpen(false); }} className="w-full bg-slate-700 text-white py-2.5 px-4 rounded-xl hover:bg-slate-600 transition-all text-xs font-bold flex items-center justify-center gap-2 font-sans border border-white/10">
                                     📢 דף עסקי
                                 </button>
                             </div>
 
-                            <button 
-                                onClick={() => {
-                                    const url = window.location.href;
-                                    const text = details.isSold 
-                                        ? `🏠 עוד נכס נמכר בהצלחה בבלעדיות!\n📍 ${details.address}\n\nשמח לבשר שהעסקה נחתמה והנכס עבר לבעליו החדשים.\n\nלכל הפרטים:\n${url}`
-                                        : `🏠 נכס חדש למכירה בבלעדיות!\n📍 ${details.address}\n💰 מחיר: ${formattedPrice} ₪\n\nלכל הפרטים והתמונות:\n${url}`;
-                                    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-                                    setIsShareMenuOpen(false);
-                                }}
-                                className="w-full bg-[#25D366] text-white py-3 px-4 rounded-xl hover:bg-[#1ebc57] transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg"
-                            >
-                                <WhatsAppIcon />
-                                וואטסאפ
+                            <button onClick={() => {
+                                const url = window.location.href;
+                                const text = details.isSold 
+                                    ? `🏠 עוד נכס נמכר בהצלחה בבלעדיות!\n📍 ${details.address}\n\nשמח לבשר שהעסקה נחתמה והנכס עבר לבעליו החדשים.\n\nלכל הפרטים:\n${url}`
+                                    : `🏠 נכס חדש למכירה בבלעדיות!\n📍 ${details.address}\n💰 מחיר: ${formattedPrice} ₪\n\nלכל הפרטים והתמונות:\n${url}`;
+                                window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                                setIsShareMenuOpen(false);
+                            }} className="w-full bg-[#25D366] text-white py-3 px-4 rounded-xl hover:bg-[#1ebc57] transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg">
+                                <WhatsAppIcon /> וואטסאפ
                             </button>
 
                             <div className="h-px bg-white/10 my-1"></div>
 
-                            <button 
-                              onClick={copyLink} 
-                              className={`w-full py-2.5 px-4 rounded-xl transition-all text-xs font-bold flex items-center justify-center gap-2 font-sans ${copyStatus === 'copied' ? 'bg-green-600 text-white shadow-inner' : 'bg-slate-800 text-white hover:bg-slate-700 border border-white/10'}`}
-                            >
-                              {copyStatus === 'copied' ? (
-                                  <>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                    הועתק!
-                                  </>
-                              ) : (
-                                  <>
-                                    <CopyIcon />
-                                    העתק לינק
-                                  </>
-                              )}
+                            <button onClick={copyLink} className={`w-full py-2.5 px-4 rounded-xl transition-all text-xs font-bold flex items-center justify-center gap-2 font-sans ${copyStatus === 'copied' ? 'bg-green-600 text-white shadow-inner' : 'bg-slate-800 text-white hover:bg-slate-700 border border-white/10'}`}>
+                              {copyStatus === 'copied' ? <><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>הועתק!</> : <><CopyIcon />העתק לינק</>}
                             </button>
                         </div>
                     )}
@@ -411,41 +332,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         </div>
       </header>
 
-      {/* Main Content Area - Hidden if sold to focus on sold billboard */}
       {!details.isSold && (
         <main className="container mx-auto px-4 py-16 md:py-24 max-w-7xl md:-mt-10 relative z-10 flex-grow text-right">
           <section className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-              
               <div className="lg:col-span-7 space-y-4">
-                  {/* Location outside the text cube, aligned to the right edge (justify-start in RTL) */}
                   <div className="flex justify-start px-2">
-                    <button 
-                      onClick={() => setIsMapModalOpen(true)}
-                      className="flex items-center gap-1.5 text-brand-accent hover:text-brand-accentHover transition-all text-sm md:text-base font-bold"
-                    >
-                      <MapDropIcon />
-                      <span className="underline underline-offset-4 decoration-brand-accent/30 hover:decoration-brand-accent">מיקום על המפה</span>
+                    <button onClick={() => setIsMapModalOpen(true)} className="flex items-center gap-1.5 text-brand-accent hover:text-brand-accentHover transition-all text-sm md:text-base font-bold">
+                      <MapDropIcon /> <span className="underline underline-offset-4 decoration-brand-accent/30 hover:decoration-brand-accent">מיקום על המפה</span>
                     </button>
                   </div>
 
                   <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
                       <div className="mb-10 text-right">
-                          <h2 className="text-[2rem] md:text-[2.75rem] font-extrabold text-slate-900 leading-tight font-sans">
-                              {details.generatedTitle}
-                          </h2>
+                          <h2 className="text-[2rem] md:text-[2.75rem] font-extrabold text-slate-900 leading-tight font-sans">{details.generatedTitle}</h2>
                           <div className="w-20 h-1.5 bg-brand-accent mt-4 rounded-full mr-0"></div>
                       </div>
                       
                       <div className="space-y-8 text-lg md:text-xl text-slate-600 leading-loose font-sans">
-                          <div className="p-6 bg-slate-50 rounded-2xl border-r-4 border-brand-accent/30">
-                             <p className="font-medium text-slate-700 font-sans">{details.enhancedDescription.area}</p>
-                          </div>
-                          <div>
-                             <p className="font-sans whitespace-pre-wrap">{details.enhancedDescription.property}</p>
-                          </div>
-                          <div className="bg-brand-accent/5 p-6 rounded-2xl border border-brand-accent/10">
-                              <p className="font-bold text-slate-900 text-xl font-sans">{details.enhancedDescription.cta}</p>
-                          </div>
+                          <div className="p-6 bg-slate-50 rounded-2xl border-r-4 border-brand-accent/30"><p className="font-medium text-slate-700 font-sans">{details.enhancedDescription.area}</p></div>
+                          <div><p className="font-sans whitespace-pre-wrap">{details.enhancedDescription.property}</p></div>
+                          <div className="bg-brand-accent/5 p-6 rounded-2xl border border-brand-accent/10"><p className="font-bold text-slate-900 text-xl font-sans">{details.enhancedDescription.cta}</p></div>
                       </div>
                   </div>
               </div>
@@ -454,16 +360,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                   <div className="bg-slate-900 text-white p-10 rounded-3xl shadow-2xl text-center relative overflow-hidden transform hover:scale-[1.02] transition-transform duration-300">
                        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-brand-accent via-orange-400 to-brand-accent"></div>
                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl"></div>
-                       
                       <p className="text-slate-400 mb-3 text-sm uppercase tracking-widest font-bold font-sans">מחיר מבוקש</p>
                       <div className="flex items-start justify-center gap-1 text-white direction-ltr font-sans">
                           <span className="text-4xl md:text-6xl font-extrabold tracking-tight">{formattedPrice}</span>
                           <span className="text-2xl md:text-3xl font-light mt-1 md:mt-2 text-brand-accent">₪</span>
                       </div>
                   </div>
-
                   <FeaturesSection features={details.features} />
-                  
                   <div className="bg-white border border-slate-200 p-10 rounded-3xl shadow-lg text-center relative overflow-hidden">
                        <div className="absolute top-0 left-0 w-full h-1 bg-slate-100"></div>
                       <div className="w-24 h-24 bg-slate-100 rounded-full mx-auto mb-6 flex items-center justify-center text-slate-300 border-4 border-white shadow-md overflow-hidden">
@@ -471,23 +374,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                       </div>
                       <p className="text-slate-500 mb-2 font-medium font-sans">הנכס מיוצג ע"י</p>
                       <h3 className="text-2xl font-bold text-slate-900 mb-4 font-sans">{details.agentName}</h3>
-                      
                       <div className="flex justify-center gap-3">
-                           <a 
-                              href={`https://wa.me/${details.agentWhatsApp}`} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
-                              className="flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebc57] text-white py-3 px-6 rounded-xl transition-colors font-bold font-sans shadow-md"
-                          >
-                              <WhatsAppIcon/>
-                              <span>וואטסאפ</span>
-                          </a>
-                          <a 
-                               href={`tel:${details.agentWhatsApp.replace(/\D/g, '')}`}
-                               className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white py-3 px-6 rounded-xl transition-colors font-bold font-sans shadow-md"
-                          >
-                               <span>חייג</span>
-                          </a>
+                           <a href={`https://wa.me/${details.agentWhatsApp}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebc57] text-white py-3 px-6 rounded-xl transition-colors font-bold font-sans shadow-md"><WhatsAppIcon/><span>וואטסאפ</span></a>
+                           <a href={`tel:${details.agentWhatsApp.replace(/\D/g, '')}`} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white py-3 px-6 rounded-xl transition-colors font-bold font-sans shadow-md"><span>חייג</span></a>
                       </div>
                   </div>
               </aside>
@@ -496,59 +385,31 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
           <section ref={leadFormRef} className="mt-24 max-w-4xl mx-auto relative">
                <div className="absolute -inset-4 bg-gradient-to-r from-brand-accent to-orange-600 rounded-[2.5rem] opacity-20 blur-xl"></div>
                <div className="relative">
-                  <LeadForm 
-                    agentWhatsApp={details.agentWhatsApp} 
-                    agentEmail={details.agentEmail} 
-                    propertyTitle={details.generatedTitle} 
-                    agentName={details.agentName} 
-                    propertyId={details.id}
-                    ownerId={details.userId}
-                  />
+                  <LeadForm agentWhatsApp={details.agentWhatsApp} agentEmail={details.agentEmail} propertyTitle={details.generatedTitle} agentName={details.agentName} propertyId={details.id} ownerId={details.userId} />
                </div>
           </section>
         </main>
       )}
 
-      {/* Map Modal */}
       {isMapModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-fade-in" onClick={() => setIsMapModalOpen(false)}>
           <div className="bg-white w-full max-w-4xl h-[70vh] rounded-3xl shadow-2xl relative overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="p-4 flex justify-between items-center border-b border-slate-100 bg-slate-50">
               <h3 className="font-bold text-slate-800 text-lg font-sans">מיקום הנכס: {details.address}</h3>
-              <button onClick={() => setIsMapModalOpen(false)} className="bg-slate-200 hover:bg-slate-300 text-slate-600 w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-inner">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-              </button>
+              <button onClick={() => setIsMapModalOpen(false)} className="bg-slate-200 hover:bg-slate-300 text-slate-600 w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-inner"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
             </div>
             <div className="flex-1 w-full h-full relative">
-              <iframe 
-                width="100%" 
-                height="100%" 
-                frameBorder="0" 
-                style={{ border: 0 }}
-                src={`https://maps.google.com/maps?q=${encodeURIComponent(details.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`} 
-                allowFullScreen
-                loading="lazy"
-                title="Google Maps"
-              ></iframe>
+              <iframe width="100%" height="100%" frameBorder="0" style={{ border: 0 }} src={`https://maps.google.com/maps?q=${encodeURIComponent(details.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`} allowFullScreen loading="lazy" title="Google Maps"></iframe>
             </div>
           </div>
         </div>
       )}
 
       <section className="mt-20 py-12 px-4 bg-slate-900 border-t border-white/5 relative overflow-hidden shrink-0">
-          <div className="absolute inset-0 opacity-10 pointer-events-none">
-              <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand-accent rounded-full blur-[120px]"></div>
-          </div>
+          <div className="absolute inset-0 opacity-10 pointer-events-none"><div className="absolute top-0 left-1/4 w-96 h-96 bg-brand-accent rounded-full blur-[120px]"></div></div>
           <div className="container mx-auto text-center relative z-10">
-              <p className="text-lg md:text-xl font-medium text-slate-300 mb-4 font-sans leading-tight">
-                דף זה נוצר באמצעות מערכת ייצור דפי הנחיתה החזקה בעולם
-              </p>
-              <a 
-                href="/" 
-                className="text-brand-accent hover:text-white text-xl font-bold font-sans transition-all duration-300 hover:scale-110 inline-block border-b-2 border-brand-accent hover:border-white pb-1"
-              >
-                realty-pages.com
-              </a>
+              <p className="text-lg md:text-xl font-medium text-slate-300 mb-4 font-sans leading-tight">דף זה נוצר באמצעות מערכת ייצור דפי הנחיתה החזקה בעולם</p>
+              <a href="/" className="text-brand-accent hover:text-white text-xl font-bold font-sans transition-all duration-300 hover:scale-110 inline-block border-b-2 border-brand-accent hover:border-white pb-1">realty-pages.com</a>
           </div>
       </section>
       
@@ -556,10 +417,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         <div className="container mx-auto space-y-4">
             <p className="text-xs opacity-50 font-sans tracking-wide">© {new Date().getFullYear()} - כל הזכויות שמורות Realty-Pages.com</p>
             <div className="flex justify-center gap-6 text-[10px] font-bold uppercase tracking-widest">
-               <a href="/privacy" className="hover:text-brand-accent transition-colors">מדיניות פרטיות</a>
-               <span className="opacity-20">|</span>
-               <a href="/terms" className="hover:text-brand-accent transition-colors">תנאי שימוש</a>
-               <span className="opacity-20">|</span>
+               <a href="/privacy" className="hover:text-brand-accent transition-colors">מדיניות פרטיות</a><span className="opacity-20">|</span>
+               <a href="/terms" className="hover:text-brand-accent transition-colors">תנאי שימוש</a><span className="opacity-20">|</span>
                <a href="mailto:Support@realty-pages.com" className="hover:text-brand-accent transition-colors">תמיכה</a>
             </div>
         </div>
@@ -567,5 +426,3 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
     </div>
   );
 };
-
-const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>;
