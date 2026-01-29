@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import type { PropertyDetails } from '../types';
 
@@ -9,8 +10,9 @@ interface EditFormProps {
 }
 
 const BuildingIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>;
-const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>;
+const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>;
 const UploadIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" /></svg>;
+const CheckIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
 
 export const EditForm: React.FC<EditFormProps> = ({ property, onSave, onCancel, isSaving }) => {
   const [data, setData] = useState<PropertyDetails>({ ...property });
@@ -56,6 +58,20 @@ export const EditForm: React.FC<EditFormProps> = ({ property, onSave, onCancel, 
         ...prev,
         images: prev.images.filter((_, i) => i !== index)
     }));
+  };
+
+  const handleMarkAsSold = () => {
+    if (window.confirm('האם לסמן את הנכס כנמכר? פעולה זו תוסיף ציון "נמכר" לכותרת ותשמור את הדף.')) {
+        const soldTitle = data.generatedTitle.includes('נמכר') 
+            ? data.generatedTitle 
+            : `${data.generatedTitle} - נמכר!`;
+        
+        const updatedData = {
+            ...data,
+            generatedTitle: soldTitle
+        };
+        onSave(updatedData);
+    }
   };
 
   const inputClasses = "w-full px-5 py-3 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:ring-2 focus:ring-brand-accent outline-none transition-all";
@@ -104,7 +120,7 @@ export const EditForm: React.FC<EditFormProps> = ({ property, onSave, onCancel, 
                 </div>
             </div>
 
-            {/* Right Column: Media */}
+            {/* Right Column: Media & Actions */}
             <div className="space-y-6">
                 <div className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700">
                     <h3 className="text-xl font-bold text-white mb-6 border-b border-slate-700 pb-2">תמונות הנכס</h3>
@@ -117,7 +133,7 @@ export const EditForm: React.FC<EditFormProps> = ({ property, onSave, onCancel, 
                         </div>
                     </div>
 
-                    <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                    <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                         {data.images.map((img, idx) => (
                             <div key={idx} className="relative aspect-video rounded-lg overflow-hidden border border-slate-700 group">
                                 <img src={img} className="w-full h-full object-cover" alt="" />
@@ -136,15 +152,26 @@ export const EditForm: React.FC<EditFormProps> = ({ property, onSave, onCancel, 
                     </div>
                 </div>
                 
-                <button 
-                    onClick={() => onSave(data)} 
-                    disabled={isSaving}
-                    className="w-full bg-brand-accent hover:bg-brand-accentHover text-white py-4 rounded-xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-2"
-                >
-                    {isSaving ? (
-                        <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    ) : 'שמור ופרסם שינויים'}
-                </button>
+                <div className="space-y-4">
+                    <button 
+                        onClick={() => onSave(data)} 
+                        disabled={isSaving}
+                        className="w-full bg-brand-accent hover:bg-brand-accentHover text-white py-4 rounded-xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-2"
+                    >
+                        {isSaving ? (
+                            <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        ) : 'שמור ופרסם שינויים'}
+                    </button>
+
+                    <button 
+                        onClick={handleMarkAsSold} 
+                        disabled={isSaving}
+                        className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white py-4 rounded-xl font-bold text-lg shadow-xl shadow-green-900/20 transition-all flex items-center justify-center gap-2 border border-green-500/30"
+                    >
+                        <CheckIcon />
+                        <span>הנכס נמכר</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
