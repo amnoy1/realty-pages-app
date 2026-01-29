@@ -52,7 +52,6 @@ const FacebookIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" he
 const CopyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>;
 const ShareIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>;
 const ManagementIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>;
-const MapPinIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>;
 
 const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: string }> = ({ icon, label, value }) => {
   // Strict filter: only show if value is present and not explicitly negative/null.
@@ -370,16 +369,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                 <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
                     <div className="mb-10">
                         <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between mb-2">
-                          <h2 className="text-[2rem] md:text-[2.75rem] font-extrabold text-slate-900 leading-tight font-sans">
-                              {details.generatedTitle}
-                          </h2>
                           <button 
                             onClick={() => setIsMapModalOpen(true)}
-                            className="flex items-center gap-1.5 text-brand-accent hover:text-brand-accentHover transition-all text-sm md:text-base font-bold self-start md:self-center"
+                            className="flex items-center gap-1.5 text-brand-accent hover:text-brand-accentHover transition-all text-sm md:text-base font-bold self-start md:self-center order-2 md:order-1"
                           >
                             <span className="text-xl">📍</span>
                             <span className="underline underline-offset-4 decoration-brand-accent/30 hover:decoration-brand-accent">מיקום על המפה</span>
                           </button>
+                          <h2 className="text-[2rem] md:text-[2.75rem] font-extrabold text-slate-900 leading-tight font-sans order-1 md:order-2">
+                              {details.generatedTitle}
+                          </h2>
                         </div>
                         <div className="w-20 h-1.5 bg-brand-accent mt-4 rounded-full"></div>
                     </div>
