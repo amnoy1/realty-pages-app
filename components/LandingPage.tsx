@@ -362,20 +362,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
       </header>
 
       {/* Main Content Area - Adjust top margin based on header stacking */}
-      <main className="container mx-auto px-4 py-16 md:py-24 max-w-7xl md:-mt-10 relative z-10 flex-grow">
+      <main className="container mx-auto px-4 py-16 md:py-24 max-w-7xl md:-mt-10 relative z-10 flex-grow text-right">
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             
-            <div className="lg:col-span-7 space-y-6">
-                <div className="flex justify-start">
+            <div className="lg:col-span-7 space-y-4">
+                {/* Location outside the text cube, to the right */}
+                <div className="flex justify-start px-2">
                   <button 
                     onClick={() => setIsMapModalOpen(true)}
-                    className="flex items-center gap-1.5 text-brand-accent hover:text-brand-accentHover transition-all text-sm md:text-base font-bold px-1"
+                    className="flex items-center gap-1.5 text-brand-accent hover:text-brand-accentHover transition-all text-sm md:text-base font-bold"
                   >
-                    <span className="text-xl">📍</span>
+                    <span className="text-xl">💧</span>
                     <span className="underline underline-offset-4 decoration-brand-accent/30 hover:decoration-brand-accent">מיקום על המפה</span>
                   </button>
                 </div>
-                
+
                 <div className="bg-white p-8 md:p-12 rounded-3xl shadow-sm border border-slate-100">
                     <div className="mb-10 text-right">
                         <h2 className="text-[2rem] md:text-[2.75rem] font-extrabold text-slate-900 leading-tight font-sans">
@@ -384,7 +385,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                         <div className="w-20 h-1.5 bg-brand-accent mt-4 rounded-full mr-0"></div>
                     </div>
                     
-                    <div className="space-y-8 text-lg md:text-xl text-slate-600 leading-loose font-sans text-right">
+                    <div className="space-y-8 text-lg md:text-xl text-slate-600 leading-loose font-sans">
                         <div className="p-6 bg-slate-50 rounded-2xl border-r-4 border-brand-accent/30">
                            <p className="font-medium text-slate-700 font-sans">{details.enhancedDescription.area}</p>
                         </div>
