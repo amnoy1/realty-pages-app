@@ -375,10 +375,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                           </h2>
                           <button 
                             onClick={() => setIsMapModalOpen(true)}
-                            className="flex items-center gap-2 bg-slate-100 hover:bg-brand-accent/10 text-brand-accent px-4 py-2 rounded-full transition-all text-sm font-bold shadow-sm self-start md:self-center border border-slate-200"
+                            className="flex items-center gap-1.5 text-brand-accent hover:text-brand-accentHover transition-all text-sm md:text-base font-bold self-start md:self-center"
                           >
-                            <MapPinIcon />
-                            <span>מיקום על המפה</span>
+                            <span className="text-xl">📍</span>
+                            <span className="underline underline-offset-4 decoration-brand-accent/30 hover:decoration-brand-accent">מיקום על המפה</span>
                           </button>
                         </div>
                         <div className="w-20 h-1.5 bg-brand-accent mt-4 rounded-full"></div>
