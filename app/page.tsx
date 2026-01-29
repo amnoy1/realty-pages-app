@@ -183,7 +183,12 @@ const HomePage: React.FC = () => {
             updated.images.map(img => img.startsWith('data:') ? uploadFile(img, `properties/${updated.id}/img_${Date.now()}.jpg`) : img)
         );
         await updateDoc(docRef, { ...updated, images: imageUrls, lastUpdatedAt: Date.now() });
-        setCurrentView('dashboard');
+        
+        // Only navigate back if we ARE NOT in the "Sold" success flow.
+        // We detect this by checking if the component itself wants to handle the success state.
+        if (!updated.isSold) {
+            setCurrentView('dashboard');
+        }
     } catch (err) { alert("שגיאה בעדכון"); }
     finally { setIsSaving(false); }
   };

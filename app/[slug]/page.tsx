@@ -7,17 +7,24 @@ import type { PropertyDetails } from '../../types';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 
+// This is crucial: it tells Next.js not to cache this page statically
+// ensuring that every time a social crawler (FB/WhatsApp) hits the link,
+// it gets the absolute latest data from Firestore.
+export const revalidate = 0;
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: {
     slug: string;
   };
 }
 
-const getPropertyDetails = cache(async (slug: string): Promise<PropertyDetails | null> => {
+const getPropertyDetails = async (slug: string): Promise<PropertyDetails | null> => {
   if (!slug) return null;
   
   try {
     const decodedSlug = decodeURIComponent(slug);
+    // Extracting the 20-character Firestore ID from the end of the slug
     const idMatch = decodedSlug.match(/([a-zA-Z0-9]{20})$/);
     const id = idMatch ? idMatch[0] : null;
 
@@ -34,35 +41,44 @@ const getPropertyDetails = cache(async (slug: string): Promise<PropertyDetails |
     console.error("[PropertyPage] Fetch error:", err);
     return null;
   }
-});
+};
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const details = await getPropertyDetails(params.slug);
   
   if (!details) {
-    return { title: 'הנכס לא נמצא | מחולל דפי נחיתה' };
+    return { title: 'הנכס לא נמצא | Realty-Pages' };
   }
 
-  const seoDescription = details.enhancedDescription?.property 
-    ? details.enhancedDescription.property.substring(0, 160) 
-    : details.generatedTitle;
+  const isSold = details.isSold === true;
+  const baseTitle = details.generatedTitle || details.address;
+  
+  // Dynamic Title for Social Sharing
+  const title = isSold ? `נמכר! 🏠 ${baseTitle}` : baseTitle;
+
+  // Dynamic Description for Social Sharing
+  const seoDescription = isSold 
+    ? `סגירת עסקה מוצלחת! הנכס ב-${details.address} נמכר. מחפשים למכור את שלכם? צרו קשר עם ${details.agentName}.`
+    : (details.enhancedDescription?.property 
+        ? details.enhancedDescription.property.substring(0, 160) 
+        : details.generatedTitle);
 
   const imageUrl = details.images?.[0] || '';
 
   return {
-    title: details.generatedTitle,
+    title: title,
     description: seoDescription,
     openGraph: {
-      title: details.generatedTitle,
+      title: title,
       description: seoDescription,
-      url: `https://${process.env.NEXT_PUBLIC_VERCEL_URL || 'your-domain.com'}/${params.slug}`,
-      siteName: 'מחולל דפי נחיתה לנדל"ן',
+      url: `https://realty-pages.com/${params.slug}`,
+      siteName: 'Realty-Pages | דפי נחיתה לנדל"ן',
       images: [
         {
           url: imageUrl,
           width: 1200,
           height: 630,
-          alt: details.address,
+          alt: title,
         },
       ],
       locale: 'he_IL',
@@ -70,7 +86,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: 'summary_large_image',
-      title: details.generatedTitle,
+      title: title,
       description: seoDescription,
       images: [imageUrl],
     },
