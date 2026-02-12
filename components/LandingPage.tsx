@@ -223,7 +223,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         )}
 
         <div className={`absolute bottom-8 right-0 left-0 px-4 md:px-16 z-20 animate-slide-up ${details.isSold ? 'block' : 'hidden md:block'}`}>
-            <div className="bg-black/40 backdrop-blur-xl p-6 md:p-10 rounded-[1.5rem] md:rounded-[2.5rem] border border-white/10 shadow-2xl max-w-4xl">
+            <div className="bg-black/40 backdrop-blur-xl p-6 md:p-10 rounded-[1.5rem] md:rounded-[2.5rem] border border-white/10 shadow-2xl max-w-2xl">
                 <div className="text-lg font-bold text-slate-300 mb-1 uppercase tracking-wide opacity-90 font-sans">
                     {propertyTypeLabel}
                 </div>
