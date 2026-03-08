@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { db } from '../lib/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import type { PropertyDetails, UserProfile, Lead } from '../types';
 
 type AdminTab = 'agents' | 'properties' | 'leads';
@@ -21,6 +21,43 @@ export const AdminDashboard: React.FC = () => {
   const isLeadNew = (timestamp: number) => {
     const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
     return timestamp >= oneDayAgo;
+  };
+
+  const normalizeEmails = async () => {
+    if (!db) return;
+    if (!confirm("פעולה זו תמיר את כל כתובות האימייל של הלידים לאותיות קטנות. האם להמשיך?")) return;
+    
+    setLoading(true);
+    try {
+      const snap = await getDocs(collection(db, 'leads'));
+      let updatedCount = 0;
+      
+      const updates = snap.docs.map(async (d) => {
+        const leadData = d.data();
+        if (leadData.email && leadData.email !== leadData.email.toLowerCase()) {
+          await updateDoc(doc(db!, 'leads', d.id), { 
+            email: leadData.email.toLowerCase() 
+          });
+          return 1;
+        }
+        return 0;
+      });
+
+      const results = await Promise.all(updates);
+      updatedCount = results.reduce((a, b) => a + b, 0);
+
+      if (updatedCount > 0) {
+        alert(`עודכנו ${updatedCount} לידים בהצלחה.`);
+        loadData();
+      } else {
+        alert("כל הלידים כבר תקינים (אותיות קטנות).");
+      }
+    } catch (err: any) {
+      console.error(err);
+      alert("שגיאה בעדכון הלידים: " + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const loadData = async () => {
@@ -79,9 +116,15 @@ export const AdminDashboard: React.FC = () => {
     <div className="container mx-auto px-4 py-8 animate-fade-in" dir="rtl">
       <div className="flex justify-between items-center mb-10">
         <h1 className="text-3xl font-black text-white font-sans">ניהול מערכת</h1>
-        <button onClick={loadData} className="bg-slate-800 text-white p-3 rounded-xl hover:bg-slate-700 transition-all border border-slate-700">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-        </button>
+        <div className="flex gap-2">
+          <button onClick={normalizeEmails} className="bg-red-500/10 text-red-400 px-4 py-2 rounded-xl hover:bg-red-500/20 transition-all border border-red-500/20 text-xs font-bold flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+            תקן נתונים (Lower Case)
+          </button>
+          <button onClick={loadData} className="bg-slate-800 text-white p-3 rounded-xl hover:bg-slate-700 transition-all border border-slate-700">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </button>
+        </div>
       </div>
       
       {/* Tab Cards */}

@@ -24,7 +24,9 @@ export default function FinishSignUp() {
         if (email) {
           try {
             setStatus('מבצע כניסה...');
-            await signInWithEmailLink(auth, email, window.location.href);
+            // Normalize email to lowercase to ensure consistency with stored data and auth rules
+            const normalizedEmail = email.toLowerCase().trim();
+            await signInWithEmailLink(auth, normalizedEmail, window.location.href);
             window.localStorage.removeItem('emailForSignIn');
             setStatus('הכניסה הצליחה! מעביר לאזור האישי...');
             

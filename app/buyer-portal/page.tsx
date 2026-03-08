@@ -44,10 +44,24 @@ export default function BuyerPortal() {
   const fetchLeads = async (email: string | null) => {
     if (!db || !email) return;
     try {
-      // Query leads by email
+      // Generate email variations to handle case-sensitivity issues with old data
+      const lowerEmail = email.toLowerCase();
+      const parts = lowerEmail.split('@');
+      let capitalizedEmail = lowerEmail;
+      if (parts.length === 2) {
+        capitalizedEmail = parts[0].charAt(0).toUpperCase() + parts[0].slice(1) + '@' + parts[1];
+      }
+      const upperEmail = lowerEmail.toUpperCase();
+      
+      // Create unique set of emails to query
+      const emailVariations = Array.from(new Set([lowerEmail, capitalizedEmail, upperEmail]));
+      
+      console.log("Fetching leads for emails:", emailVariations);
+
+      // Query leads by email variations
       const q = query(
         collection(db, 'leads'), 
-        where('email', '==', email)
+        where('email', 'in', emailVariations)
       );
       
       const querySnapshot = await getDocs(q);
