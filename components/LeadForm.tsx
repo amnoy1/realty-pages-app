@@ -41,23 +41,30 @@ export const LeadForm: React.FC<LeadFormProps> = ({
       if (db) {
         await addDoc(collection(db, 'leads'), {
           propertyId: propertyId || 'pending_save',
-          propertyTitle: propertyTitle,
+          propertyTitle: propertyTitle || 'Untitled Property',
           ownerId: ownerId || 'unknown',
-          fullName: fullName,
-          phone: phone,
-          email: email,
+          fullName: fullName || 'Anonymous',
+          phone: phone || '',
+          email: email || '',
           createdAt: Date.now(),
           source: 'landing_page_form'
         });
         console.log("Lead saved successfully to DB");
       }
+    } catch (dbErr: any) {
+      console.error("Error saving lead to Firestore:", dbErr);
+      setError('שגיאה בשמירת הליד: ' + (dbErr.message || dbErr.code || 'שגיאה לא ידועה'));
+      setIsSubmitting(false);
+      return;
+    }
 
+    try {
       // 2. Send Sign-In Link
       if (auth) {
         const actionCodeSettings = {
           // URL you want to redirect back to. The domain (www.example.com) for this
           // URL must be in the authorized domains list in the Firebase Console.
-          url: `${window.location.origin}/finish-sign-up?propertyId=${propertyId}`,
+          url: `${window.location.origin}/finish-sign-up?propertyId=${propertyId || ''}`,
           handleCodeInApp: true,
         };
 
@@ -65,15 +72,19 @@ export const LeadForm: React.FC<LeadFormProps> = ({
         window.localStorage.setItem('emailForSignIn', email);
         console.log("Sign-in email sent");
       }
-
-    } catch (dbErr: any) {
-      console.warn("Error processing lead:", dbErr);
-      // Even if auth fails (e.g. domain not authorized), we might have saved the lead.
-      // We'll show a generic success or specific error if needed.
-      if (dbErr.code === 'auth/unauthorized-continue-uri') {
-          setError('הדומיין אינו מאושר לשליחת מיילים. אנא פנה למנהל המערכת.');
+    } catch (authErr: any) {
+      console.warn("Error sending sign-in link:", authErr);
+      
+      // Lead was saved, but email failed. We should probably still show success for the lead, 
+      // but warn about the email.
+      // However, for now, let's show the specific error to debug.
+      
+      if (authErr.code === 'auth/unauthorized-continue-uri') {
+          setError('הליד נשמר, אך הדומיין אינו מאושר לשליחת מיילים (Auth).');
+      } else if (authErr.code === 'auth/operation-not-allowed') {
+          setError('הליד נשמר, אך שליחת מיילים לא מופעלת בפרויקט (Email Link Sign-in).');
       } else {
-          setError('אירעה שגיאה בשליחת הפרטים. נא לנסות שוב מאוחר יותר.');
+          setError('הליד נשמר, אך אירעה שגיאה בשליחת המייל: ' + (authErr.message || authErr.code));
       }
       setIsSubmitting(false);
       return;
