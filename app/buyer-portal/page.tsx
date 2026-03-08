@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { db, auth, onAuthStateChanged, signOut } from '../../lib/firebase';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebase/firestore';
 import type { Lead } from '../../types';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface BuyerLead extends Lead {
   propertyDetails?: any; // We'll fetch property details too
@@ -13,6 +14,7 @@ interface BuyerLead extends Lead {
 export default function BuyerPortal() {
   const [user, setUser] = useState<any>(null);
   const [leads, setLeads] = useState<BuyerLead[]>([]);
+  const [agentProfile, setAgentProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -37,11 +39,6 @@ export default function BuyerPortal() {
       const q = query(
         collection(db, 'leads'), 
         where('email', '==', email)
-        // Note: orderBy requires an index if used with where. 
-        // We'll sort in memory to avoid index requirement for now if possible, 
-        // or just try to use it if the index exists. 
-        // Given we just created the collection, index might not exist.
-        // Let's fetch then sort.
       );
       
       const querySnapshot = await getDocs(q);
@@ -51,6 +48,16 @@ export default function BuyerPortal() {
       leadsData.sort((a, b) => b.createdAt - a.createdAt);
 
       setLeads(leadsData);
+
+      // Fetch agent profile from the most recent lead
+      if (leadsData.length > 0 && leadsData[0].ownerId) {
+        const agentDocRef = doc(db, 'users', leadsData[0].ownerId);
+        const agentDocSnap = await getDoc(agentDocRef);
+        if (agentDocSnap.exists()) {
+          setAgentProfile(agentDocSnap.data());
+        }
+      }
+
     } catch (err) {
       console.error("Error fetching leads:", err);
     } finally {
@@ -64,6 +71,16 @@ export default function BuyerPortal() {
       router.push('/');
     }
   };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'בוקר טוב';
+    if (hour >= 12 && hour < 18) return 'צהריים טובים';
+    if (hour >= 18 && hour < 22) return 'ערב טוב';
+    return 'לילה טוב';
+  };
+
+  const clientName = leads.length > 0 ? leads[0].fullName : (user?.displayName || 'לקוח יקר');
 
   if (loading) {
     return (
@@ -88,10 +105,32 @@ export default function BuyerPortal() {
     <div className="min-h-screen bg-slate-50 font-sans" dir="rtl">
       <header className="bg-white shadow-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-slate-800">הנכסים שלי</h1>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-slate-500 hidden sm:inline">{user.email}</span>
-            <button onClick={handleLogout} className="text-sm text-red-500 hover:text-red-700 font-bold">יציאה</button>
+             {agentProfile?.photoURL && (
+                <div className="relative h-12 w-12 sm:h-14 sm:w-14 rounded-full overflow-hidden border border-slate-100 shadow-sm">
+                  <Image 
+                    src={agentProfile.photoURL} 
+                    alt="Agency Logo" 
+                    fill
+                    className="object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+             )}
+             <div>
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-800">
+                  {getGreeting()}, {clientName}
+                </h1>
+                {agentProfile?.displayName && (
+                  <p className="text-xs text-slate-500">לקוח של {agentProfile.displayName}</p>
+                )}
+             </div>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <button onClick={handleLogout} className="text-sm text-red-500 hover:text-red-700 font-bold bg-red-50 px-4 py-2 rounded-lg transition-colors">
+              יציאה
+            </button>
           </div>
         </div>
       </header>
