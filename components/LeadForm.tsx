@@ -40,6 +40,12 @@ export const LeadForm: React.FC<LeadFormProps> = ({
       // 1. Save Lead to Firestore
       const normalizedEmail = email.toLowerCase().trim();
       
+      // Check if user is already logged in and email matches
+      let uid = null;
+      if (auth?.currentUser && auth.currentUser.email?.toLowerCase() === normalizedEmail) {
+        uid = auth.currentUser.uid;
+      }
+
       if (db) {
         await addDoc(collection(db, 'leads'), {
           propertyId: propertyId || 'pending_save',
@@ -48,6 +54,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
           fullName: fullName || 'Anonymous',
           phone: phone || '',
           email: normalizedEmail,
+          uid: uid, // Save UID if available
           createdAt: Date.now(),
           source: 'landing_page_form'
         });

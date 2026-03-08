@@ -23,6 +23,7 @@ export default function BuyerPortal() {
   const [isSendingLink, setIsSendingLink] = useState(false);
   const [linkSent, setLinkSent] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [fetchError, setFetchError] = useState('');
 
   const router = useRouter();
 
@@ -43,25 +44,12 @@ export default function BuyerPortal() {
 
   const fetchLeads = async (email: string | null) => {
     if (!db || !email) return;
+    setFetchError('');
     try {
-      // Generate email variations to handle case-sensitivity issues with old data
-      const lowerEmail = email.toLowerCase();
-      const parts = lowerEmail.split('@');
-      let capitalizedEmail = lowerEmail;
-      if (parts.length === 2) {
-        capitalizedEmail = parts[0].charAt(0).toUpperCase() + parts[0].slice(1) + '@' + parts[1];
-      }
-      const upperEmail = lowerEmail.toUpperCase();
-      
-      // Create unique set of emails to query
-      const emailVariations = Array.from(new Set([lowerEmail, capitalizedEmail, upperEmail]));
-      
-      console.log("Fetching leads for emails:", emailVariations);
-
-      // Query leads by email variations
+      // Query leads by email
       const q = query(
         collection(db, 'leads'), 
-        where('email', 'in', emailVariations)
+        where('email', '==', email)
       );
       
       const querySnapshot = await getDocs(q);
@@ -81,8 +69,9 @@ export default function BuyerPortal() {
         }
       }
 
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error fetching leads:", err);
+      setFetchError(err.message || 'Error fetching leads');
     } finally {
       setLoading(false);
     }
@@ -236,6 +225,11 @@ export default function BuyerPortal() {
             <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
               <p className="text-xl text-slate-400 font-medium">עדיין לא הבעת עניין בנכסים.</p>
               <p className="text-sm text-slate-300 mt-2" dir="ltr">Connected as: {user?.email}</p>
+              {fetchError && (
+                <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-xl text-sm font-bold" dir="ltr">
+                  Error: {fetchError}
+                </div>
+              )}
             </div>
           ) : (
             leads.map((lead) => (
