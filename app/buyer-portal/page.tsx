@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { db, auth, onAuthStateChanged, signOut } from '../../lib/firebase';
+import { db, auth, onAuthStateChanged, signOut, sendSignInLinkToEmail } from '../../lib/firebase';
 import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebase/firestore';
 import type { Lead } from '../../types';
 import { useRouter } from 'next/navigation';
@@ -16,6 +16,14 @@ export default function BuyerPortal() {
   const [leads, setLeads] = useState<BuyerLead[]>([]);
   const [agentProfile, setAgentProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  
+  // Login form state
+  const [loginEmail, setLoginEmail] = useState('');
+  const [isSendingLink, setIsSendingLink] = useState(false);
+  const [linkSent, setLinkSent] = useState(false);
+  const [loginError, setLoginError] = useState('');
+
   const router = useRouter();
 
   useEffect(() => {
@@ -26,6 +34,7 @@ export default function BuyerPortal() {
         fetchLeads(currentUser.email);
       } else {
         // Not logged in
+        setUser(null);
         setLoading(false);
       }
     });
@@ -67,8 +76,35 @@ export default function BuyerPortal() {
 
   const handleLogout = async () => {
     if (auth) {
+      setIsLoggingOut(true);
       await signOut(auth);
       router.push('/');
+    }
+  };
+
+  const handleSendLoginLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!loginEmail) return;
+    
+    setIsSendingLink(true);
+    setLoginError('');
+
+    try {
+      if (auth) {
+        const actionCodeSettings = {
+          url: `${window.location.origin}/finish-sign-up`,
+          handleCodeInApp: true,
+        };
+
+        await sendSignInLinkToEmail(auth, loginEmail, actionCodeSettings);
+        window.localStorage.setItem('emailForSignIn', loginEmail);
+        setLinkSent(true);
+      }
+    } catch (err: any) {
+      console.error("Error sending login link:", err);
+      setLoginError('שגיאה בשליחת הקישור: ' + (err.message || 'נסה שנית מאוחר יותר'));
+    } finally {
+      setIsSendingLink(false);
     }
   };
 
@@ -82,7 +118,7 @@ export default function BuyerPortal() {
 
   const clientName = leads.length > 0 ? leads[0].fullName : (user?.displayName || 'לקוח יקר');
 
-  if (loading) {
+  if (loading || isLoggingOut) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-brand-accent border-t-transparent"></div>
@@ -93,10 +129,53 @@ export default function BuyerPortal() {
   if (!user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4 text-center" dir="rtl">
-        <h1 className="text-3xl font-bold text-slate-800 mb-4">אזור אישי לקונים</h1>
-        <p className="text-slate-600 mb-8">אנא התחבר באמצעות הקישור שנשלח אליך למייל.</p>
-        <p className="text-sm text-slate-400">אם הגעת לכאן בטעות, חזור לדף הבית.</p>
-        <a href="/" className="mt-4 text-brand-accent font-bold hover:underline">חזרה לדף הבית</a>
+        <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full border border-slate-100">
+          <h1 className="text-3xl font-bold text-slate-800 mb-2">אזור אישי לקונים</h1>
+          <p className="text-slate-500 mb-8">התחבר כדי לצפות בנכסים ששמרת ובסטטוס הפניות שלך</p>
+          
+          {linkSent ? (
+            <div className="bg-green-50 p-6 rounded-2xl border border-green-100 animate-fade-in">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600 text-2xl">✓</div>
+              <h3 className="font-bold text-green-800 text-lg mb-2">הקישור נשלח בהצלחה!</h3>
+              <p className="text-green-700 text-sm">בדוק את תיבת המייל שלך ({loginEmail}) ולחץ על הקישור כדי להיכנס.</p>
+              <button 
+                onClick={() => setLinkSent(false)} 
+                className="mt-4 text-sm text-green-600 font-bold hover:underline"
+              >
+                לא קיבלת? נסה שוב
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSendLoginLink} className="space-y-4">
+              <div>
+                <label htmlFor="email" className="block text-sm font-bold text-slate-700 mb-1 text-right">כתובת אימייל</label>
+                <input
+                  type="email"
+                  id="email"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-brand-accent outline-none transition-all text-right"
+                  placeholder="name@example.com"
+                  required
+                />
+              </div>
+              
+              {loginError && <p className="text-red-500 text-sm font-bold">{loginError}</p>}
+              
+              <button
+                type="submit"
+                disabled={isSendingLink}
+                className="w-full bg-brand-accent hover:bg-brand-accentHover text-white py-3 px-6 rounded-xl font-bold shadow-lg transition-all disabled:opacity-70 flex items-center justify-center gap-2"
+              >
+                {isSendingLink ? 'שולח...' : 'שלח לי קישור כניסה'}
+              </button>
+            </form>
+          )}
+          
+          <div className="mt-8 pt-6 border-t border-slate-100">
+            <a href="/" className="text-slate-400 hover:text-brand-accent text-sm font-medium transition-colors">חזרה לדף הבית</a>
+          </div>
+        </div>
       </div>
     );
   }
