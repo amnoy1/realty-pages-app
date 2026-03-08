@@ -38,6 +38,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({
 
     try {
       // 1. Save Lead to Firestore
+      const normalizedEmail = email.toLowerCase().trim();
+      
       if (db) {
         await addDoc(collection(db, 'leads'), {
           propertyId: propertyId || 'pending_save',
@@ -45,7 +47,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
           ownerId: ownerId || 'unknown',
           fullName: fullName || 'Anonymous',
           phone: phone || '',
-          email: email || '',
+          email: normalizedEmail,
           createdAt: Date.now(),
           source: 'landing_page_form'
         });

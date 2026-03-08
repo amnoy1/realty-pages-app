@@ -31,7 +31,7 @@ export default function BuyerPortal() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        fetchLeads(currentUser.email);
+        fetchLeads(currentUser.email?.toLowerCase() || null);
       } else {
         // Not logged in
         setUser(null);
@@ -86,6 +86,8 @@ export default function BuyerPortal() {
     e.preventDefault();
     if (!loginEmail) return;
     
+    const normalizedEmail = loginEmail.toLowerCase().trim();
+    
     setIsSendingLink(true);
     setLoginError('');
 
@@ -96,8 +98,8 @@ export default function BuyerPortal() {
           handleCodeInApp: true,
         };
 
-        await sendSignInLinkToEmail(auth, loginEmail, actionCodeSettings);
-        window.localStorage.setItem('emailForSignIn', loginEmail);
+        await sendSignInLinkToEmail(auth, normalizedEmail, actionCodeSettings);
+        window.localStorage.setItem('emailForSignIn', normalizedEmail);
         setLinkSent(true);
       }
     } catch (err: any) {
@@ -219,6 +221,7 @@ export default function BuyerPortal() {
           {leads.length === 0 ? (
             <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
               <p className="text-xl text-slate-400 font-medium">עדיין לא הבעת עניין בנכסים.</p>
+              <p className="text-sm text-slate-300 mt-2" dir="ltr">Connected as: {user?.email}</p>
             </div>
           ) : (
             leads.map((lead) => (
