@@ -50,7 +50,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
     }
   };
 
-  useEffect(() => { fetchData(); }, [userId]);
+  useEffect(() => { fetchData(); }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleTabChange = (tab: 'properties' | 'leads') => {
     setActiveTab(tab);

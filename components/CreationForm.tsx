@@ -111,7 +111,7 @@ export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => v
       <div className="w-full max-w-6xl z-10 animate-fade-in mb-20">
         <div className="text-center mb-12">
             <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-6 tracking-tight drop-shadow-lg">
-                מחולל <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-yellow-400">דפי נחיתה</span> לנדל"ן
+                מחולל <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-yellow-400">דפי נחיתה</span> לנדל&quot;ן
             </h1>
             <p className="text-xl text-slate-300 max-w-3xl mx-auto font-light leading-relaxed">
                 הפכו נתונים יבשים לדפי נחיתה יוקרתיים שמוכרים נכסים.
@@ -296,7 +296,7 @@ export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => v
 
       <footer className="w-full py-12 border-t border-slate-800 bg-slate-900/50 text-slate-500 text-center z-10">
         <div className="container mx-auto px-4 flex flex-col items-center gap-4">
-            <p className="text-xs font-sans">© {new Date().getFullYear()} מחולל דפי נחיתה לנדל"ן - Realty-Pages.com</p>
+            <p className="text-xs font-sans">© {new Date().getFullYear()} מחולל דפי נחיתה לנדל&quot;ן - Realty-Pages.com</p>
             <div className="flex gap-4 text-xs font-bold">
                 <a href="/privacy" className="hover:text-brand-accent transition-colors">מדיניות פרטיות</a>
                 <span className="opacity-20">|</span>

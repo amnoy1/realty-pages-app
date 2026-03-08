@@ -122,7 +122,7 @@ export const AdminDashboard: React.FC = () => {
                                     <tr key={u.uid} className="hover:bg-white/5 transition-colors group">
                                         <td className="p-5 flex items-center gap-3">
                                             <div className="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center font-bold text-white border border-slate-600 overflow-hidden">
-                                                {u.photoURL ? <img src={u.photoURL} className="w-full h-full object-cover" /> : (u.displayName?.charAt(0))}
+                                                {u.photoURL ? <img src={u.photoURL} alt={u.displayName || 'Agent'} className="w-full h-full object-cover" /> : (u.displayName?.charAt(0))}
                                             </div>
                                             <div className="flex flex-col">
                                                 <span className="font-bold text-white group-hover:text-brand-accent transition-colors">{u.displayName}</span>
@@ -207,6 +207,7 @@ export const AdminDashboard: React.FC = () => {
                                 <th className="p-5">סטטוס</th>
                                 <th className="p-5">תאריך</th>
                                 <th className="p-5">שם הלקוח</th>
+                                <th className="p-5">אימייל</th>
                                 <th className="p-5">טלפון</th>
                                 <th className="p-5">סוכן יעד</th>
                                 <th className="p-5">נכס</th>
@@ -230,6 +231,7 @@ export const AdminDashboard: React.FC = () => {
                                             {new Date(lead.createdAt).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}
                                         </td>
                                         <td className="p-5 text-white font-bold">{lead.fullName}</td>
+                                        <td className="p-5 text-slate-400 text-xs">{lead.email}</td>
                                         <td className="p-5 text-brand-accent font-bold">{lead.phone}</td>
                                         <td className="p-5 text-slate-300 text-sm">{getAgentName(lead.ownerId)}</td>
                                         <td className="p-5 text-slate-500 text-xs truncate max-w-[150px]">{getPropertyAddress(lead.propertyId)}</td>
@@ -250,7 +252,7 @@ export const AdminDashboard: React.FC = () => {
                   <div className="p-8 border-b border-slate-800 flex justify-between items-center sticky top-0 bg-slate-900 z-10">
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-2xl bg-brand-accent flex items-center justify-center text-white text-xl font-black">
-                            {selectedAgent.photoURL ? <img src={selectedAgent.photoURL} className="w-full h-full object-cover rounded-2xl" /> : selectedAgent.displayName?.charAt(0)}
+                            {selectedAgent.photoURL ? <img src={selectedAgent.photoURL} alt={selectedAgent.displayName || 'Agent'} className="w-full h-full object-cover rounded-2xl" /> : selectedAgent.displayName?.charAt(0)}
                         </div>
                         <h2 className="text-2xl font-black text-white font-sans">{selectedAgent.displayName} - דוח פעילות</h2>
                       </div>

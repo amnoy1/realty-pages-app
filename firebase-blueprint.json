@@ -1,0 +1,93 @@
+{
+  "entities": {
+    "landingPages": {
+      "title": "Landing Page",
+      "description": "Represents a property landing page created by an agent.",
+      "type": "object",
+      "properties": {
+        "address": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "string" },
+        "agentName": { "type": "string" },
+        "agentEmail": { "type": "string" },
+        "agentWhatsApp": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "logo": { "type": "string" },
+        "targetAudience": { "type": "array", "items": { "type": "string" } },
+        "userId": { "type": "string", "description": "UID of the agent who owns this page" },
+        "userEmail": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "generatedTitle": { "type": "string" },
+        "propertyType": { "type": "string" },
+        "enhancedDescription": {
+          "type": "object",
+          "properties": {
+            "area": { "type": "string" },
+            "property": { "type": "string" },
+            "cta": { "type": "string" }
+          }
+        },
+        "features": {
+          "type": "object",
+          "properties": {
+            "apartmentArea": { "type": "string" },
+            "lotArea": { "type": "string" },
+            "balconyArea": { "type": "string" },
+            "rooms": { "type": "string" },
+            "floor": { "type": "string" },
+            "safeRoom": { "type": "string" },
+            "parking": { "type": "string" },
+            "storage": { "type": "string" },
+            "airDirections": { "type": "string" },
+            "elevator": { "type": "string" }
+          }
+        },
+        "isSold": { "type": "boolean" }
+      }
+    },
+    "leads": {
+      "title": "Lead",
+      "description": "A potential buyer who expressed interest in a property.",
+      "type": "object",
+      "properties": {
+        "propertyId": { "type": "string" },
+        "propertyTitle": { "type": "string" },
+        "ownerId": { "type": "string", "description": "UID of the agent who owns the property" },
+        "fullName": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "source": { "type": "string" }
+      },
+      "required": ["propertyId", "fullName", "phone", "email"]
+    },
+    "users": {
+      "title": "User",
+      "description": "System user (Agent or Buyer)",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "lastLogin": { "type": "number" },
+        "createdAt": { "type": "number" }
+      }
+    }
+  },
+  "firestore": {
+    "landingPages/{landingPageId}": {
+      "schema": "landingPages",
+      "description": "Collection of property landing pages"
+    },
+    "leads/{leadId}": {
+      "schema": "leads",
+      "description": "Collection of leads"
+    },
+    "users/{userId}": {
+      "schema": "users",
+      "description": "Collection of users"
+    }
+  }
+}

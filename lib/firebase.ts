@@ -7,6 +7,9 @@ import {
   signInWithPopup, 
   signOut, 
   onAuthStateChanged, 
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink,
   Auth
 } from 'firebase/auth';
 
@@ -83,5 +86,5 @@ export const debugEnv: Record<string, string> = {
     hasApiKey: firebaseConfig?.apiKey ? 'Yes' : 'No'
 };
 
-export { db, storage, auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, initializationError };
+export { db, storage, auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, initializationError };
 export type { User } from 'firebase/auth';

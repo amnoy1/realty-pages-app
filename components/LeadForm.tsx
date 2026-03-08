@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { db } from '../lib/firebase';
+import { db, auth, sendSignInLinkToEmail } from '../lib/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 
 interface LeadFormProps {
@@ -22,21 +22,22 @@ export const LeadForm: React.FC<LeadFormProps> = ({
 }) => {
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !phone) {
-      setError('נא למלא שם וטלפון תקינים.');
+    if (!fullName || !phone || !email) {
+      setError('נא למלא שם, טלפון ואימייל תקינים.');
       return;
     }
     setError('');
     setIsSubmitting(true);
 
     try {
-      // ניסיון שמירה ל-Firestore (אוסף leads)
+      // 1. Save Lead to Firestore
       if (db) {
         await addDoc(collection(db, 'leads'), {
           propertyId: propertyId || 'pending_save',
@@ -44,14 +45,36 @@ export const LeadForm: React.FC<LeadFormProps> = ({
           ownerId: ownerId || 'unknown',
           fullName: fullName,
           phone: phone,
+          email: email,
           createdAt: Date.now(),
           source: 'landing_page_form'
         });
         console.log("Lead saved successfully to DB");
       }
-    } catch (dbErr) {
-      console.warn("Could not save lead to DB (check Firebase Rules):", dbErr);
-      setError('אירעה שגיאה בשליחת הפרטים. נא לנסות שוב מאוחר יותר.');
+
+      // 2. Send Sign-In Link
+      if (auth) {
+        const actionCodeSettings = {
+          // URL you want to redirect back to. The domain (www.example.com) for this
+          // URL must be in the authorized domains list in the Firebase Console.
+          url: `${window.location.origin}/finish-sign-up?propertyId=${propertyId}`,
+          handleCodeInApp: true,
+        };
+
+        await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+        window.localStorage.setItem('emailForSignIn', email);
+        console.log("Sign-in email sent");
+      }
+
+    } catch (dbErr: any) {
+      console.warn("Error processing lead:", dbErr);
+      // Even if auth fails (e.g. domain not authorized), we might have saved the lead.
+      // We'll show a generic success or specific error if needed.
+      if (dbErr.code === 'auth/unauthorized-continue-uri') {
+          setError('הדומיין אינו מאושר לשליחת מיילים. אנא פנה למנהל המערכת.');
+      } else {
+          setError('אירעה שגיאה בשליחת הפרטים. נא לנסות שוב מאוחר יותר.');
+      }
       setIsSubmitting(false);
       return;
     }
@@ -67,7 +90,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                 ✓
             </div>
             <h2 className="text-3xl font-bold text-slate-800 mb-3">תודה, {fullName}!</h2>
-            <p className="text-slate-600 text-lg mb-8 font-medium">הפרטים שלך הועברו לסוכן {agentName}. ניצור איתך קשר בהקדם לתיאום סיור.</p>
+            <p className="text-slate-600 text-lg mb-4 font-medium">הפרטים שלך הועברו לסוכן {agentName}.</p>
+            <p className="text-slate-600 text-lg mb-8 font-medium">שלחנו לך מייל עם קישור כניסה לאזור האישי שלך, שם תוכל לראות את הנכס הזה ונכסים נוספים.</p>
             <button onClick={() => setSubmitted(false)} className="w-full bg-slate-800 hover:bg-slate-700 text-white py-4 px-6 rounded-2xl transition-all font-bold shadow-lg">שלח פנייה נוספת</button>
         </div>
     );
@@ -101,6 +125,18 @@ export const LeadForm: React.FC<LeadFormProps> = ({
             placeholder="050-0000000"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-1">אימייל</label>
+          <input
+            type="email"
+            id="email"
+            className="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-brand-accent outline-none transition-all placeholder-slate-400 font-medium"
+            placeholder="your@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>

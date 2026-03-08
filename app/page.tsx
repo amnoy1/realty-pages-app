@@ -251,7 +251,7 @@ const HomePage: React.FC = () => {
               <div className="relative">
                  {!user && (
                      <div className="absolute inset-0 z-40 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
-                         <h2 className="text-3xl font-bold text-white mb-4">ניהול נכסי נדל"ן</h2>
+                         <h2 className="text-3xl font-bold text-white mb-4">ניהול נכסי נדל&quot;ן</h2>
                          <p className="text-slate-300 mb-6">התחבר כדי להתחיל ליצור דפי נחיתה מקצועיים</p>
                      </div>
                  )}

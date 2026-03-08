@@ -60,5 +60,7 @@ export interface Lead {
   ownerId: string;       // ה-UID של הסוכן (למי הליד שייך)
   fullName: string;
   phone: string;
+  email?: string;        // אימייל הליד (אופציונלי לתאימות לאחור, אך רצוי)
   createdAt: number;
+  source?: string;
 }

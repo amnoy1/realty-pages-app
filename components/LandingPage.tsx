@@ -372,7 +372,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                       <div className="w-24 h-24 bg-slate-100 rounded-full mx-auto mb-6 flex items-center justify-center text-slate-300 border-4 border-white shadow-md overflow-hidden">
                           {details.logo ? <img src={details.logo} className="w-full h-full object-contain p-2" /> : <UserIcon />}
                       </div>
-                      <p className="text-slate-500 mb-2 font-medium font-sans">הנכס מיוצג ע"י</p>
+                      <p className="text-slate-500 mb-2 font-medium font-sans">הנכס מיוצג ע&quot;י</p>
                       <h3 className="text-2xl font-bold text-slate-900 mb-4 font-sans">{details.agentName}</h3>
                       <div className="flex justify-center gap-3">
                            <a href={`https://wa.me/${details.agentWhatsApp}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebc57] text-white py-3 px-6 rounded-xl transition-colors font-bold font-sans shadow-md"><WhatsAppIcon/><span>וואטסאפ</span></a>

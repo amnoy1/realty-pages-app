@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Check if the user is the owner of the property associated with the lead
+    // This requires reading the property document, which costs a read.
+    // Alternatively, we trust the 'ownerId' field on the lead document if it was set correctly.
+    // We will trust 'ownerId' on the lead document for read access to avoid extra reads,
+    // but we must ensure 'ownerId' is set correctly on create.
+    function isLeadOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.ownerId;
+    }
+
+    function isLeadSelf() {
+      return isAuthenticated() && (
+        (resource.data.email == request.auth.token.email) ||
+        (resource.data.uid == request.auth.uid)
+      );
+    }
+
+    function isAdmin() {
+       return isAuthenticated() &&
+         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+           (request.auth.token.email == "amir@mango-realty.com" && request.auth.token.email_verified == true));
+    }
+    
+    // Validation helpers
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+    
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+    }
+
+    match /landingPages/{pageId} {
+      allow read: if true; // Publicly readable
+      allow create: if isAuthenticated(); // Any authenticated user (agent) can create
+      allow update: if isOwner(resource.data.userId) || isAdmin();
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+
+    match /leads/{leadId} {
+      // Allow creating a lead if it has required fields. Public access allowed for lead generation.
+      allow create: if hasRequiredFields(['propertyId', 'fullName', 'phone', 'email']) &&
+                       isValidEmail(request.resource.data.email);
+      
+      // Allow read if user is the agent (ownerId) or the lead themselves (by email) or admin
+      allow read: if isLeadOwner() || isLeadSelf() || isAdmin();
+      
+      // Allow update only by admin or maybe the agent (e.g. status update)
+      allow update: if isLeadOwner() || isAdmin();
+    }
+  }
+}
