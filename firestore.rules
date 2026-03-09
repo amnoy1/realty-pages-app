@@ -25,7 +25,7 @@ service cloud.firestore {
 
     function isLeadSelf() {
       return isAuthenticated() && (
-        (request.auth.token.email != null && resource.data.email.lower() == request.auth.token.email.lower()) ||
+        (request.auth.token.email != null && resource.data.email == request.auth.token.email) ||
         (resource.data.uid == request.auth.uid)
       );
     }
