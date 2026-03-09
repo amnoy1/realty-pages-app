@@ -30,7 +30,7 @@ export default function BuyerPortal() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        fetchLeads(currentUser.email?.toLowerCase() || null);
+        fetchLeads(currentUser);
       } else {
         // Not logged in
         setUser(null);
@@ -40,13 +40,17 @@ export default function BuyerPortal() {
     return () => unsubscribe();
   }, []);
 
-  const fetchLeads = async (email: string | null) => {
-    if (!db || !user) return;
+  const fetchLeads = async (currentUser: any) => {
+    if (!db || !currentUser) {
+      setLoading(false);
+      return;
+    }
+    
+    const email = currentUser.email?.toLowerCase() || null;
     setFetchError('');
     
     try {
       const queries = [];
-      const constraints = [];
       
       // Strategy 1: Query by Email (normalized)
       if (email) {
@@ -54,11 +58,11 @@ export default function BuyerPortal() {
       }
       
       // Strategy 2: Query by UID (if available)
-      if (user.uid) {
-        queries.push(getDocs(query(collection(db, 'leads'), where('uid', '==', user.uid))));
+      if (currentUser.uid) {
+        queries.push(getDocs(query(collection(db, 'leads'), where('uid', '==', currentUser.uid))));
       }
 
-      console.log(`Fetching leads for Email: ${email}, UID: ${user.uid}`);
+      console.log(`Fetching leads for Email: ${email}, UID: ${currentUser.uid}`);
 
       const results = await Promise.all(queries);
       const allDocs = results.flatMap(r => r.docs);
