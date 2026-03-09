@@ -44,7 +44,7 @@ export const AdminDashboard: React.FC = () => {
       });
 
       const results = await Promise.all(updates);
-      updatedCount = results.reduce((a, b) => a + b, 0);
+      updatedCount = results.reduce<number>((a, b) => a + b, 0);
 
       if (updatedCount > 0) {
         alert(`עודכנו ${updatedCount} לידים בהצלחה.`);
