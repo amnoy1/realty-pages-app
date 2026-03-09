@@ -43,17 +43,32 @@ export default function BuyerPortal() {
   }, []);
 
   const fetchLeads = async (email: string | null) => {
-    if (!db || !email) return;
+    if (!db || !user) return;
     setFetchError('');
+    
     try {
-      // Query leads by email
-      const q = query(
-        collection(db, 'leads'), 
-        where('email', '==', email)
-      );
+      const queries = [];
+      const constraints = [];
       
-      const querySnapshot = await getDocs(q);
-      const leadsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as BuyerLead));
+      // Strategy 1: Query by Email (normalized)
+      if (email) {
+        queries.push(getDocs(query(collection(db, 'leads'), where('email', '==', email))));
+      }
+      
+      // Strategy 2: Query by UID (if available)
+      if (user.uid) {
+        queries.push(getDocs(query(collection(db, 'leads'), where('uid', '==', user.uid))));
+      }
+
+      console.log(`Fetching leads for Email: ${email}, UID: ${user.uid}`);
+
+      const results = await Promise.all(queries);
+      const allDocs = results.flatMap(r => r.docs);
+      
+      // Deduplicate by ID
+      const uniqueDocs = new Map();
+      allDocs.forEach(d => uniqueDocs.set(d.id, { id: d.id, ...d.data() }));
+      const leadsData = Array.from(uniqueDocs.values()) as BuyerLead[];
       
       // Sort by createdAt desc
       leadsData.sort((a, b) => b.createdAt - a.createdAt);
@@ -224,7 +239,12 @@ export default function BuyerPortal() {
           {leads.length === 0 ? (
             <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
               <p className="text-xl text-slate-400 font-medium">עדיין לא הבעת עניין בנכסים.</p>
-              <p className="text-sm text-slate-300 mt-2" dir="ltr">Connected as: {user?.email}</p>
+              <div className="text-xs text-slate-300 mt-4 p-4 bg-slate-50 rounded-xl inline-block text-left" dir="ltr">
+                <p><strong>Debug Info:</strong></p>
+                <p>User Email: {user?.email}</p>
+                <p>Search Email: {user?.email?.toLowerCase()}</p>
+                <p>User UID: {user?.uid}</p>
+              </div>
               {fetchError && (
                 <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-xl text-sm font-bold" dir="ltr">
                   Error: {fetchError}
