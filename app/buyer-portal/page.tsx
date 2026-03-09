@@ -6,6 +6,7 @@ import { collection, query, where, getDocs, orderBy, doc, getDoc } from 'firebas
 import type { Lead } from '../../types';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { Bed, Square, Layers, Car } from 'lucide-react';
 
 interface BuyerLead extends Lead {
   propertyDetails?: any; // We'll fetch property details too
@@ -75,7 +76,21 @@ export default function BuyerPortal() {
       // Sort by createdAt desc
       leadsData.sort((a, b) => b.createdAt - a.createdAt);
 
-      setLeads(leadsData);
+      // Fetch property details for each lead
+      const leadsWithProperties = await Promise.all(leadsData.map(async (lead) => {
+        try {
+          const propertyDocRef = doc(db!, 'landingPages', lead.propertyId);
+          const propertyDocSnap = await getDoc(propertyDocRef);
+          if (propertyDocSnap.exists()) {
+            return { ...lead, propertyDetails: propertyDocSnap.data() };
+          }
+        } catch (e) {
+          console.error("Error fetching property details for lead", lead.id, e);
+        }
+        return lead;
+      }));
+
+      setLeads(leadsWithProperties);
 
       // Fetch agent profile from the most recent lead
       if (leadsData.length > 0 && leadsData[0].ownerId) {
@@ -225,21 +240,69 @@ export default function BuyerPortal() {
               )}
             </div>
           ) : (
-            leads.map((lead) => (
+            leads.map((lead) => {
+              const details = lead.propertyDetails;
+              const formattedPrice = details?.price ? details.price.replace(/[^\d,]/g, '') : '';
+              
+              return (
               <div key={lead.id} className="bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden hover:shadow-xl transition-shadow duration-300">
                 <div className="p-6 sm:p-8">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-slate-900 mb-1">{lead.propertyTitle || 'נכס ללא כותרת'}</h2>
+                      {details?.address ? (
+                        <>
+                          <h2 className="text-2xl font-black text-slate-900 mb-1">{details.address}</h2>
+                          <p className="text-lg font-bold text-slate-600 mb-2">{details.generatedTitle || lead.propertyTitle}</p>
+                        </>
+                      ) : (
+                        <h2 className="text-2xl font-bold text-slate-900 mb-2">{lead.propertyTitle || 'נכס ללא כותרת'}</h2>
+                      )}
                       <p className="text-slate-500 text-sm">פנית בתאריך: {new Date(lead.createdAt).toLocaleDateString('he-IL')}</p>
                     </div>
-                    <a 
-                      href={`/${lead.propertyId}`} 
-                      className="bg-brand-accent hover:bg-brand-accentHover text-white px-6 py-2.5 rounded-xl font-bold shadow-lg transition-all text-sm whitespace-nowrap"
-                    >
-                      צפה בנכס
-                    </a>
+                    
+                    <div className="flex flex-col items-start sm:items-end gap-3">
+                      {formattedPrice && (
+                        <div className="text-2xl font-black text-brand-accent">
+                          {formattedPrice} ₪
+                        </div>
+                      )}
+                      <a 
+                        href={`/${lead.propertyId}`} 
+                        className="bg-brand-accent hover:bg-brand-accentHover text-white px-6 py-2.5 rounded-xl font-bold shadow-lg transition-all text-sm whitespace-nowrap text-center"
+                      >
+                        צפה בנכס
+                      </a>
+                    </div>
                   </div>
+                  
+                  {details?.features && (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                      {details.features.rooms && (
+                        <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                          <Bed className="w-5 h-5 text-brand-accent shrink-0" />
+                          <span className="font-bold text-slate-700 text-sm">{details.features.rooms} חדרים</span>
+                        </div>
+                      )}
+                      {details.features.apartmentArea && (
+                        <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                          <Square className="w-5 h-5 text-brand-accent shrink-0" />
+                          <span className="font-bold text-slate-700 text-sm">{details.features.apartmentArea} מ&quot;ר</span>
+                        </div>
+                      )}
+                      {details.features.floor && (
+                        <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                          <Layers className="w-5 h-5 text-brand-accent shrink-0" />
+                          <span className="font-bold text-slate-700 text-sm">קומה {details.features.floor}</span>
+                        </div>
+                      )}
+                      {details.features.parking && (
+                        <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                          <Car className="w-5 h-5 text-brand-accent shrink-0" />
+                          <span className="font-bold text-slate-700 text-sm">{details.features.parking} חניות</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   
                   <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                     <p className="text-sm text-slate-600 font-medium mb-2">סטטוס הפנייה:</p>
@@ -250,7 +313,7 @@ export default function BuyerPortal() {
                   </div>
                 </div>
               </div>
-            ))
+            )})
           )}
         </div>
       </main>
