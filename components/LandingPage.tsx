@@ -61,8 +61,19 @@ const MapDropIcon = () => (
 
 const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>;
 
-const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: string }> = ({ icon, label, value }) => {
-  if (!value || typeof value !== 'string' || value.trim() === '' || value === 'null' || value === 'אין' || value === 'ללא' || value === 'לא צוין' || value === '0') return null;
+const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: string | null }> = ({ icon, label, value }) => {
+  if (
+    !value || 
+    typeof value !== 'string' || 
+    value.trim() === '' || 
+    value.toLowerCase() === 'null' || 
+    value.toLowerCase() === 'undefined' ||
+    value === 'אין' || 
+    value === 'ללא' || 
+    value === 'לא צוין' || 
+    value === '0' ||
+    value === '-'
+  ) return null;
   
   return (
     <div className="flex flex-col items-center justify-center text-center p-6 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 group hover:-translate-y-1">
@@ -76,7 +87,22 @@ const FeatureItem: React.FC<{ icon: React.ReactNode; label: string; value?: stri
 };
 
 const FeaturesSection: React.FC<{ features: PropertyFeatures }> = ({ features }) => {
-  const hasFeatures = Object.values(features).some(val => typeof val === 'string' && val.trim() !== '' && val !== 'null' && val !== 'אין' && val !== 'ללא' && val !== 'לא צוין' && val !== '0');
+  const isValueValid = (val: any) => {
+    if (!val || typeof val !== 'string') return false;
+    const v = val.trim().toLowerCase();
+    return !(
+      v === '' || 
+      v === 'null' || 
+      v === 'undefined' || 
+      v === 'אין' || 
+      v === 'ללא' || 
+      v === 'לא צוין' || 
+      v === '0' || 
+      v === '-'
+    );
+  };
+
+  const hasFeatures = Object.values(features).some(isValueValid);
   if (!hasFeatures) return null;
 
   return (
