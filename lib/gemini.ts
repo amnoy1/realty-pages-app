@@ -2,21 +2,21 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { PropertyFeatures, EnhancedDescription } from "../types";
 
-const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-
 export async function generatePropertyContent(
   originalDescription: string,
   address: string,
   targetAudience: string[] = []
 ) {
-  if (!API_KEY) {
+  const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+
+  if (!apiKey) {
     console.error("Gemini API Key is missing in environment variables.");
     throw new Error("מפתח ה-API של Gemini חסר. אנא הגדר את NEXT_PUBLIC_GEMINI_API_KEY בהגדרות המערכת.");
   }
 
   try {
-    const genAI = new GoogleGenAI({ apiKey: API_KEY });
-    const model = "gemini-3.1-pro-preview";
+    const genAI = new GoogleGenAI({ apiKey });
+    const model = "gemini-3-flash-preview";
 
     const prompt = `
       אתה מומחה לשיווק נדל"ן ישראלי. המטרה שלך היא להפוך תיאור נכס גולמי לדף נחיתה שיווקי, מרשים ומניע לפעולה.
