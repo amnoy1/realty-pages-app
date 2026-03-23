@@ -163,6 +163,9 @@ export const EditForm: React.FC<EditFormProps> = ({ property, onSave, onCancel, 
                     <label className={labelClasses}>תיאור הנכס</label>
                     <textarea name="enhancedDescription.property" rows={5} value={data.enhancedDescription.property} onChange={handleTextChange} className={inputClasses} />
 
+                    <label className={labelClasses}>יתרונות לקהל היעד</label>
+                    <textarea name="enhancedDescription.audienceBenefits" rows={4} value={data.enhancedDescription.audienceBenefits} onChange={handleTextChange} className={inputClasses} />
+
                     <label className={labelClasses}>קריאה לפעולה</label>
                     <input name="enhancedDescription.cta" value={data.enhancedDescription.cta} onChange={handleTextChange} className={inputClasses} />
                 </div>

@@ -27,6 +27,7 @@ export interface PropertyFeatures {
 export interface EnhancedDescription {
   area: string;
   property: string;
+  audienceBenefits: string;
   cta: string;
 }
 

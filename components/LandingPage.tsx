@@ -351,6 +351,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                       <div className="space-y-8 text-lg md:text-xl text-slate-600 leading-loose font-sans">
                           <div className="p-6 bg-slate-50 rounded-2xl border-r-4 border-brand-accent/30"><p className="font-medium text-slate-700 font-sans">{details.enhancedDescription.area}</p></div>
                           <div><p className="font-sans whitespace-pre-wrap">{details.enhancedDescription.property}</p></div>
+                          {details.enhancedDescription.audienceBenefits && (
+                            <div className="p-6 bg-brand-accent/5 rounded-2xl border-r-4 border-brand-accent/60 italic">
+                               <p className="font-sans text-slate-800">{details.enhancedDescription.audienceBenefits}</p>
+                            </div>
+                          )}
                           <div className="bg-brand-accent/5 p-6 rounded-2xl border border-brand-accent/10"><p className="font-bold text-slate-900 text-xl font-sans">{details.enhancedDescription.cta}</p></div>
                       </div>
                   </div>

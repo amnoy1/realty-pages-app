@@ -36,12 +36,13 @@ export async function POST(req: Request) {
       קהל יעד: ${targetAudience.join(", ")}
       
       עליך להחזיר אובייקט JSON הכולל:
-      1. title: כותרת שיווקית קצרה וקולעת (עד 10 מילים).
+      1. title: כותרת שיווקית קצרה וקולעת (עד 10 מילים) המותאמת לקהל היעד.
       2. propertyType: סוג הנכס (דירה, פנטהאוז, בית פרטי וכו').
-      3. description: אובייקט עם 3 חלקים:
+      3. description: אובייקט עם 4 חלקים:
          - area: תיאור מפורט, מקצועי ומרשים של האזור והשכונה (4-6 משפטים). הדגש את היתרונות שמצאת במחקר (נגישות, חינוך, מסחר, אוכלוסייה).
          - property: תיאור מפורט ומלהיב של הנכס עצמו (4-6 משפטים).
-         - cta: משפט הנעה לפעולה חזק.
+         - audienceBenefits: פסקה ממוקדת (3-4 משפטים) המסבירה בצורה מתוחכמת מדוע הנכס הזה הוא ההזדמנות המושלמת ספציפית עבור ${targetAudience.join(", ")}. התמקד ביתרונות שחשובים להם (תשואה למשקיעים, ביטחון למשפחות, יוקרה למשפרי דיור וכו').
+         - cta: משפט הנעה לפעולה חזק המותאם לקהל היעד.
       4. features: אובייקט עם מאפייני הנכס (שטח דירה, שטח מגרש, מרפסת, חדרים, קומה, ממ"ד, חניה, מחסן, כיווני אוויר, מעלית). השתמש בערכים מהתיאור הגולמי אם קיימים.
       
       החזר את התשובה בפורמט JSON בלבד, בעברית. אל תוסיף טקסט הסברי לפני או אחרי ה-JSON.
@@ -64,9 +65,10 @@ export async function POST(req: Request) {
               properties: {
                 area: { type: Type.STRING },
                 property: { type: Type.STRING },
+                audienceBenefits: { type: Type.STRING },
                 cta: { type: Type.STRING },
               },
-              required: ["area", "property", "cta"],
+              required: ["area", "property", "audienceBenefits", "cta"],
             },
             features: {
               type: Type.OBJECT,
