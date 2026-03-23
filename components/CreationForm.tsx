@@ -27,9 +27,33 @@ export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => v
   });
   const [images, setImages] = useState<string[]>([]);
   const [logo, setLogo] = useState<string | undefined>();
+  const [loadingMessage, setLoadingMessage] = useState("ה-AI מנתח את הנתונים...");
   
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
+
+  React.useEffect(() => {
+    if (!isLoading) {
+      setLoadingMessage("ה-AI מנתח את הנתונים...");
+      return;
+    }
+
+    const messages = [
+      "מבצע מחקר עומק מעמיק על השכונה, מוסדות החינוך והנגישות...",
+      "מתאים את עמוד הנחיתה לקהל היעד אותו הגדרת...",
+      "מנתח את מאפייני הנכס ומשדרג את התיאור השיווקי...",
+      "מעצב את דף הנחיתה היוקרתי שלך...",
+      "עוד רגע וזה מוכן..."
+    ];
+
+    let i = 0;
+    const interval = setInterval(() => {
+      i = (i + 1) % messages.length;
+      setLoadingMessage(messages[i]);
+    }, 3500);
+
+    return () => clearInterval(interval);
+  }, [isLoading]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -281,7 +305,7 @@ export const CreationForm: React.FC<{ onSubmit: (details: PropertyFormData) => v
                     {isLoading ? (
                         <>
                             <Spinner />
-                            <span>ה-AI מנתח ובונה את הדף עבור קהל היעד...</span>
+                            <span>{loadingMessage}</span>
                         </>
                     ) : (
                         <>
