@@ -16,7 +16,9 @@ import { AdminDashboard } from '../components/AdminDashboard';
 import { UserDashboard } from '../components/UserDashboard';
 import { EditForm } from '../components/EditForm';
 
-const ADMIN_EMAILS = ['amir@mango-realty.com']; 
+const ADMIN_EMAILS = ['amir@mango-realty.com', 'amir@in-real.estate']; 
+
+import { generatePropertyContent } from '../lib/gemini';
 
 const HomePage: React.FC = () => {
   const [propertyDetails, setPropertyDetails] = useState<PropertyDetails | null>(null);
@@ -94,16 +96,12 @@ const HomePage: React.FC = () => {
     if (!user) { alert("עליך להתחבר למערכת."); return; }
     setIsLoading(true);
     try {
-      const response = await fetch('/api/generate-content', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          originalDescription: formData.description, 
-          address: formData.address,
-          targetAudience: formData.targetAudience 
-        }),
-      });
-      const generatedData = await response.json();
+      const generatedData = await generatePropertyContent(
+        formData.description,
+        formData.address,
+        formData.targetAudience
+      );
+      
       setPropertyDetails({
         ...formData,
         userId: user.uid,
@@ -117,7 +115,7 @@ const HomePage: React.FC = () => {
       setCurrentView('preview');
     } catch (err: any) {
       console.error(err);
-      alert("שגיאה בייצור תוכן");
+      alert(err.message || "שגיאה בייצור תוכן");
     } finally { setIsLoading(false); }
   };
 

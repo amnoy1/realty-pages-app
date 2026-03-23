@@ -248,57 +248,68 @@ export default function BuyerPortal() {
               <div key={lead.id} className="bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden hover:shadow-xl transition-shadow duration-300">
                 <div className="p-6 sm:p-8">
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <div>
+                    <div className="flex-1">
                       {details?.address ? (
-                        <>
-                          <h2 className="text-2xl font-black text-slate-900 mb-1">{details.address}</h2>
-                          <p className="text-lg font-bold text-slate-600 mb-2">{details.generatedTitle || lead.propertyTitle}</p>
-                        </>
+                        <div className="mb-4">
+                          <h2 className="text-2xl font-black text-slate-900 leading-tight mb-1">
+                            {details.address}
+                          </h2>
+                          <p className="text-lg font-bold text-slate-500">
+                            {details.generatedTitle || lead.propertyTitle}
+                          </p>
+                        </div>
                       ) : (
                         <h2 className="text-2xl font-bold text-slate-900 mb-2">{lead.propertyTitle || 'נכס ללא כותרת'}</h2>
                       )}
-                      <p className="text-slate-500 text-sm">פנית בתאריך: {new Date(lead.createdAt).toLocaleDateString('he-IL')}</p>
+                      <div className="flex items-center gap-2 text-slate-400 text-sm mb-4">
+                        <span className="bg-slate-100 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">פנייה בתאריך</span>
+                        <span>{new Date(lead.createdAt).toLocaleDateString('he-IL')}</span>
+                      </div>
                     </div>
                     
-                    <div className="flex flex-col items-start sm:items-end gap-3">
+                    <div className="flex flex-col items-start sm:items-end gap-3 shrink-0">
                       {formattedPrice && (
-                        <div className="text-2xl font-black text-brand-accent">
+                        <div className="text-3xl font-black text-brand-accent bg-brand-accent/5 px-4 py-2 rounded-2xl border border-brand-accent/10">
                           {formattedPrice} ₪
                         </div>
                       )}
                       <a 
                         href={`/${lead.propertyId}`} 
-                        className="bg-brand-accent hover:bg-brand-accentHover text-white px-6 py-2.5 rounded-xl font-bold shadow-lg transition-all text-sm whitespace-nowrap text-center"
+                        className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-all text-center"
                       >
-                        צפה בנכס
+                        צפה בפרטים המלאים
                       </a>
                     </div>
                   </div>
                   
                   {details?.features && (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                       {details.features.rooms && (
-                        <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                          <Bed className="w-5 h-5 text-brand-accent shrink-0" />
-                          <span className="font-bold text-slate-700 text-sm">{details.features.rooms} חדרים</span>
+                        <div className="flex flex-col gap-1 bg-slate-50 p-4 rounded-2xl border border-slate-100 items-center text-center">
+                          <Bed className="w-6 h-6 text-brand-accent mb-1" />
+                          <span className="text-xs text-slate-400 font-medium">חדרים</span>
+                          <span className="font-black text-slate-800">{details.features.rooms}</span>
                         </div>
                       )}
                       {details.features.apartmentArea && (
-                        <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                          <Square className="w-5 h-5 text-brand-accent shrink-0" />
-                          <span className="font-bold text-slate-700 text-sm">{details.features.apartmentArea} מ&quot;ר</span>
+                        <div className="flex flex-col gap-1 bg-slate-50 p-4 rounded-2xl border border-slate-100 items-center text-center">
+                          <Square className="w-6 h-6 text-brand-accent mb-1" />
+                          <span className="text-xs text-slate-400 font-medium">מ&quot;ר</span>
+                          <span className="font-black text-slate-800">{details.features.apartmentArea}</span>
                         </div>
                       )}
                       {details.features.floor && (
-                        <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                          <Layers className="w-5 h-5 text-brand-accent shrink-0" />
-                          <span className="font-bold text-slate-700 text-sm">קומה {details.features.floor}</span>
+                        <div className="flex flex-col gap-1 bg-slate-50 p-4 rounded-2xl border border-slate-100 items-center text-center">
+                          <Layers className="w-6 h-6 text-brand-accent mb-1" />
+                          <span className="text-xs text-slate-400 font-medium">קומה</span>
+                          <span className="font-black text-slate-800">{details.features.floor}</span>
                         </div>
                       )}
                       {details.features.parking && (
-                        <div className="flex items-center gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                          <Car className="w-5 h-5 text-brand-accent shrink-0" />
-                          <span className="font-bold text-slate-700 text-sm">{details.features.parking} חניות</span>
+                        <div className="flex flex-col gap-1 bg-slate-50 p-4 rounded-2xl border border-slate-100 items-center text-center">
+                          <Car className="w-6 h-6 text-brand-accent mb-1" />
+                          <span className="text-xs text-slate-400 font-medium">חניה</span>
+                          <span className="font-black text-slate-800">{details.features.parking}</span>
                         </div>
                       )}
                     </div>
