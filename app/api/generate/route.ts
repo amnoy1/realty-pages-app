@@ -3,6 +3,7 @@ import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
+  console.log("[Server] Received request for /api/generate (v2.1)");
   const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
 
   if (!apiKey) {

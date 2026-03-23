@@ -7,6 +7,7 @@ export async function generatePropertyContent(
   address: string,
   targetAudience: string[] = []
 ) {
+  console.log("[Client] Calling /api/generate (v2.1)");
   try {
     const response = await fetch("/api/generate", {
       method: "POST",
