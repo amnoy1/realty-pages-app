@@ -21,14 +21,17 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
       const fetchNewLeads = async () => {
         try {
           const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
-          // שימוש ב-db! כדי לפתור את שגיאת ה-TypeScript
+          // Fetch all leads for this owner and filter in memory to avoid index requirement
           const q = query(
             collection(db!, 'leads'),
-            where('ownerId', '==', user.uid),
-            where('createdAt', '>=', oneDayAgo)
+            where('ownerId', '==', user.uid)
           );
           const snap = await getDocs(q);
-          setNewLeadsCount(snap.size);
+          const newLeads = snap.docs.filter(doc => {
+            const data = doc.data();
+            return data.createdAt && data.createdAt >= oneDayAgo;
+          });
+          setNewLeadsCount(newLeads.length);
         } catch (e) {
           console.error("Error fetching new leads count:", e);
         }

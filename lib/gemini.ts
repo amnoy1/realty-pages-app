@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
 import { PropertyFeatures, EnhancedDescription } from "../types";
 
 export async function generatePropertyContent(
@@ -35,13 +35,14 @@ export async function generatePropertyContent(
          - cta: משפט הנעה לפעולה חזק.
       4. features: אובייקט עם מאפייני הנכס (שטח דירה, שטח מגרש, מרפסת, חדרים, קומה, ממ"ד, חניה, מחסן, כיווני אוויר, מעלית). השתמש בערכים מהתיאור הגולמי אם קיימים.
       
-      החזר את התשובה בפורמט JSON בלבד, בעברית.
+      החזר את התשובה בפורמט JSON בלבד, בעברית. אל תוסיף טקסט הסברי לפני או אחרי ה-JSON.
     `;
 
     const response = await genAI.models.generateContent({
       model,
       contents: [{ parts: [{ text: prompt }] }],
       config: {
+        thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
