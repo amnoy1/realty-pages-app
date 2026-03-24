@@ -218,43 +218,55 @@ const HomePage: React.FC = () => {
             currentView={currentView} 
           />
       </div>
-      <div className="pt-16">
-          {currentView === 'edit' && editingProperty ? (
-              <EditForm property={editingProperty} onSave={handleUpdateProperty} onCancel={() => setCurrentView('dashboard')} isSaving={isSaving} />
-          ) : currentView === 'admin' && isAdmin ? (
-              <AdminDashboard />
-          ) : currentView === 'dashboard' && user ? (
-              <UserDashboard 
-                userId={user.uid} 
-                userEmail={user.email} 
-                onCreateNew={navigateToCreate} 
-                onEdit={(p) => { setEditingProperty(p); setCurrentView('edit'); }} 
-              />
-          ) : currentView === 'preview' && propertyDetails ? (
-              <LandingPage 
-                  details={propertyDetails} 
-                  isPreview={true} 
-                  onReset={() => {
-                    setPropertyDetails(null);
-                    setCurrentView('create');
-                  }} 
-                  onSave={handleSaveAndPublish} 
-                  isSaving={isSaving} 
-                  onNavigateToDashboard={() => {
-                    setPropertyDetails(null);
-                    setCurrentView('dashboard');
-                  }}
-              />
-          ) : (
-              <div className="relative">
-                 {!user && (
-                     <div className="absolute inset-0 z-40 bg-slate-900/80 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
-                         <h2 className="text-3xl font-bold text-white mb-4">ניהול נכסי נדל&quot;ן</h2>
-                         <p className="text-slate-300 mb-6">התחבר כדי להתחיל ליצור דפי נחיתה מקצועיים</p>
-                     </div>
-                 )}
-                 <CreationForm onSubmit={handleFormSubmit} isLoading={isLoading} />
+      <div className="pt-16 min-h-screen flex flex-col">
+          {!user ? (
+              <div className="flex-grow flex items-center justify-center p-4">
+                  <div className="w-full flex flex-col items-center">
+                      <div className="mb-8 text-center">
+                          <h1 className="text-4xl md:text-6xl font-black text-white mb-4 tracking-tight">Realty-Pages</h1>
+                          <p className="text-xl text-slate-400">הדרך המהירה והחכמה ביותר לייצר דפי נחיתה לנכסים</p>
+                      </div>
+                      <Auth 
+                        user={user} 
+                        isAdmin={isAdmin} 
+                        onViewChange={(view) => setCurrentView(view)} 
+                        currentView={currentView} 
+                        mode="full"
+                      />
+                  </div>
               </div>
+          ) : (
+            <>
+              {currentView === 'edit' && editingProperty ? (
+                  <EditForm property={editingProperty} onSave={handleUpdateProperty} onCancel={() => setCurrentView('dashboard')} isSaving={isSaving} />
+              ) : currentView === 'admin' && isAdmin ? (
+                  <AdminDashboard />
+              ) : currentView === 'dashboard' && user ? (
+                  <UserDashboard 
+                    userId={user.uid} 
+                    userEmail={user.email} 
+                    onCreateNew={navigateToCreate} 
+                    onEdit={(p) => { setEditingProperty(p); setCurrentView('edit'); }} 
+                  />
+              ) : currentView === 'preview' && propertyDetails ? (
+                  <LandingPage 
+                      details={propertyDetails} 
+                      isPreview={true} 
+                      onReset={() => {
+                        setPropertyDetails(null);
+                        setCurrentView('create');
+                      }} 
+                      onSave={handleSaveAndPublish} 
+                      isSaving={isSaving} 
+                      onNavigateToDashboard={() => {
+                        setPropertyDetails(null);
+                        setCurrentView('dashboard');
+                      }}
+                  />
+              ) : (
+                  <CreationForm onSubmit={handleFormSubmit} isLoading={isLoading} />
+              )}
+            </>
           )}
       </div>
     </div>

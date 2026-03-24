@@ -10,6 +10,9 @@ import {
   sendSignInLinkToEmail,
   isSignInWithEmailLink,
   signInWithEmailLink,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
   Auth
 } from 'firebase/auth';
 
@@ -63,5 +66,5 @@ export const debugEnv: Record<string, string> = {
     hasApiKey: envConfig?.apiKey ? 'Yes' : 'No'
 };
 
-export { db, storage, auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, initializationError };
+export { db, storage, auth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, initializationError };
 export type { User } from 'firebase/auth';
