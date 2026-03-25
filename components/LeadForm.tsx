@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { db, auth, sendSignInLinkToEmail } from '../lib/firebase';
 import { collection, addDoc } from 'firebase/firestore';
+import * as gtag from '../lib/gtag';
 
 interface LeadFormProps {
   agentWhatsApp: string;
@@ -58,6 +59,14 @@ export const LeadForm: React.FC<LeadFormProps> = ({
           createdAt: Date.now(),
           source: 'landing_page_form'
         });
+        
+        gtag.event({
+          action: 'generate_lead',
+          category: 'conversion',
+          label: propertyTitle,
+          value: 1
+        });
+        
         console.log("Lead saved successfully to DB");
       }
     } catch (dbErr: any) {

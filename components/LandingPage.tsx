@@ -11,6 +11,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import type { PropertyDetails, PropertyFeatures } from '../types';
 import { ImageGallery } from './ImageGallery';
 import { LeadForm } from './LeadForm';
+import * as gtag from '../lib/gtag';
 
 declare global {
   interface Window {
@@ -162,11 +163,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         setIsShareMenuOpen(false);
       }
     };
+
+    if (!isPreview && details.id) {
+      gtag.event({
+        action: 'view_landing_page',
+        category: 'engagement',
+        label: details.address,
+        value: 1
+      });
+    }
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isPreview, details.id, details.address]);
 
   const handleCtaClick = () => {
+    gtag.event({
+      action: 'cta_click',
+      category: 'engagement',
+      label: details.address,
+      value: 1
+    });
     leadFormRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
   
@@ -191,6 +208,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
   const shareOnFacebook = (target: 'feed' | 'page' = 'feed') => {
     const url = window.location.href;
     
+    gtag.event({
+      action: 'share',
+      category: 'engagement',
+      label: `facebook_${target}`
+    });
+
     if (target === 'page') {
       const pageShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&display=popup&share_channel=page_pinnable`;
       window.open(pageShareUrl, 'facebook-share-dialog', 'width=626,height=436');
@@ -341,6 +364,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                                     ? `🏠 עוד נכס נמכר בהצלחה בבלעדיות!\n📍 ${details.address}\n\nשמח לבשר שהעסקה נחתמה והנכס עבר לבעליו החדשים.\n\nלכל הפרטים:\n${url}`
                                     : `🏠 נכס חדש למכירה בבלעדיות!\n📍 ${details.address}\n💰 מחיר: ${formattedPrice} ₪\n\nלכל הפרטים והתמונות:\n${url}`;
                                 window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                                gtag.event({
+                                  action: 'share',
+                                  category: 'engagement',
+                                  label: 'whatsapp'
+                                });
                                 setIsShareMenuOpen(false);
                             }} className="w-full bg-[#25D366] text-white py-3 px-4 rounded-xl hover:bg-[#1ebc57] transition-all text-sm font-bold flex items-center justify-center gap-2 font-sans shadow-lg">
                                 <WhatsAppIcon /> וואטסאפ

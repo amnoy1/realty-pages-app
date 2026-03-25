@@ -4,6 +4,7 @@ import { Heebo } from "next/font/google";
 import "./globals.css";
 import React from "react";
 import { NextRouterProvider } from "../components/RouterContext";
+import GoogleAnalytics from "../components/GoogleAnalytics";
 
 const heebo = Heebo({ subsets: ["hebrew", "latin"] });
 
@@ -43,6 +44,7 @@ export default function RootLayout({
   return (
     <html lang="he" dir="rtl">
       <body className={`${heebo.className} bg-slate-900 text-white`}>
+        <GoogleAnalytics />
         <NextRouterProvider>
           {children}
         </NextRouterProvider>

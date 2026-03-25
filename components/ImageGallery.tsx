@@ -1,5 +1,6 @@
 
 import React, { useState, useRef } from 'react';
+import * as gtag from '../lib/gtag';
 
 interface ImageGalleryProps {
   images: string[];
@@ -18,6 +19,11 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
     const isFirstImage = currentIndex === 0;
     const newIndex = isFirstImage ? images.length - 1 : currentIndex - 1;
     setCurrentIndex(newIndex);
+    gtag.event({
+      action: 'gallery_nav',
+      category: 'engagement',
+      label: 'previous'
+    });
   };
 
   const goToNext = (e?: React.MouseEvent) => {
@@ -25,6 +31,11 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({ images }) => {
     const isLastImage = currentIndex === images.length - 1;
     const newIndex = isLastImage ? 0 : currentIndex + 1;
     setCurrentIndex(newIndex);
+    gtag.event({
+      action: 'gallery_nav',
+      category: 'engagement',
+      label: 'next'
+    });
   };
 
   const onTouchStart = (e: React.TouchEvent) => {

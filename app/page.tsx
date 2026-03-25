@@ -19,6 +19,7 @@ import { EditForm } from '../components/EditForm';
 const ADMIN_EMAILS = ['amir@mango-realty.com', 'amir@in-real.estate']; 
 
 import { generatePropertyContent } from '../lib/gemini';
+import * as gtag from '../lib/gtag';
 
 const HomePage: React.FC = () => {
   const [propertyDetails, setPropertyDetails] = useState<PropertyDetails | null>(null);
@@ -111,6 +112,14 @@ const HomePage: React.FC = () => {
         enhancedDescription: generatedData.description,
         features: generatedData.features,
       });
+      
+      gtag.event({
+        action: 'generate_property',
+        category: 'creation',
+        label: formData.address,
+        value: 1
+      });
+
       // Switch to preview view immediately after generation
       setCurrentView('preview');
     } catch (err: any) {
@@ -166,6 +175,14 @@ const HomePage: React.FC = () => {
       };
 
       await setDoc(docRef, dataToSave);
+      
+      gtag.event({
+        action: 'publish_property',
+        category: 'creation',
+        label: propertyDetails.address,
+        value: 1
+      });
+
       router.push(`/${slug}-${newId}`);
     } catch (error: any) {
         alert("שגיאה בשמירה");

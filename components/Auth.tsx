@@ -13,6 +13,7 @@ import {
   updateProfile
 } from '../lib/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
+import * as gtag from '../lib/gtag';
 
 interface AuthProps {
   user: User | null;
@@ -71,6 +72,11 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
       const provider = new GoogleAuthProvider();
       provider.setCustomParameters({ prompt: 'select_account' });
       await signInWithPopup(auth, provider);
+      gtag.event({
+        action: 'login',
+        category: 'auth',
+        label: 'google'
+      });
     } catch (error: any) {
       console.error("Google login failed:", error);
       if (error.code !== 'auth/popup-closed-by-user') {
@@ -94,8 +100,18 @@ export const Auth: React.FC<AuthProps> = ({ user, isAdmin, onViewChange, current
         if (displayName) {
           await updateProfile(userCredential.user, { displayName });
         }
+        gtag.event({
+          action: 'sign_up',
+          category: 'auth',
+          label: 'email'
+        });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
+        gtag.event({
+          action: 'login',
+          category: 'auth',
+          label: 'email'
+        });
       }
     } catch (error: any) {
       console.error("Email auth failed:", error);
