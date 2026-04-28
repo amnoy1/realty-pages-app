@@ -176,10 +176,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
       
       // המרה ל-Firestore Tracking
       if (db && details.id) {
-        const docRef = doc(db, 'properties', details.id);
+        const docRef = doc(db, 'landingPages', details.id);
         updateDoc(docRef, {
           views: increment(1)
-        }).catch(err => console.error("Error updating views:", err));
+        }).catch(err => console.error("[Tracking] Error updating views:", err));
       }
     }
 
@@ -188,10 +188,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
       if (isPreview || !details.id || !db) return;
       const duration = Date.now() - entryTime;
       if (duration > 1000) { // הגנה מפני קפיצות קצרות מדי
-        const docRef = doc(db, 'properties', details.id);
+        const docRef = doc(db, 'landingPages', details.id);
         updateDoc(docRef, {
           totalTimeSpent: increment(duration)
-        }).catch(err => console.error("Error updating time:", err));
+        }).catch(err => console.error("[Tracking] Error updating time:", err));
       }
     };
 

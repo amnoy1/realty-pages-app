@@ -58,7 +58,8 @@ service cloud.firestore {
     match /landingPages/{pageId} {
       allow read: if true; // Publicly readable
       allow create: if isAuthenticated(); // Any authenticated user (agent) can create
-      allow update: if isOwner(resource.data.userId) || isAdmin();
+      allow update: if (isOwner(resource.data.userId) || isAdmin()) || 
+                       (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views', 'totalTimeSpent']));
       allow delete: if isOwner(resource.data.userId) || isAdmin();
     }
 

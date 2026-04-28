@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { db } from '../lib/firebase';
-import { collection, getDocs, query, where, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, where, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
 import type { PropertyDetails, Lead } from '../types';
 
 interface UserDashboardProps {
@@ -30,27 +30,33 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
     if (savedTime) setLastViewedLeads(parseInt(savedTime));
   }, [userId]);
 
-  const fetchData = async () => {
+  useEffect(() => {
     if (!db || !userId) return;
     setLoading(true);
-    try {
-      const qProps = query(collection(db, 'landingPages'), where('userId', '==', userId));
-      const propSnap = await getDocs(qProps);
-      const props = propSnap.docs.map(doc => ({ ...doc.data() as object, id: doc.id } as PropertyDetails));
+
+    const qProps = query(collection(db, 'landingPages'), where('userId', '==', userId));
+    const unsubscribeProps = onSnapshot(qProps, (snapshot) => {
+      const props = snapshot.docs.map(doc => ({ ...doc.data() as object, id: doc.id } as PropertyDetails));
       setMyProperties(props.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
-
-      const qLeads = query(collection(db, 'leads'), where('ownerId', '==', userId));
-      const leadSnap = await getDocs(qLeads);
-      const leads = leadSnap.docs.map(doc => ({ ...doc.data() as object, id: doc.id } as Lead));
-      setMyLeads(leads.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
-    } catch (err) {
-      console.error("Dashboard fetch error:", err);
-    } finally {
       setLoading(false);
-    }
-  };
+    }, (err) => {
+      console.error("Properties snapshot error:", err);
+      setLoading(false);
+    });
 
-  useEffect(() => { fetchData(); }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+    const qLeads = query(collection(db, 'leads'), where('ownerId', '==', userId));
+    const unsubscribeLeads = onSnapshot(qLeads, (snapshot) => {
+      const leads = snapshot.docs.map(doc => ({ ...doc.data() as object, id: doc.id } as Lead));
+      setMyLeads(leads.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
+    }, (err) => {
+      console.error("Leads snapshot error:", err);
+    });
+
+    return () => {
+      unsubscribeProps();
+      unsubscribeLeads();
+    };
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleTabChange = (tab: 'properties' | 'leads') => {
     setActiveTab(tab);
