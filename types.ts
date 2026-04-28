@@ -42,6 +42,8 @@ export interface PropertyDetails extends PropertyFormData {
   enhancedDescription: EnhancedDescription;
   features: PropertyFeatures;
   isSold?: boolean;
+  views?: number;
+  totalTimeSpent?: number; // במילישניות
 }
 
 export interface UserProfile {

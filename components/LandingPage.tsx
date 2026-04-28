@@ -12,6 +12,8 @@ import type { PropertyDetails, PropertyFeatures } from '../types';
 import { ImageGallery } from './ImageGallery';
 import { LeadForm } from './LeadForm';
 import * as gtag from '../lib/gtag';
+import { db } from '../lib/firebase';
+import { doc, updateDoc, increment } from 'firebase/firestore';
 
 declare global {
   interface Window {
@@ -171,10 +173,44 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
         label: details.address,
         value: 1
       });
+      
+      // המרה ל-Firestore Tracking
+      if (db && details.id) {
+        const docRef = doc(db, 'properties', details.id);
+        updateDoc(docRef, {
+          views: increment(1)
+        }).catch(err => console.error("Error updating views:", err));
+      }
     }
 
+    const entryTime = Date.now();
+    const trackTime = () => {
+      if (isPreview || !details.id || !db) return;
+      const duration = Date.now() - entryTime;
+      if (duration > 1000) { // הגנה מפני קפיצות קצרות מדי
+        const docRef = doc(db, 'properties', details.id);
+        updateDoc(docRef, {
+          totalTimeSpent: increment(duration)
+        }).catch(err => console.error("Error updating time:", err));
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        trackTime();
+      }
+    };
+
+    window.addEventListener('beforeunload', trackTime);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      trackTime();
+      window.removeEventListener('beforeunload', trackTime);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, [isPreview, details.id, details.address]);
 
   const handleCtaClick = () => {

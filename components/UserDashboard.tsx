@@ -84,6 +84,22 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
     return p ? p.address : 'כתובת לא ידועה';
   };
 
+  const formatDuration = (ms?: number) => {
+    if (!ms) return '0 שניות';
+    const seconds = Math.floor(ms / 1000);
+    if (seconds < 60) return `${seconds} שניות`;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    if (minutes < 60) return `${minutes} דק' ו-${remainingSeconds} שנ'`;
+    const hours = Math.floor(minutes / 60);
+    return `${hours} שעות`;
+  };
+
+  const getAvgTime = (totalMs?: number, views?: number) => {
+    if (!totalMs || !views || views === 0) return '0 שניות';
+    return formatDuration(totalMs / views);
+  };
+
   const filteredLeads = filterId ? myLeads.filter(l => l.propertyId === filterId) : myLeads;
   
   // לידים "חדשים" באמת - כאלו שנוצרו מאז הצפייה האחרונה (לפני הטאב הנוכחי)
@@ -148,7 +164,21 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
                 </div>
                 <div className="p-5 font-sans">
                   <h3 className="text-white font-bold line-clamp-1 mb-1">{prop.generatedTitle}</h3>
-                  <p className="text-slate-400 text-xs mb-4 line-clamp-1">{prop.address}</p>
+                  <p className="text-slate-400 text-xs mb-3 line-clamp-1">{prop.address}</p>
+                  
+                  <div className="flex items-center gap-4 mb-5 text-[10px] bg-slate-900/40 p-2 rounded-lg border border-slate-700/50">
+                    <div className="flex items-center gap-1 text-slate-400" title="מספר כניסות לדף">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                      <span className="font-bold text-slate-300">{prop.views || 0}</span>
+                      <span>כניסות</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-slate-400" title="זמן שהייה ממוצע בדף">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      <span className="font-bold text-slate-300">{getAvgTime(prop.totalTimeSpent, prop.views)}</span>
+                      <span>בממוצע</span>
+                    </div>
+                  </div>
+
                   <div className="flex gap-2">
                     <a href={`/${prop.slug}-${prop.id}`} target="_blank" className="flex-1 bg-slate-700 hover:bg-slate-600 text-white text-center py-2 rounded-lg text-sm font-bold">צפה</a>
                     <button onClick={() => onEdit(prop)} className="p-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"><EditIcon /></button>
