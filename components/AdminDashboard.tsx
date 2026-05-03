@@ -3,10 +3,18 @@ import React, { useEffect, useState } from 'react';
 import { db } from '../lib/firebase';
 import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import type { PropertyDetails, UserProfile, Lead } from '../types';
+import * as gtag from '../lib/gtag';
 
 type AdminTab = 'agents' | 'properties' | 'leads';
 
 export const AdminDashboard: React.FC = () => {
+  useEffect(() => {
+    gtag.event({
+      action: 'view_admin_dashboard',
+      category: 'admin',
+      label: 'dashboard_load'
+    });
+  }, []);
   const [data, setData] = useState<{ 
     users: UserProfile[], 
     props: PropertyDetails[], 
