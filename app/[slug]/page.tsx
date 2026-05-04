@@ -71,7 +71,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: {
       title: title,
       description: seoDescription,
-      siteName: 'Realty-Pages | דפי נחיתה לנדל"ן',
+      siteName: details.agentName || 'נדל"ן בבלעדיות',
       images: [
         {
           url: imageUrl,
@@ -81,7 +81,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         },
       ],
       locale: 'he_IL',
-      type: 'website',
+      type: 'article', // Using article instead of website can sometimes look better in previews
     },
     twitter: {
       card: 'summary_large_image',
