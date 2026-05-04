@@ -209,28 +209,35 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
     // URL Cleaning: Remove tracking parameters after a short delay
     // This keeps the URL looking "original" and "clean" for the user.
     const cleanUrlTimeout = setTimeout(() => {
-      const url = new URL(window.location.href);
-      const trackers = ['fbclid', 'gclid', 'wbraid', 'gbraid', 'msclkid'];
-      let changed = false;
-      
-      trackers.forEach(param => {
-        if (url.searchParams.has(param)) {
-          url.searchParams.delete(param);
+      try {
+        const url = new URL(window.location.href);
+        const trackers = ['fbclid', 'gclid', 'wbraid', 'gbraid', 'msclkid'];
+        let changed = false;
+        
+        trackers.forEach(param => {
+          if (url.searchParams.has(param)) {
+            url.searchParams.delete(param);
+            changed = true;
+          }
+        });
+
+        // Also remove UTM parameters
+        const utms = Array.from(url.searchParams.keys()).filter(key => key.startsWith('utm_'));
+        utms.forEach(key => {
+          url.searchParams.delete(key);
           changed = true;
+        });
+
+        // Fix: Always decode the pathname to show Hebrew in the address bar instead of %D7...
+        // and keep the URL clean.
+        const decodedPathname = decodeURIComponent(url.pathname);
+        if (changed || url.pathname !== decodedPathname) {
+          window.history.replaceState({}, '', window.location.origin + decodedPathname + url.search);
         }
-      });
-
-      // Also remove UTM parameters
-      const utms = Array.from(url.searchParams.keys()).filter(key => key.startsWith('utm_'));
-      utms.forEach(key => {
-        url.searchParams.delete(key);
-        changed = true;
-      });
-
-      if (changed) {
-        window.history.replaceState({}, '', url.pathname + url.search);
+      } catch (e) {
+        console.error("URL cleaning error:", e);
       }
-    }, 3000); // 3 seconds delay to allow trackers to work
+    }, 2000); 
     
     return () => {
       trackTime();
@@ -251,9 +258,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
     leadFormRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
   
+  // הקישור המקורי והנקי של דף הנחיתה (עם עברית מפוענחת לנוחות שיתוף)
+  const pageUrl = details.id 
+    ? `${window.location.origin}/${decodeURIComponent(details.slug || '')}-${details.id}` 
+    : window.location.origin + decodeURIComponent(window.location.pathname);
+  
   const copyLink = () => {
-    const url = window.location.origin + window.location.pathname;
-    navigator.clipboard.writeText(url)
+    navigator.clipboard.writeText(pageUrl)
       .then(() => {
           setCopyStatus('copied');
           setTimeout(() => setCopyStatus('idle'), 2000);
@@ -270,7 +281,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
   };
 
   const shareOnFacebook = (target: 'feed' | 'page' = 'feed') => {
-    const url = window.location.origin + window.location.pathname;
+    const encodedUrl = encodeURIComponent(pageUrl);
     
     gtag.event({
       action: 'share',
@@ -279,7 +290,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
     });
 
     if (target === 'page') {
-      const pageShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&display=popup&share_channel=page_pinnable`;
+      const pageShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&display=popup&share_channel=page_pinnable`;
       window.open(pageShareUrl, 'facebook-share-dialog', 'width=626,height=436');
       return;
     }
@@ -287,16 +298,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
     if (window.FB) {
         window.FB.ui({
           method: 'share',
-          href: url,
+          href: pageUrl,
           display: 'popup'
         }, function(response: any){
             if (!response || response.error) {
-               const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+               const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
                window.open(shareUrl, 'facebook-share-dialog', 'width=626,height=436');
             }
         });
     } else {
-        const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+        const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
         window.open(shareUrl, 'facebook-share-dialog', 'width=626,height=436');
     }
   };
@@ -423,10 +434,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                             </div>
 
                             <button onClick={() => {
-                                const url = window.location.origin + window.location.pathname;
                                 const text = details.isSold 
-                                    ? `🏠 עוד נכס נמכר בהצלחה בבלעדיות!\n📍 ${details.address}\n\nשמח לבשר שהעסקה נחתמה והנכס עבר לבעליו החדשים.\n\nלכל הפרטים:\n${url}`
-                                    : `🏠 נכס חדש למכירה בבלעדיות!\n📍 ${details.address}\n💰 מחיר: ${formattedPrice} ₪\n\nלכל הפרטים והתמונות:\n${url}`;
+                                    ? `🏠 עוד נכס נמכר בהצלחה בבלעדיות!\n📍 ${details.address}\n\nשמח לבשר שהעסקה נחתמה והנכס עבר לבעליו החדשים.\n\nלכל הפרטים:\n${pageUrl}`
+                                    : `🏠 נכס חדש למכירה בבלעדיות!\n📍 ${details.address}\n💰 מחיר: ${formattedPrice} ₪\n\nלכל הפרטים והתמונות:\n${pageUrl}`;
                                 window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
                                 gtag.event({
                                   action: 'share',
