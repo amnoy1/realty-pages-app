@@ -68,27 +68,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: title,
     description: seoDescription,
-    openGraph: {
-      title: title,
-      description: seoDescription,
-      siteName: details.agentName || 'נדל"ן בבלעדיות',
-      images: [
-        {
-          url: imageUrl,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
-      locale: 'he_IL',
-      type: 'article', // Using article instead of website can sometimes look better in previews
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: title,
-      description: seoDescription,
-      images: [imageUrl],
-    },
+    // Removing openGraph and twitter blocks to prevent apps like WhatsApp/Facebook 
+    // from generating a "rich preview" (the bubble) as requested by the user.
   };
 }
 
