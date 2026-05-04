@@ -67,9 +67,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: title,
-    description: seoDescription,
-    // Removing openGraph and twitter blocks to prevent apps like WhatsApp/Facebook 
-    // from generating a "rich preview" (the bubble) as requested by the user.
+    // We keep the title for the browser tab, but removing everything else 
+    // to minimize social preview generation.
   };
 }
 
