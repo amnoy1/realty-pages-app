@@ -67,8 +67,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   return {
     title: title,
-    // We keep the title for the browser tab, but removing everything else 
-    // to minimize social preview generation.
+    description: seoDescription,
+    // We keep title and description for SEO (Google), but omit openGraph 
+    // and twitter tags to minimize the WhatsApp "rich preview" bubble.
   };
 }
 
