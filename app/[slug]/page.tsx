@@ -71,7 +71,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     openGraph: {
       title: title,
       description: seoDescription,
-      url: `https://realty-pages.com/${params.slug}`,
       siteName: 'Realty-Pages | דפי נחיתה לנדל"ן',
       images: [
         {

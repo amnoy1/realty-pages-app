@@ -14,6 +14,7 @@ interface UserDashboardProps {
 
 const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18m-2 0v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>;
 const EditIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
+const CopyIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>;
 const PhoneIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
 const UsersIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
 
@@ -114,6 +115,13 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
     return formatDuration(totalMs / views);
   };
 
+  const handleCopyLink = (slug: string, id: string) => {
+    const url = `${window.location.origin}/${slug}-${id}`;
+    navigator.clipboard.writeText(url)
+      .then(() => alert("הלינק הועתק!"))
+      .catch(() => alert("שגיאה בהעתקה"));
+  };
+
   const filteredLeads = filterId ? myLeads.filter(l => l.propertyId === filterId) : myLeads;
   
   // לידים "חדשים" באמת - כאלו שנוצרו מאז הצפייה האחרונה (לפני הטאב הנוכחי)
@@ -195,6 +203,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ userId, userEmail,
 
                   <div className="flex gap-2">
                     <a href={`/${prop.slug}-${prop.id}`} target="_blank" className="flex-1 bg-slate-700 hover:bg-slate-600 text-white text-center py-2 rounded-lg text-sm font-bold">צפה</a>
+                    <button onClick={() => handleCopyLink(prop.slug || '', prop.id!)} className="p-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors border border-slate-600" title="העתק לינק"><CopyIcon /></button>
                     <button onClick={() => onEdit(prop)} className="p-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors"><EditIcon /></button>
                     <button onClick={(e) => handleDeleteProperty(e, prop.id!)} disabled={isDeleting === prop.id} className="p-2 bg-red-900/20 text-red-500 hover:bg-red-600 hover:text-white rounded-lg transition-colors"><TrashIcon /></button>
                   </div>

@@ -205,8 +205,36 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
     document.addEventListener("mousedown", handleClickOutside);
+
+    // URL Cleaning: Remove tracking parameters after a short delay
+    // This keeps the URL looking "original" and "clean" for the user.
+    const cleanUrlTimeout = setTimeout(() => {
+      const url = new URL(window.location.href);
+      const trackers = ['fbclid', 'gclid', 'wbraid', 'gbraid', 'msclkid'];
+      let changed = false;
+      
+      trackers.forEach(param => {
+        if (url.searchParams.has(param)) {
+          url.searchParams.delete(param);
+          changed = true;
+        }
+      });
+
+      // Also remove UTM parameters
+      const utms = Array.from(url.searchParams.keys()).filter(key => key.startsWith('utm_'));
+      utms.forEach(key => {
+        url.searchParams.delete(key);
+        changed = true;
+      });
+
+      if (changed) {
+        window.history.replaceState({}, '', url.pathname + url.search);
+      }
+    }, 3000); // 3 seconds delay to allow trackers to work
+    
     return () => {
       trackTime();
+      clearTimeout(cleanUrlTimeout);
       window.removeEventListener('beforeunload', trackTime);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       document.removeEventListener("mousedown", handleClickOutside);
@@ -224,7 +252,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
   };
   
   const copyLink = () => {
-    const url = window.location.href;
+    const url = window.location.origin + window.location.pathname;
     navigator.clipboard.writeText(url)
       .then(() => {
           setCopyStatus('copied');
@@ -242,7 +270,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
   };
 
   const shareOnFacebook = (target: 'feed' | 'page' = 'feed') => {
-    const url = window.location.href;
+    const url = window.location.origin + window.location.pathname;
     
     gtag.event({
       action: 'share',
@@ -395,7 +423,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ details, isPreview = f
                             </div>
 
                             <button onClick={() => {
-                                const url = window.location.href;
+                                const url = window.location.origin + window.location.pathname;
                                 const text = details.isSold 
                                     ? `🏠 עוד נכס נמכר בהצלחה בבלעדיות!\n📍 ${details.address}\n\nשמח לבשר שהעסקה נחתמה והנכס עבר לבעליו החדשים.\n\nלכל הפרטים:\n${url}`
                                     : `🏠 נכס חדש למכירה בבלעדיות!\n📍 ${details.address}\n💰 מחיר: ${formattedPrice} ₪\n\nלכל הפרטים והתמונות:\n${url}`;
